@@ -10,6 +10,10 @@ export { Process } from "./Process";
 export { ProcessStep } from "./ProcessStep";
 export type { ProcessStepProps } from "./ProcessStep";
 
+export { Pricing } from "./Pricing";
+export { PricingCard } from "./PricingCard";
+export type { PricingCardProps } from "./PricingCard";
+
 export { Contact } from "./Contact";
 export { ContactInfo } from "./ContactInfo";
 export { ContactForm } from "./ContactForm";

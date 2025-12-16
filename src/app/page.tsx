@@ -1,5 +1,5 @@
 import { RevealProvider } from "@/components/layout";
-import { Hero, Services, Process, Contact } from "@/components/sections";
+import { Hero, Services, Process, Pricing, Contact } from "@/components/sections";
 
 export default function Home() {
   return (
@@ -7,6 +7,7 @@ export default function Home() {
       <Hero />
       <Services />
       <Process />
+      <Pricing />
       <Contact />
     </RevealProvider>
   );
