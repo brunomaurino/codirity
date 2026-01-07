@@ -3,6 +3,7 @@ import { Outfit, Space_Mono } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/Toaster";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -49,6 +50,9 @@ export default function RootLayout({
           {/* Toast Notifications */}
           <Toaster />
         </ThemeProvider>
+
+        {/* Analytics */}
+        <GoogleAnalytics />
       </body>
     </html>
   );
