@@ -24,6 +24,14 @@ export const metadata: Metadata = {
     "Modernize your business with AI-powered automation and custom systems. Built by engineers from Globant & Ualá. Book a free consultation today.",
 };
 
+// Blocking, pre-paint theme initialization. Runs before the body paints and sets
+// the [data-theme] attribute on <html>, mirroring ThemeProvider's resolution
+// (localStorage key "codirity-theme"; unstored -> "light"; "system" ->
+// prefers-color-scheme). This prevents the flash of incorrect theme that the
+// former ThemeProvider mount-gate guarded against, without nulling the server tree.
+// <html> carries suppressHydrationWarning so the script-set attribute does not warn.
+const themeInitScript = `(function(){try{var t=localStorage.getItem('codirity-theme');var m=(t==='light'||t==='dark'||t==='system')?t:'light';var r=m==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):m;document.documentElement.setAttribute('data-theme',r);}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,6 +39,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${outfit.variable} ${spaceMono.variable} font-sans antialiased`}
       >

@@ -25,11 +25,12 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       )}
       aria-label={`Switch to ${resolvedTheme === "light" ? "dark" : "light"} mode`}
     >
-      {resolvedTheme === "light" ? (
-        <Moon className="w-5 h-5" />
-      ) : (
-        <Sun className="w-5 h-5" />
-      )}
+      {/* Both icons render; visibility is driven by the [data-theme] attribute
+          (Tailwind `dark:` variant), which the pre-paint theme-init script sets
+          before hydration — so the correct icon shows immediately with no flash
+          and no hydration mismatch. */}
+      <Moon className="w-5 h-5 dark:hidden" />
+      <Sun className="hidden w-5 h-5 dark:block" />
     </button>
   );
 }
