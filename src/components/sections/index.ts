@@ -12,6 +12,8 @@ export type { ProcessStepProps } from "./ProcessStep";
 
 export { Benefits } from "./Benefits";
 
+export { RecentWork } from "./RecentWork";
+
 export { About } from "./About";
 
 export { Pricing } from "./Pricing";

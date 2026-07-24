@@ -5,6 +5,7 @@ import {
   Process,
   Services,
   Benefits,
+  RecentWork,
   About,
   Pricing,
   Contact,
@@ -26,8 +27,10 @@ export default function Home() {
       <Services />
       {/* S4 — Membership benefits */}
       <Benefits />
+      {/* S5 — Recent work (hidden until offer.caseStudies has content) */}
+      <RecentWork />
       <About />
-      {/* Pricing still the consultative card until Bundle D (anchor #pricing resolves) */}
+      {/* S6 — Pricing (two-tier + Stripe + founding banner + guarantee) */}
       <Pricing />
       <Contact />
     </RevealProvider>

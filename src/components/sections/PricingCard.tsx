@@ -6,10 +6,14 @@ export interface PricingCardProps {
   name: string;
   price: string;
   priceSubtext?: string;
+  /** Short emphasized line under the price, e.g. the active-task limit. */
+  tasks?: string;
   description: string;
   features: string[];
   ctaText: string;
   ctaHref: string;
+  /** External link target (e.g. Stripe). When true, opens in a new tab with rel=noopener. */
+  ctaExternal?: boolean;
   calLink?: string;
   featured?: boolean;
   className?: string;
@@ -19,10 +23,12 @@ export function PricingCard({
   name,
   price,
   priceSubtext,
+  tasks,
   description,
   features,
   ctaText,
   ctaHref,
+  ctaExternal,
   calLink,
   featured,
   className,
@@ -94,6 +100,18 @@ export function PricingCard({
         )}
       </div>
 
+      {/* Active-task limit */}
+      {tasks && (
+        <p
+          className={cn(
+            "mb-6 text-sm font-semibold",
+            featured ? "text-white/90" : "text-brand-dark dark:text-brand"
+          )}
+        >
+          {tasks}
+        </p>
+      )}
+
       {/* Description */}
       <p
         className={cn(
@@ -142,7 +160,13 @@ export function PricingCard({
           <ArrowRight className="w-5 h-5" />
         </CalPopupButton>
       ) : (
-        <a href={ctaHref} className={buttonStyles}>
+        <a
+          href={ctaHref}
+          {...(ctaExternal
+            ? { target: "_blank", rel: "noopener noreferrer" }
+            : {})}
+          className={buttonStyles}
+        >
           {ctaText}
           <ArrowRight className="w-5 h-5" />
         </a>
