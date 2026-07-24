@@ -47,10 +47,33 @@ _(none)_
   + Privacy Policy link ONLY (no ToS/Terms — D6). All from offer.ts.
 
 ## Review findings + resolutions
-_(Phase 4/5)_
+
+Battery `wf_f9d75ad6-7d8` (2 adv + 2 QA, verify-voters=2): 1 raw → 1 confirmed, 0 refuted, 0
+deferrals, 60 areas examined. The single MINOR APPLIED:
+
+1. **MINOR — collapsed FAQ answers exposed to screen readers.** The CSS-collapsed answer panels
+   had no `aria-hidden`, so AT could reach all 6 answers regardless of visual state. APPLIED:
+   `aria-hidden={!isOpen}` on each answer panel — collapsed answers are now hidden from AT while
+   STILL present in the DOM (crawlable, matches the FAQPage JSON-LD). Verified: answer-0
+   aria-hidden=false (open), answer-1 aria-hidden=true (collapsed); answer text still in server HTML.
 
 ## Areas examined and rejected
-_(battery)_
+
+From battery `areasExamined` (60 entries; consolidated) — a very clean bundle:
+- **JSON-LD validity** — FAQPage mainEntity Question/acceptedAnswer shape correct; Service.offers
+  price numeric (3995/6995) + priceCurrency USD per tier. Flat price (no /mo UnitPriceSpecification)
+  matches the spec.
+- **single-source / no drift** — Faq + FaqPageJsonLd both import `faq`; ServiceJsonLd + Pricing both
+  import `tiers`. Live SSR HTML: every JSON-LD question/answer string appears verbatim in the page body.
+- **crawlable answers** — answers always rendered, only CSS-collapsed (grid-rows/opacity), never
+  unmounted/display:none → Googlebot sees the same content as the JSON-LD.
+- **accordion a11y + heading** — aria-expanded/aria-controls correct; SectionHeader=h2; exactly one h1.
+- **Footer S9 / D6** — BOMAU LLC + brand + mailto contact from offer.ts; Privacy link only; grep for
+  /terms = 0 (no ToS).
+- **JSON-LD count/placement** — 3 blocks (Organization site-wide from layout; Service + FAQPage home
+  only from page); no double-injection. No injection surface (static offer.ts objects).
+- **RSC boundary** — page.tsx stays server (renders JSON-LD + RevealProvider); Faq is a leaf client
+  importing only pure-presentational primitives. No regression to Bundle C/D sections or D metadata/OG.
 
 ## Open items NOT addressed in this PR
 - Contact section still consultative copy (out of S7–S9 scope; could align in a follow-up). Bundle F
@@ -61,3 +84,4 @@ _(battery)_
 - worktree: /Users/brunomaurino/projects/codirity-be-faq-footer
 - worktree_entry: path
 - cron: (none — bundle-loop owns the resume-watchdog; --bundle-id set)
+- battery_run_id: wf_f9d75ad6-7d8 (Phase 4/5/5.5)

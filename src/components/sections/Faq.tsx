@@ -55,6 +55,7 @@ export function Faq() {
                 {/* Answer stays in the DOM (crawlable + matches JSON-LD); collapsed via CSS. */}
                 <div
                   id={answerId}
+                  aria-hidden={!isOpen}
                   className={cn(
                     "grid transition-all duration-300 ease-out",
                     isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
