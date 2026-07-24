@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { RevealProvider } from "@/components/layout";
+import { ServiceJsonLd, FaqPageJsonLd } from "@/components/seo/JsonLd";
 import {
   Hero,
   Process,
@@ -8,6 +9,7 @@ import {
   RecentWork,
   About,
   Pricing,
+  Faq,
   Contact,
 } from "@/components/sections";
 
@@ -19,20 +21,27 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <RevealProvider>
-      <Hero />
-      {/* S2 — How it works */}
-      <Process />
-      {/* S3 — What we build */}
-      <Services />
-      {/* S4 — Membership benefits */}
-      <Benefits />
-      {/* S5 — Recent work (hidden until offer.caseStudies has content) */}
-      <RecentWork />
-      <About />
-      {/* S6 — Pricing (two-tier + Stripe + founding banner + guarantee) */}
-      <Pricing />
-      <Contact />
-    </RevealProvider>
+    <>
+      {/* Service.offers + FAQPage structured data (server-rendered; sourced from offer.ts) */}
+      <ServiceJsonLd />
+      <FaqPageJsonLd />
+      <RevealProvider>
+        <Hero />
+        {/* S2 — How it works */}
+        <Process />
+        {/* S3 — What we build */}
+        <Services />
+        {/* S4 — Membership benefits */}
+        <Benefits />
+        {/* S5 — Recent work (hidden until offer.caseStudies has content) */}
+        <RecentWork />
+        <About />
+        {/* S6 — Pricing (two-tier + Stripe + founding banner + guarantee) */}
+        <Pricing />
+        {/* S7 — FAQ (accordion) + S8 — Book a call */}
+        <Faq />
+        <Contact />
+      </RevealProvider>
+    </>
   );
 }

@@ -14,6 +14,8 @@ export { Benefits } from "./Benefits";
 
 export { RecentWork } from "./RecentWork";
 
+export { Faq } from "./Faq";
+
 export { About } from "./About";
 
 export { Pricing } from "./Pricing";
