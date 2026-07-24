@@ -20,6 +20,12 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
+// NOTE: this storage key and the resolution rules below (value set, unstored
+// default of "light", and the "system" -> prefers-color-scheme mapping) are
+// intentionally MIRRORED by the pre-paint `themeInitScript` in src/app/layout.tsx,
+// which runs before this component and cannot import from here (it is inlined as a
+// static string in <head>). If you change the key or the resolution here, update
+// that script too, or the two will silently desync.
 const STORAGE_KEY = "codirity-theme";
 // Same-tab setTheme() must notify useSyncExternalStore subscribers; the native
 // `storage` event only fires in OTHER tabs, so we also dispatch this one.
@@ -59,33 +65,30 @@ function subscribe(callback: () => void): () => void {
   };
 }
 
-function getResolvedSnapshot(): ResolvedTheme {
+// Single composite snapshot "<theme>|<resolved>" read off ONE subscription, so
+// both hooks' worth of reactivity comes from a single registered listener set.
+// The composite (not just the raw preference) is what makes an OS scheme change
+// while in "system" mode re-render: the raw value stays "system" but the resolved
+// half flips, so the snapshot string changes. Returns a primitive (compared by
+// Object.is), so no infinite-loop / "getSnapshot should be cached" warning.
+function getSnapshot(): string {
   const theme = getStoredTheme();
-  return theme === "system" ? getSystemTheme() : theme;
+  const resolved = theme === "system" ? getSystemTheme() : theme;
+  return `${theme}|${resolved}`;
 }
 
-// Server snapshots match the pre-paint script's unstored default ("light").
-function getServerTheme(): Theme {
-  return "light";
-}
-function getServerResolved(): ResolvedTheme {
-  return "light";
+// Server snapshot matches the pre-paint script's unstored default ("light").
+function getServerSnapshot(): string {
+  return "light|light";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Raw preference (may be "system") and its resolved value are read as two
-  // snapshots off the same subscription: when the OS scheme changes while in
-  // "system" mode, the raw snapshot stays "system" but the resolved one flips.
-  const theme = useSyncExternalStore(
+  const snapshot = useSyncExternalStore(
     subscribe,
-    getStoredTheme,
-    getServerTheme
+    getSnapshot,
+    getServerSnapshot
   );
-  const resolvedTheme = useSyncExternalStore(
-    subscribe,
-    getResolvedSnapshot,
-    getServerResolved
-  );
+  const [theme, resolvedTheme] = snapshot.split("|") as [Theme, ResolvedTheme];
 
   // Keep the <html data-theme> attribute in sync with the resolved theme. The
   // pre-paint script sets it first (before this ever runs), so this is a no-op

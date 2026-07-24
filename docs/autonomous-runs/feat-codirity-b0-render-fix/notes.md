@@ -109,16 +109,65 @@ _(none)_
 _(none)_
 
 ## Review findings + resolutions
-_(Phase 4/5)_
+
+Battery `wf_0debc7f1-b57` (2 adv + 2 QA, verify-voters=3): 3 raw → 3 unique → 3 confirmed,
+0 refuted, 0 escalations, 0 deferrals, 56 areas examined. All 3 MINOR (applyInline):
+
+1. **MINOR — Footer.tsx:40 copyright year now build-time** (was client-only). RESOLVED BY ANALYSIS,
+   kept as-is: `Footer` is a SERVER component (no `"use client"`), so there is NO hydration mismatch
+   (server components don't re-execute on the client). The residual — a build-time-frozen year — is
+   standard, correct behavior for a statically-prerendered page and is the intended result of
+   server-rendering the footer; the reviewer's implied fix (make it client-only) would reverse
+   Bundle 0's server-rendering goal for a non-SEO element. Vercel redeploys refresh it. No change.
+2. **MINOR — ThemeProvider double subscribe** (same `subscribe` fn to two `useSyncExternalStore`).
+   APPLIED: consolidated to ONE `useSyncExternalStore` with a composite `"<theme>|<resolved>"`
+   snapshot → single registered listener set; still reacts to both raw (setTheme) and resolved-only
+   (OS scheme flip in system mode) changes. Verified live in-browser (dark/light/system all react).
+3. **MINOR — layout.tsx theme contract duplicated with ThemeProvider, no reverse-link comment.**
+   APPLIED: added a cross-reference NOTE comment at ThemeProvider's `STORAGE_KEY` explaining the
+   pre-paint `themeInitScript` mirrors it and cannot import (inlined static string), so both must
+   change together. (layout.tsx already carries the forward reference.) True logic de-dup is
+   infeasible — the inline script runs before any bundle loads and must be a literal string.
+
+Post-apply re-verification: lint + tsc + build green; script-stripped acceptance holds (44,302 B,
+single h1, header/main/footer); ThemeProvider reactivity validated live.
 
 ## Areas examined and rejected
-_(from battery areasExamined)_
+
+From battery `areasExamined` (56 entries; distinct areas consolidated):
+- **SSR render-time browser access in the now-un-gated subtree** — Header (window only in useEffect),
+  Footer (no browser API), Toaster (sonner client comp, no render-time access), RevealProvider +
+  useRevealOnScroll (document only in useEffect), sections/* (0 hits for window/document/localStorage/
+  matchMedia). No prerender crash; tsc + eslint exit 0.
+- **useSyncExternalStore SSR contract / hydration** — getServerSnapshot supplied → no "Missing
+  getServerSnapshot" throw; hydrates with "light" (matches inline-script unstored default); real
+  client value applied on post-hydration re-render, no mismatch warning.
+- **getSnapshot primitive stability** — returns primitive strings compared by Object.is → no
+  infinite re-render / "getSnapshot should be cached" warning.
+- **Inline theme-init script parity with ThemeProvider** — unstored→light; system→prefers-color-scheme;
+  else stored value — matches exactly. No dark-OS-unstored flash.
+- **Toggle icon + Tailwind dark: variant** — `@custom-variant dark` keys off [data-theme] (not
+  prefers-color-scheme); both icons in identical server/client markup, visibility CSS-only → no
+  hydration mismatch.
+- **aria-label hydration** — derives from resolvedTheme (server snapshot "light" during hydration,
+  updates post-hydration); ThemeToggle currently has no consumer in the rendered tree anyway.
+- **Inline script XSS safety** — static template literal, zero interpolation via
+  dangerouslySetInnerHTML; no user/request data; no CSP/nonce config to violate.
+- **Other mount/return-null/typeof-window gates** — only GoogleAnalytics `if(!gaId) return null`
+  (env-gated, outside <ThemeProvider>, pre-existing). ThemeProvider confirmed the only tree-nuller.
+- **Same-tab toggle + system OS-change reactivity** — setTheme writes localStorage (try/catch) +
+  dispatches THEME_EVENT; subscribe listens matchMedia change + storage + THEME_EVENT.
+- **Public ThemeContext API** — still {theme, resolvedTheme, setTheme, toggleTheme}; toggle +
+  persistence preserved.
 
 ## Open items NOT addressed in this PR
-_(none yet)_
+
+None — all review findings resolved (2 applied, 1 resolved-by-analysis with rationale above).
+Perf trimming (195.5 KB gz > 150 KB budget) is Bundle F's hard gate, per the HANDOFF (not Bundle 0).
 
 ## Durable handles
 - marker: $HOME/.claude/autonomous-active/autonomous-task-feat-codirity-b0-render-fix
 - worktree: /Users/brunomaurino/projects/codirity-b0-render-fix
 - worktree_entry: path
 - cron: (none — bundle-loop owns the resume-watchdog; --bundle-id set)
+- battery_run_id: wf_0debc7f1-b57 (Phase 4/5/5.5; resume with resumeFromRunId on death)
