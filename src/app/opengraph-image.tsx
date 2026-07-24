@@ -1,0 +1,75 @@
+import { ImageResponse } from "next/og";
+import { SITE_NAME } from "@/lib/site";
+
+// Generated 1200x630 Open Graph image (also used as the Twitter card fallback).
+// Brand palette: brand-dark #103B13 background, brand green #32CD32 accent.
+export const alt = "Codirity — AI & automation engineering";
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+export default function OpengraphImage() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          height: "100%",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          background:
+            "linear-gradient(135deg, #0b2b0e 0%, #103B13 55%, #14501a 100%)",
+          padding: "96px",
+          fontFamily: "sans-serif",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
+          <div
+            style={{
+              fontSize: 96,
+              fontWeight: 800,
+              color: "#ffffff",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            {SITE_NAME}
+          </div>
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: "9999px",
+              background: "#32CD32",
+            }}
+          />
+        </div>
+        <div
+          style={{
+            marginTop: 28,
+            fontSize: 44,
+            lineHeight: 1.25,
+            color: "#d7f5d9",
+            maxWidth: 900,
+            fontWeight: 500,
+          }}
+        >
+          AI-powered automation and custom systems that help businesses move
+          faster.
+        </div>
+        <div
+          style={{
+            marginTop: 44,
+            fontSize: 26,
+            color: "#59F359",
+            fontWeight: 600,
+            letterSpacing: "0.02em",
+          }}
+        >
+          codirity.com
+        </div>
+      </div>
+    ),
+    { ...size }
+  );
+}

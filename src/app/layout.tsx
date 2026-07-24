@@ -4,6 +4,8 @@ import { Header, Footer } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/Toaster";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { OrganizationJsonLd } from "@/components/seo/JsonLd";
+import { SITE_NAME, getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -18,10 +20,38 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
+// Positioning-NEUTRAL copy: it describes the company (AI & automation engineering),
+// not the subscription/pricing model. The live body is still consultative until
+// Bundles C/D land the new positioning; the subscription-forward copy flip is owned
+// by Bundle D so the OG card LinkedIn caches does not contradict the live page during
+// the C→D window.
+const SITE_TITLE = "Codirity — AI & Automation Engineering";
+const SITE_DESCRIPTION =
+  "Codirity builds AI-powered automation and custom systems that help businesses cut costs, move faster, and scale. Engineered by a team from Globant & Ualá.";
+
 export const metadata: Metadata = {
-  title: "Codirity | AI-Powered Automation & Custom System Development",
-  description:
-    "Modernize your business with AI-powered automation and custom systems. Built by engineers from Globant & Ualá. Book a free consultation today.",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // NOTE: canonical + openGraph.url are set PER-PAGE (page.tsx, privacy/page.tsx),
+  // not here. Next merges metadata shallowly, so a canonical/url set on the root
+  // layout would be inherited unchanged by every route — emitting the homepage
+  // canonical on /privacy and risking search-engine consolidation of that page.
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 // Blocking, pre-paint theme initialization. Runs before the body paints and sets
@@ -61,6 +91,9 @@ export default function RootLayout({
           {/* Toast Notifications */}
           <Toaster />
         </ThemeProvider>
+
+        {/* Organization structured data (server-rendered for crawlers) */}
+        <OrganizationJsonLd />
 
         {/* Analytics */}
         <GoogleAnalytics />
