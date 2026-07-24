@@ -37,7 +37,7 @@ Dashboard: https://claude.ai/code/artifact/2f247ee0-f635-4601-870d-7267de77cbe5
 | **A** | SEO & metadata foundation (OG, sitemap, robots, JSON-LD) | 0 | [x] complete | [#2](https://github.com/brunomaurino/codirity/pull/2) | `3ca3d9f` |
 | **B** | Offer config source of truth (`src/config/offer.ts`) | A | [x] complete | [#3](https://github.com/brunomaurino/codirity/pull/3) | `b24bb2d` |
 | **C** | Hero + How it works + What we build + Benefits (S1–S4) | B | [x] complete | [#4](https://github.com/brunomaurino/codirity/pull/4) | `59b2287` |
-| **D** | Pricing two-tier + Stripe + Recent work (S5–S6) | C | [ ] not started | — | — |
+| **D** | Pricing two-tier + Stripe + Recent work (S5–S6) | C | [x] complete | [#5](https://github.com/brunomaurino/codirity/pull/5) | `f627236` |
 | **E** | FAQ + JSON-LD FAQPage + Book a call + Footer (S7–S9) | D | [ ] not started | — | — |
 | **F** | Analytics events + performance close-out + acceptance | E | [ ] not started | — | — |
 

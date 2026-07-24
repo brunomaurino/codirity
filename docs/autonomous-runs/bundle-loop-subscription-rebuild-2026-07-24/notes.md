@@ -49,7 +49,13 @@ Bundle-id mapping (ordinal in §2): 0→0, A→1, B→2, C→3, D→4, E→5, F�
   Battery: 5 MINOR (all applied: offer-sourced scope labels, Benefits hover group, trust-line
   stagger, accurate "Book an intro call" CTA since the Cal event is 30-min), 0 refuted, 0 deferrals.
   Hero flipped to subscription positioning; offer.ts extended with hero/sections/scopeLabels copy.
-  ⚠️ MERGE D CONTIGUOUSLY (next) — old consultative Pricing card + neutral metadata still live.
+- **Bundle D** — PR [#5](https://github.com/brunomaurino/codirity/pull/5) MERGED at `f627236` (squash).
+  Battery: 1 MAJOR + 1 MINOR (both applied: OG image copy flipped subscription-forward, Pricing
+  header from offer.sections.pricing), 0 refuted, 0 deferrals. Two-tier pricing + Stripe env-wired
+  CTAs + founding banner + guarantee; metadata/OG flipped subscription-forward (closes Bundle A's
+  deferral). ⚠️ NOTE: a GitHub Pull Requests MAJOR OUTAGE (documented incident, ~33 min of HTTP 500
+  on PR-create) delayed opening PR #5 — rode it out with patient retries per the transient-error
+  doctrine (branch was safely pushed; no work lost).
 
 ## Orchestrator decisions
 
