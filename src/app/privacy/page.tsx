@@ -3,9 +3,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Codirity",
+  // "Privacy Policy" only — the root layout's title.template ("%s | Codirity")
+  // adds the brand suffix, so a literal "... | Codirity" here would double it.
+  title: "Privacy Policy",
   description:
     "Learn how Codirity collects, uses, and protects your personal information.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPolicy() {

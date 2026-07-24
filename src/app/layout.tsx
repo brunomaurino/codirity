@@ -37,15 +37,15 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  alternates: {
-    canonical: "/",
-  },
+  // NOTE: canonical + openGraph.url are set PER-PAGE (page.tsx, privacy/page.tsx),
+  // not here. Next merges metadata shallowly, so a canonical/url set on the root
+  // layout would be inherited unchanged by every route — emitting the homepage
+  // canonical on /privacy and risking search-engine consolidation of that page.
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    url: "/",
   },
   twitter: {
     card: "summary_large_image",

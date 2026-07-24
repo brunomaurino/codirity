@@ -66,10 +66,42 @@ _(none — carrying Bundle 0 operating notes)_
 _(none)_
 
 ## Review findings + resolutions
-_(Phase 4/5)_
+
+Battery `wf_d48f5463-d66` (2 adv + 2 QA, verify-voters=2): 4 raw → 2 unique → 2 confirmed, 0
+refuted, 0 deferrals, 55 areas examined. Both MAJOR (2/2), both APPLIED:
+
+1. **MAJOR — /privacy title double-suffix.** The new `title.template "%s | Codirity"` wrapped
+   /privacy's literal `"Privacy Policy | Codirity"` → `"Privacy Policy | Codirity | Codirity"`.
+   FIX: /privacy title → `"Privacy Policy"` (template adds the suffix once). Verified: /privacy
+   now emits `<title>Privacy Policy | Codirity</title>`.
+2. **MAJOR — canonical/og:url `"/"` inherited by /privacy.** Root layout hardcoded
+   `alternates.canonical:"/"` + `openGraph.url:"/"`; Next's shallow metadata merge propagated the
+   homepage canonical to /privacy (de-index risk). FIX: removed canonical + openGraph.url from the
+   root layout; set canonical PER-PAGE — home `page.tsx` `canonical:"/"`, `privacy/page.tsx`
+   `canonical:"/privacy"`. og:url left unset site-wide (a missing og:url is safe; scrapers use the
+   fetched URL — a WRONG og:url was the problem). Verified: home canonical=`.../`,
+   privacy canonical=`.../privacy`.
+
+Post-apply re-verify: lint + tsc + build green; both pages emit correct title + canonical; og:image
++ og:title still present (shared from layout).
 
 ## Areas examined and rejected
-_(from battery)_
+
+From battery `areasExamined` (55 entries; distinct areas consolidated):
+- **env-aware getSiteUrl + preview og:image** — Next overrides metadataBase with VERCEL_URL for the
+  static OG route on preview and uses the prod domain on production; priority matches §4a matrix.
+- **twitter:image auto-fallback** — twitter block omits `images`, so Next back-fills it from
+  openGraph.images (populated by the opengraph-image.tsx file convention). summary_large_image resolves.
+- **openGraph static image injection** — og:image + width/height/alt emitted from the file convention;
+  type/siteName/title/description present.
+- **JSON-LD Organization validity** — valid schema.org Organization; logo → /logo-footer.png (present);
+  static object, no injection risk.
+- **positioning-neutral copy** — no subscription/pricing/consultation; old consultation string removed.
+- **sitemap/robots** — home + /privacy only (no /terms); robots allows '/', absolute sitemap URL, host valid.
+- **vercel.json** — valid schema, source '/(.*)', the four §4a security headers, no secrets/env logic.
+- **SSR render regression (Bundle 0)** — tree still renders (no mount-gate); JsonLd is a server-component
+  script sibling. Single h1 preserved.
+- **type/build safety** — tsc --noEmit exit 0 across all new files. OG image served 200 image/png 1200x630.
 
 ## Open items NOT addressed in this PR
 
@@ -81,3 +113,4 @@ _(from battery)_
 - worktree: /Users/brunomaurino/projects/codirity-ba-seo
 - worktree_entry: path
 - cron: (none — bundle-loop owns the resume-watchdog; --bundle-id set)
+- battery_run_id: wf_d48f5463-d66 (Phase 4/5/5.5)
