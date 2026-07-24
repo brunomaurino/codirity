@@ -88,11 +88,42 @@ export interface CaseStudy {
   href?: string;
 }
 
+export interface Cta {
+  label: string;
+  href?: string;
+}
+
+export interface HeroContent {
+  badge: string;
+  /** The page's single <h1>. */
+  headline: string;
+  subhead: string;
+  primaryCta: Cta;
+  /** Secondary CTA opens the Cal.com popup (no href — uses calLink). */
+  secondaryCta: Cta;
+  trustLine: string;
+}
+
+/** Header copy (eyebrow label + title + optional description) for a marketing section. */
+export interface SectionCopy {
+  label: string;
+  title: string;
+  description?: string;
+}
+
+export interface SectionsContent {
+  howItWorks: SectionCopy;
+  whatWeBuild: SectionCopy;
+  benefits: SectionCopy;
+}
+
 export interface Offer {
   brand: string;
   legalEntity: string;
   contactEmail: string;
   calLink: string;
+  hero: HeroContent;
+  sections: SectionsContent;
   tiers: Tier[];
   foundingRate: FoundingRate;
   guarantee: Guarantee;
@@ -111,6 +142,45 @@ export const LEGAL_ENTITY = "BOMAU LLC";
 export const CONTACT_EMAIL = "support@codirity.com";
 /** Cal.com link (namespace/event) used by CalPopupButton. */
 export const CAL_LINK = "support-codirity-lz8rjc/30min";
+
+export const hero: HeroContent = {
+  badge: "AI & automation, on subscription",
+  headline: "Your AI & automation team, on subscription.",
+  subhead:
+    "Unlimited requests, senior engineering, and AI-accelerated delivery — for one flat monthly rate. Pause or cancel anytime.",
+  primaryCta: { label: "See pricing", href: "#pricing" },
+  // Duration-neutral: the configured Cal event (CAL_LINK) is a 30-minute call, so a
+  // "15-min" label would understate the actual booking. Kept short and low-friction.
+  secondaryCta: { label: "Book an intro call" },
+  trustLine: "Built by engineers from Globant & Ualá",
+};
+
+/** Column headings for the "What we build" included / not-included lists. */
+export const scopeLabels = {
+  included: "What's included",
+  notIncluded: "Not included",
+} as const;
+
+export const sections: SectionsContent = {
+  howItWorks: {
+    label: "How it works",
+    title: "From idea to shipped, on repeat",
+    description:
+      "Subscribe, add tasks to your queue, and we build them one at a time. No scoping calls, no contracts.",
+  },
+  whatWeBuild: {
+    label: "What we build",
+    title: "AI, automation, and custom systems",
+    description:
+      "If it's software that makes your business run faster, it's in scope. Here's where we focus — and where we don't.",
+  },
+  benefits: {
+    label: "Membership benefits",
+    title: "Why teams subscribe",
+    description:
+      "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
+  },
+};
 
 export const tiers: Tier[] = [
   {
@@ -292,6 +362,8 @@ export const offer: Offer = {
   legalEntity: LEGAL_ENTITY,
   contactEmail: CONTACT_EMAIL,
   calLink: CAL_LINK,
+  hero,
+  sections,
   tiers,
   foundingRate,
   guarantee,

@@ -1,34 +1,8 @@
 import { Section, Container } from "@/components/layout";
 import { SectionHeader } from "@/components/ui";
 import { ProcessStep } from "./ProcessStep";
+import { howItWorks, sections } from "@/config/offer";
 import { cn } from "@/lib/utils";
-
-const steps = [
-  {
-    number: "01",
-    title: "Discovery",
-    description:
-      "We analyze your current processes, identify bottlenecks, and understand your strategic goals.",
-  },
-  {
-    number: "02",
-    title: "Design",
-    description:
-      "We architect a custom solution with clear milestones and measurable outcomes.",
-  },
-  {
-    number: "03",
-    title: "Build",
-    description:
-      "Our team develops and tests rigorously, keeping you involved at every stage.",
-  },
-  {
-    number: "04",
-    title: "Optimize",
-    description:
-      "Post-launch support and iterative improvements ensure lasting success.",
-  },
-];
 
 export function Process() {
   return (
@@ -44,9 +18,9 @@ export function Process() {
     >
       <Container size="narrow">
         <SectionHeader
-          label="How We Work"
-          title="A Proven Approach"
-          description="Our methodology ensures successful outcomes through collaboration, iteration, and continuous improvement."
+          label={sections.howItWorks.label}
+          title={sections.howItWorks.title}
+          description={sections.howItWorks.description}
           className="mb-16 reveal"
         />
 
@@ -54,15 +28,15 @@ export function Process() {
           {/* Connecting Line */}
           <div
             className={cn(
-              "hidden md:block absolute top-[50px] left-[12%] right-[12%]",
+              "hidden md:block absolute top-[50px] left-[16%] right-[16%]",
               "h-0.5 bg-gradient-to-r from-gray-200 via-brand to-gray-200",
               "z-0"
             )}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <div key={index} className="group reveal">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {howItWorks.map((step) => (
+              <div key={step.number} className="group reveal">
                 <ProcessStep
                   number={step.number}
                   title={step.title}
