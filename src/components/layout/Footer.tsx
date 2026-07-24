@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BRAND, LEGAL_ENTITY, CONTACT_EMAIL } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 const footerLinks = {
@@ -51,7 +52,7 @@ export function Footer() {
                 href="/"
                 className="inline-flex items-center gap-2 font-mono text-2xl font-bold text-white tracking-tight mb-6"
               >
-                <span>Codirity</span>
+                <span>{BRAND}</span>
                 <span className="w-2.5 h-2.5 bg-brand rounded-full animate-pulse-dot" />
               </Link>
               <p className="text-white/60 text-[0.95rem] leading-relaxed max-w-xs mb-6">
@@ -131,13 +132,20 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Footer Bottom */}
+        {/* Footer Bottom (S9): legal entity + brand, contact email, privacy link only (no ToS in v1) */}
         <div className="py-6 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/40 text-sm">
-              © {currentYear} Codirity. All rights reserved.
+              © {currentYear} {BRAND}. Operated by {LEGAL_ENTITY}. All rights
+              reserved.
             </p>
-            <div className="flex gap-6">
+            <div className="flex items-center gap-6">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="text-white/40 text-sm hover:text-brand transition-colors duration-300"
+              >
+                {CONTACT_EMAIL}
+              </a>
               <Link
                 href="/privacy"
                 className="text-white/40 text-sm hover:text-brand transition-colors duration-300"
