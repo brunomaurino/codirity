@@ -3,11 +3,89 @@
 **Derived from:** PRD "Codirity.com Rebuild: Productized Subscription Launch" (Bruno, v1, 2026-07-23)
 **Author of handoff:** Claude Code · **Date:** 2026-07-24
 **Repo:** `~/projects/codirity` (Next.js 16, App Router) · **Deploy:** Vercel (`www.codirity.com`)
-**Consumer:** `/autonomous-task` (one bundle = one PR) and human review.
+**Consumer:** `/autonomous-bundle-loop` → `/autonomous-task` (one bundle = one PR) and human review.
 
 > This handoff is the buildable version of the PRD. Where the PRD's stated evidence no longer
 > matches the live code, this document records the **verified current state** and re-scopes the
 > work accordingly. Read §1 before trusting the PRD's problem list.
+
+---
+
+## §0 — How to execute this plan
+
+Run the whole plan with:
+
+```
+/autonomous-bundle-loop docs/HANDOFF-subscription-rebuild.md
+```
+
+The loop ships bundles **in the §2 order** (0 → A → B → C → D → E → F), one `/autonomous-task` PR each.
+Push/PR identity is **`maurino72`** (collaborator on `brunomaurino/codirity`); every `gh` call is scoped
+`GH_TOKEN=$(gh auth token -u maurino72) gh …`. **Merge policy (ground-rule 9):** Bruno authorized FULL
+unattended auto-merge for all 7 bundles in-session (2026-07-24) — each merges on a green gate after its
+review battery, no per-bundle checkpoint. `main` is unprotected and Vercel auto-deploys, so every merge
+ships to production; that is expected and authorized. Resumable from disk: re-invoke the same command in
+a fresh conversation and the loop continues from the first non-`[x]` row.
+
+## §2 — Bundle status surface
+
+| Bundle | Scope | Depends on | Status | PR # | Merge SHA |
+|---|---|---|---|---|---|
+| **0** | Fix server rendering (remove ThemeProvider mount-gate) | — | [ ] not started | — | — |
+| **A** | SEO & metadata foundation (OG, sitemap, robots, JSON-LD) | 0 | [ ] not started | — | — |
+| **B** | Offer config source of truth (`src/config/offer.ts`) | A | [ ] not started | — | — |
+| **C** | Hero + How it works + What we build + Benefits (S1–S4) | B | [ ] not started | — | — |
+| **D** | Pricing two-tier + Stripe + Recent work (S5–S6) | C | [ ] not started | — | — |
+| **E** | FAQ + JSON-LD FAQPage + Book a call + Footer (S7–S9) | D | [ ] not started | — | — |
+| **F** | Analytics events + performance close-out + acceptance | E | [ ] not started | — | — |
+
+## §3 — Per-bundle launch commands
+
+Each block is the verbatim `/autonomous-task` brief for that bundle. The loop appends `--bundle-id` and
+`--plan-slug`. Full scope + acceptance for each bundle is in the "Bundle specifications" section below —
+build to that; the block is the entry point.
+
+### §3.0 — Bundle 0
+
+```
+Build Bundle 0 (render fix) for the Codirity subscription rebuild. Work in a fresh worktree at /Users/brunomaurino/projects/codirity-b0-render-fix on branch feat/codirity-b0-render-fix (cut off origin/main). Full spec + acceptance: docs/HANDOFF-subscription-rebuild.md "Bundle 0 — Fix server rendering" and ground rules §2. Brief: the served <body> is empty because src/components/theme/ThemeProvider.tsx:99-101 does `if(!mounted) return null` and layout.tsx wraps the whole app in <ThemeProvider>. Remove the mount-gate (render children unconditionally); prevent theme flash with a blocking inline <head> script in src/app/layout.tsx that sets the data-theme ATTRIBUTE (not a class) on <html> before paint, matching globals.css [data-theme="dark"] and ThemeProvider.tsx:48-49; <html> already has suppressHydrationWarning. Grep the layout ancestry for other mount/useEffect/return-null/typeof-window gates and confirm ThemeProvider is the only one. Acceptance: curl the Vercel preview, strip <script> tags, confirm the real <h1> + <header>/<main>/<footer> + section copy are present (ground-rule 8); theme applies with no flash in light and dark; lint + tsc + next build green. Also baseline the homepage first-party JS size (gzip the chunks referenced by the built home HTML) and record it in the PR.
+```
+
+### §3.A — Bundle A
+
+```
+Build Bundle A (SEO & metadata) for the Codirity subscription rebuild. Fresh worktree at /Users/brunomaurino/projects/codirity-ba-seo on branch feat/codirity-ba-seo (off origin/main; Bundle 0 already merged). Full spec + acceptance: docs/HANDOFF-subscription-rebuild.md "Bundle A — SEO & metadata foundation" + §4a. Brief: Next.js Metadata API in layout.tsx (title/description/metadataBase env-aware via VERCEL_PROJECT_PRODUCTION_URL/VERCEL_URL + prod fallback/canonical/openGraph images 1200x630/twitter summary_large_image); generated 1200x630 OG placeholder (brand palette + "Codirity" wordmark) under public/ or opengraph-image.tsx; src/app/sitemap.ts (home + /privacy only, no ToS) and robots.ts; minimal vercel.json with security headers only; JSON-LD Organization now (Service.offers + FAQPage deferred to Bundle E with an offer.ts-import rule + a PR-body deferral note); single <h1>; replace stale consultative title/description with POSITIONING-NEUTRAL copy (describe the company, not "subscription/pricing" — flips to subscription-forward in Bundle D). Acceptance split: pre-merge gate = og tags in built HTML + sitemap/robots 200 + JSON-LD validates + single h1; post-deploy (not a blocker) = OG renders on opengraph.xyz + LinkedIn on the deployed URL.
+```
+
+### §3.B — Bundle B
+
+```
+Build Bundle B (offer config, pure data, no UI) for the Codirity subscription rebuild. Fresh worktree at /Users/brunomaurino/projects/codirity-bb-offer-config on branch feat/codirity-bb-offer-config (off origin/main). Full spec: docs/HANDOFF-subscription-rebuild.md "Bundle B — Offer config". Brief: create src/config/offer.ts with typed constants — tiers (Standard $3,995/mo 1 active task; Pro $6,995/mo 2 active tasks priority; each unlimited requests/revisions, pause/cancel anytime, feature list, stripeUrl from env), foundingRate {active:true, price:'$2,995/mo', slots:5, label:'first 5 clients, price locked for life'}, guarantee '75% back', included/notIncluded scope lists (PRD S3), benefits (S4), howItWorks 3 steps (S2), faq[{question,answer}] (S7 min set incl. "Who does the work?"), calLink 'support-codirity-lz8rjc/30min', contact email, legal entity 'BOMAU LLC', brand 'Codirity'. Env: NEXT_PUBLIC_STRIPE_LINK_STANDARD/_PRO/_FOUNDING with placeholder fallbacks; document in .env.example. No component changes. Acceptance: offer.ts typechecks; .env.example documents the three Stripe vars.
+```
+
+### §3.C — Bundle C
+
+```
+Build Bundle C (Hero + How it works + What we build + Benefits, S1–S4) for the Codirity subscription rebuild. Fresh worktree at /Users/brunomaurino/projects/codirity-bc-sections on branch feat/codirity-bc-sections (off origin/main). Full spec + acceptance: docs/HANDOFF-subscription-rebuild.md "Bundle C". Brief: adapt Hero (new H1 "Your AI & automation team, on subscription.", sub-copy, primary CTA "See pricing"→#pricing, secondary "Book a 15-min intro call"→Cal, trust line "Built by engineers from Globant & Ualá"); Process→"How it works" from offer.howItWorks; Services→"What we build" included+notIncluded from offer.ts; new "Membership benefits" grid from offer.benefits. All SERVER components, copy sourced from offer.ts only, reuse Section/Container/Card/Badge, keep reveal classes. Acceptance: sections render server-side (script-stripped HTML, ground-rule 8), single <h1>, renders at 375/768/1440px. NOTE: merge C and D contiguously.
+```
+
+### §3.D — Bundle D
+
+```
+Build Bundle D (Pricing two-tier + Stripe + Recent work, S5–S6) for the Codirity subscription rebuild. Fresh worktree at /Users/brunomaurino/projects/codirity-bd-pricing on branch feat/codirity-bd-pricing (off origin/main; merge contiguously after Bundle C). Full spec + acceptance: docs/HANDOFF-subscription-rebuild.md "Bundle D". Brief: replace the single "Let's Talk" card with a two-tier pricing block (Standard | Pro) from offer.tiers, each CTA linking its Stripe Payment Link from env; founding-rate launch banner above the grid gated on offer.foundingRate.active (framed as a limited offer layered on the $3,995/$6,995 anchor, not the headline); guarantee block below; any pricing toggle is a leaf client component, pricing data stays server-rendered; "Recent work" S5 with typed placeholder offer.caseStudies. ALSO flip layout.tsx title/description/openGraph copy to subscription-forward (closes the deferral from Bundle A — this deliverable is owned here, note it in the PR body). Acceptance: both tier CTAs open the env Stripe URLs (placeholders OK, verified href-wired); founding banner + guarantee render; pricing copy from offer.ts only; OG/metadata is subscription-forward.
+```
+
+### §3.E — Bundle E
+
+```
+Build Bundle E (FAQ + JSON-LD FAQPage + Book a call + Footer, S7–S9) for the Codirity subscription rebuild. Fresh worktree at /Users/brunomaurino/projects/codirity-be-faq-footer on branch feat/codirity-be-faq-footer (off origin/main). Full spec + acceptance: docs/HANDOFF-subscription-rebuild.md "Bundle E". Brief: FAQ accordion as a LEAF client component, data from offer.faq, the same array feeding the FAQPage JSON-LD (single source, no duplication), include "Who does the work?" (solo senior engineer, AI-accelerated, owned openly); complete Service.offers + FAQPage JSON-LD deferred from Bundle A; "Book a call" S8 via CalPopupButton framed optional; Footer S9 = "BOMAU LLC" + "Codirity" + PRIVACY LINK ONLY (no ToS link in v1) + contact email. Acceptance: FAQ opens/closes client-side; FAQPage + Service JSON-LD validate and match on-page copy exactly; footer links resolve.
+```
+
+### §3.F — Bundle F
+
+```
+Build Bundle F (analytics events + performance close-out + acceptance gate) for the Codirity subscription rebuild. Fresh worktree at /Users/brunomaurino/projects/codirity-bf-analytics-perf on branch feat/codirity-bf-analytics-perf (off origin/main). Full spec + acceptance: docs/HANDOFF-subscription-rebuild.md "Bundle F". Brief: instrument the 5 GA4 events (pricing_viewed, checkout_click_standard, checkout_click_pro, call_booked, faq_opened); next/image audit; final client-JS measurement. PERF IS A HARD GATE: baseline was 195.5 KB gz (already over the 150 KB budget) — if final Perf<90 or JS>150 KB gz, this bundle does NOT pass on disclosure alone; land concrete mitigation (lazy-load the Cal embed, gate gtag.js, drop sonner from the critical path, trim JS) or STOP for explicit Bruno sign-off to relax the target. Run the full acceptance battery (PRD §8): script-stripped copy check, OG validators, Lighthouse mobile (Perf≥90, SEO≥95, A11y≥90), responsive 375/768/1440, all 5 events fire. Acceptance: PRD §8 items 1–7 each demonstrated with evidence in the PR body.
+```
 
 ---
 
@@ -131,10 +209,11 @@ worthless to scrapers if the body is JS-only. It ships **first** as Bundle 0 (se
 
 ---
 
-## 3. Bundles (each = one PR)
+## Bundle specifications (reference detail)
 
 Ordered by dependency. **Bundle 0 unblocks A** (scraper-visible HTML); B unblocks C–E; F is the
-final verification gate.
+final verification gate. (The loop's entry points are the §3 launch blocks above; build to the full
+scope + acceptance here.)
 
 ### Bundle 0 — Fix server rendering (TR-1, P0, ship FIRST) 🔴
 The load-bearing fix. Until this lands, the served `<body>` is empty (§1.2) and every SEO/OG gate is
