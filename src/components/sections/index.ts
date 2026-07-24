@@ -10,6 +10,8 @@ export { Process } from "./Process";
 export { ProcessStep } from "./ProcessStep";
 export type { ProcessStepProps } from "./ProcessStep";
 
+export { Benefits } from "./Benefits";
+
 export { About } from "./About";
 
 export { Pricing } from "./Pricing";

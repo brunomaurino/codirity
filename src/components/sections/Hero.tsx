@@ -1,8 +1,9 @@
 import { ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui";
+import { Badge, CalPopupButton } from "@/components/ui";
 import { Container } from "@/components/layout";
 import { HeroBackground } from "./HeroBackground";
 import { HeroCards } from "./HeroCards";
+import { hero, CAL_LINK } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 export function Hero() {
@@ -35,22 +36,18 @@ export function Hero() {
               withDot
               className="mb-6 opacity-0 animate-slide-up animation-delay-200"
             >
-              AI-Powered Technology Solutions
+              {hero.badge}
             </Badge>
 
             <h1
               className={cn(
-                "text-4xl md:text-5xl lg:text-6xl xl:text-[4.5rem]",
+                "text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem]",
                 "font-extrabold leading-[1.08] tracking-[-2.5px]",
                 "text-gray-900 dark:text-white mb-6",
                 "opacity-0 animate-slide-up animation-delay-300"
               )}
             >
-              Modernize Your
-              <br />
-              Business With
-              <br />
-              <span className="gradient-text">Intelligent AI</span>
+              {hero.headline}
             </h1>
 
             <p
@@ -60,9 +57,7 @@ export function Hero() {
                 "opacity-0 animate-slide-up animation-delay-400"
               )}
             >
-              We deliver intelligent automation and custom system development
-              that transforms how companies operate—reducing costs, accelerating
-              growth, and future-proofing your business.
+              {hero.subhead}
             </p>
 
             <div
@@ -72,7 +67,7 @@ export function Hero() {
               )}
             >
               <a
-                href="#contact"
+                href={hero.primaryCta.href}
                 className={cn(
                   "inline-flex items-center justify-center gap-2",
                   "px-8 py-4 text-base font-semibold rounded-full",
@@ -81,22 +76,31 @@ export function Hero() {
                   "transition-all duration-300"
                 )}
               >
-                Contact Us
+                {hero.primaryCta.label}
                 <ArrowRight className="w-5 h-5" />
               </a>
-              <a
-                href="#services"
+              <CalPopupButton
+                calLink={CAL_LINK}
                 className={cn(
                   "inline-flex items-center justify-center gap-2",
                   "px-8 py-4 text-base font-semibold rounded-full",
                   "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
                   "hover:border-brand hover:text-brand dark:hover:text-brand hover:bg-brand-pale",
-                  "transition-all duration-300"
+                  "transition-all duration-300 cursor-pointer"
                 )}
               >
-                Explore Services
-              </a>
+                {hero.secondaryCta.label}
+              </CalPopupButton>
             </div>
+
+            <p
+              className={cn(
+                "mt-6 text-sm font-medium text-gray-500 dark:text-gray-400",
+                "opacity-0 animate-slide-up animation-delay-500"
+              )}
+            >
+              {hero.trustLine}
+            </p>
           </div>
 
           {/* Hero Visual */}
