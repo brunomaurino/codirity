@@ -20,14 +20,13 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
-// Positioning-NEUTRAL copy: it describes the company (AI & automation engineering),
-// not the subscription/pricing model. The live body is still consultative until
-// Bundles C/D land the new positioning; the subscription-forward copy flip is owned
-// by Bundle D so the OG card LinkedIn caches does not contradict the live page during
-// the C→D window.
-const SITE_TITLE = "Codirity — AI & Automation Engineering";
+// Subscription-forward copy (Bundle D): the live body now leads with the subscription
+// model (Bundle C hero + Bundle D pricing), so the title/description/OG match it. This
+// closes the positioning-neutral deferral from Bundle A — the OG card scrapers cache no
+// longer contradicts the page.
+const SITE_TITLE = "Codirity — Your AI & automation team, on subscription";
 const SITE_DESCRIPTION =
-  "Codirity builds AI-powered automation and custom systems that help businesses cut costs, move faster, and scale. Engineered by a team from Globant & Ualá.";
+  "Your AI & automation team, on subscription. Unlimited requests, senior engineering, and AI-accelerated delivery for one flat monthly rate — pause or cancel anytime. Built by engineers from Globant & Ualá.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),

@@ -115,6 +115,7 @@ export interface SectionsContent {
   howItWorks: SectionCopy;
   whatWeBuild: SectionCopy;
   benefits: SectionCopy;
+  recentWork: SectionCopy;
 }
 
 export interface Offer {
@@ -179,6 +180,12 @@ export const sections: SectionsContent = {
     title: "Why teams subscribe",
     description:
       "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
+  },
+  recentWork: {
+    label: "Recent work",
+    title: "What we've shipped",
+    description:
+      "A look at recent automations and systems we've built for teams like yours.",
   },
 };
 
