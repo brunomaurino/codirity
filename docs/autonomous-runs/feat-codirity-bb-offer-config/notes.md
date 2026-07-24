@@ -40,10 +40,40 @@ truth for the offer) + document the three Stripe env vars in `.env.example`. Pur
 _(none)_
 
 ## Review findings + resolutions
-_(Phase 4/5)_
+
+Battery `wf_dfeb77c5-00a` (2 adv + 2 QA, verify-voters=2): 7 raw → 4 unique → 4 confirmed, 0
+refuted, 0 deferrals, 61 areas examined. All 4 APPLIED:
+
+1. **MAJOR — guarantee.title overstated.** "7-day money-back guarantee" implies a full refund but
+   the description + FAQ say 75%. APPLIED: title → "7-day 75%-back guarantee" (accurate; the title
+   was a non-spec builder addition).
+2. **MAJOR — Tier.price display-only, no numeric value for Service.offers JSON-LD.** APPLIED: added
+   `priceAmount: number` to Tier (3995/6995) + foundingRate (2995) and exported `CURRENCY = "USD"`,
+   so Bundle E's Service.offers has a clean machine-readable value. (This directly readies the
+   B1-D-jsonld1 deferral for Bundle E.)
+3. **MINOR — active-task limit duplicated in `tasks` and `features[0]`.** APPLIED: removed the
+   duplicate from each tier's `features` (kept only in `tasks`) — single authoritative copy, no
+   double-render.
+4. **MINOR — "/mo" vs "/month" inconsistency.** APPLIED: tier `period` "/month" → "/mo" to match the
+   spec-mandated founding "$2,995/mo" (changed the tiers, not the spec-fixed founding value).
+
+Post-apply: lint + tsc + build green; shape re-check confirms priceAmount/period/dedup/title.
 
 ## Areas examined and rejected
-_(from battery)_
+
+From battery `areasExamined` (61 entries; consolidated):
+- **Price accuracy** — Standard $3,995, Pro $6,995, founding $2,995/mo match the HANDOFF exactly.
+- **Pro emphasis** — 2 active tasks, Priority delivery, highlighted:true present.
+- **foundingRate shape** — active/price/slots:5/label match spec field-for-field; active gates the banner.
+- **'Who does the work?' FAQ** — present, answered openly (senior engineer, Globant/Ualá, AI-accelerated).
+- **env fallback** — stripeLink() returns '#' for undefined AND empty; NEXT_PUBLIC_ static member access
+  (Next inlines at build); tsc clean.
+- **purity** — no React/JSX import; server+client importable; icons are plain strings.
+- **.gitignore negation** — verified `git check-ignore`: .env.example NOT ignored (tracked), .env.local still ignored.
+- **.env.example** — documents all 3 Stripe vars + site/GA/SMTP; only empty placeholders, no secrets.
+- **lucide icon names** — CreditCard/Infinity/Zap/Rocket/PauseCircle/TrendingUp all resolve in lucide-react 0.561.
+- **consumer type completeness** — every field D/E/footer/book-a-call obviously need is present.
+- **caseStudies** — empty typed array is the intentional D5 placeholder.
 
 ## Open items NOT addressed in this PR
 - caseStudies content is a typed placeholder (empty array) — real content supplied later (D5).
@@ -54,3 +84,4 @@ _(from battery)_
 - worktree: /Users/brunomaurino/projects/codirity-bb-offer-config
 - worktree_entry: path
 - cron: (none — bundle-loop owns the resume-watchdog; --bundle-id set)
+- battery_run_id: wf_dfeb77c5-00a (Phase 4/5/5.5)

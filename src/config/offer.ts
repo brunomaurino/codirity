@@ -23,7 +23,9 @@ export interface Tier {
   name: string;
   /** Display price, e.g. "$3,995". */
   price: string;
-  /** Billing period suffix, e.g. "/month". */
+  /** Machine-readable monthly amount (no symbol/separator), for Service.offers JSON-LD. */
+  priceAmount: number;
+  /** Billing period suffix, e.g. "/mo". */
   period: string;
   /** One-line summary of the active-task limit. */
   tasks: string;
@@ -42,7 +44,10 @@ export interface Tier {
 export interface FoundingRate {
   /** Gates the home launch banner. Flip to false (one line) when the slots fill. */
   active: boolean;
+  /** Display price (spec-mandated verbatim), e.g. "$2,995/mo". */
   price: string;
+  /** Machine-readable monthly amount, for structured data / analytics. */
+  priceAmount: number;
   slots: number;
   label: string;
   /** Stripe Payment Link for the founding rate (env-configured). */
@@ -100,6 +105,8 @@ export interface Offer {
 }
 
 export const BRAND = "Codirity";
+/** ISO 4217 currency for all prices — used by Service.offers structured data (Bundle E). */
+export const CURRENCY = "USD";
 export const LEGAL_ENTITY = "BOMAU LLC";
 export const CONTACT_EMAIL = "support@codirity.com";
 /** Cal.com link (namespace/event) used by CalPopupButton. */
@@ -110,11 +117,13 @@ export const tiers: Tier[] = [
     id: "standard",
     name: "Standard",
     price: "$3,995",
-    period: "/month",
+    priceAmount: 3995,
+    period: "/mo",
     tasks: "One active task at a time",
     description: "For teams with a steady stream of automation and build work.",
+    // The active-task limit lives in `tasks` (rendered prominently); it is not
+    // repeated here to keep a single authoritative copy of that fact.
     features: [
-      "One active task at a time",
       "Unlimited requests & revisions",
       "AI-accelerated senior engineering",
       "Async delivery, tracked in Trello",
@@ -128,11 +137,13 @@ export const tiers: Tier[] = [
     id: "pro",
     name: "Pro",
     price: "$6,995",
-    period: "/month",
+    priceAmount: 6995,
+    period: "/mo",
     tasks: "Two active tasks at a time",
     description: "For teams that need two things moving in parallel, faster.",
+    // Active-task limit lives in `tasks` (not repeated here); Priority delivery is
+    // the Pro-only differentiator and stays in the list.
     features: [
-      "Two active tasks at a time",
       "Priority delivery",
       "Unlimited requests & revisions",
       "AI-accelerated senior engineering",
@@ -148,13 +159,16 @@ export const tiers: Tier[] = [
 export const foundingRate: FoundingRate = {
   active: true,
   price: "$2,995/mo",
+  priceAmount: 2995,
   slots: 5,
   label: "first 5 clients, price locked for life",
   stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_FOUNDING),
 };
 
 export const guarantee: Guarantee = {
-  title: "7-day money-back guarantee",
+  // Titled to match the actual terms (75% back, not a full refund) — the FAQ and the
+  // description below state 75%, so the heading must not overstate it.
+  title: "7-day 75%-back guarantee",
   description:
     "Try it for a week. Not convinced? Get 75% back, no questions asked.",
 };
