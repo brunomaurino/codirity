@@ -56,6 +56,10 @@ Bundle-id mapping (ordinal in §2): 0→0, A→1, B→2, C→3, D→4, E→5, F�
   deferral). ⚠️ NOTE: a GitHub Pull Requests MAJOR OUTAGE (documented incident, ~33 min of HTTP 500
   on PR-create) delayed opening PR #5 — rode it out with patient retries per the transient-error
   doctrine (branch was safely pushed; no work lost).
+- **Bundle E** — PR [#6](https://github.com/brunomaurino/codirity/pull/6) MERGED at `3b14d88` (squash).
+  Battery: 1 MINOR (applied: FAQ answer aria-hidden), 0 refuted, 0 deferrals, 60 areas examined.
+  FAQ accordion + Service.offers/FAQPage JSON-LD (from offer.ts) + book-a-call + footer S9.
+  **CLOSES commitment B1-D-jsonld1** → plan has NO open commitments remaining.
 
 ## Orchestrator decisions
 
