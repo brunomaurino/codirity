@@ -41,6 +41,15 @@ Bundle-id mapping (ordinal in §2): 0→0, A→1, B→2, C→3, D→4, E→5, F�
 - **Bundle A** — PR [#2](https://github.com/brunomaurino/codirity/pull/2) MERGED at `3ca3d9f` (squash).
   Status update: `00c4d16`. Battery: 2 MAJOR (both applied: per-page canonical + privacy title),
   0 refuted. 1 planned deferral: B1-D-jsonld1 (Service.offers + FAQPage JSON-LD → Bundle E).
+- **Bundle B** — PR [#3](https://github.com/brunomaurino/codirity/pull/3) MERGED at `b24bb2d` (squash).
+  Status update: `d4e8348`. Battery: 2 MAJOR + 2 MINOR (all applied: accurate guarantee title,
+  numeric priceAmount+CURRENCY for JSON-LD, de-dup task line, /mo period), 0 refuted, 0 deferrals.
+  offer.ts is the source of truth for C/D/E; priceAmount readies B1-D-jsonld1 for Bundle E.
+- **Bundle C** — PR [#4](https://github.com/brunomaurino/codirity/pull/4) MERGED at `59b2287` (squash).
+  Battery: 5 MINOR (all applied: offer-sourced scope labels, Benefits hover group, trust-line
+  stagger, accurate "Book an intro call" CTA since the Cal event is 30-min), 0 refuted, 0 deferrals.
+  Hero flipped to subscription positioning; offer.ts extended with hero/sections/scopeLabels copy.
+  ⚠️ MERGE D CONTIGUOUSLY (next) — old consultative Pricing card + neutral metadata still live.
 
 ## Orchestrator decisions
 
