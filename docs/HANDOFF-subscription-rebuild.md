@@ -33,7 +33,7 @@ Dashboard: https://claude.ai/code/artifact/2f247ee0-f635-4601-870d-7267de77cbe5
 
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
 |---|---|---|---|---|---|
-| **0** | Fix server rendering (remove ThemeProvider mount-gate) | — | [ ] not started | — | — |
+| **0** | Fix server rendering (remove ThemeProvider mount-gate) | — | [x] complete | [#1](https://github.com/brunomaurino/codirity/pull/1) | `f04838a` |
 | **A** | SEO & metadata foundation (OG, sitemap, robots, JSON-LD) | 0 | [ ] not started | — | — |
 | **B** | Offer config source of truth (`src/config/offer.ts`) | A | [ ] not started | — | — |
 | **C** | Hero + How it works + What we build + Benefits (S1–S4) | B | [ ] not started | — | — |
