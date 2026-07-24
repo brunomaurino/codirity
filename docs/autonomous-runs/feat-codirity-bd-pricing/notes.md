@@ -49,10 +49,38 @@ _(none)_
 - Browser screenshot glitched (blank) — capture flake; DOM inspection + curl authoritative.
 
 ## Review findings + resolutions
-_(Phase 4/5)_
+
+Battery `wf_9f0e3697-1e8` (2 adv + 2 QA, verify-voters=2): 3 raw → 2 confirmed, 0 refuted, 0
+deferrals, 59 areas examined. Both APPLIED:
+
+1. **MAJOR (2/2) — OG image copy stale after the metadata flip.** opengraph-image.tsx still said
+   "AI & automation engineering" (alt) + "...move faster" (body), contradicting the new
+   subscription-forward og:title/og:description — defeating the flip's goal (the shared card must
+   match the page). APPLIED: flipped the OG image alt + body to subscription-forward ("Your AI &
+   automation team, on subscription. Unlimited requests, one flat monthly rate."). Rendered + visually
+   confirmed the OG PNG (89.9 KB) shows the new copy and `&amp;` renders as `&`.
+2. **MINOR — Pricing.tsx hardcoded its SectionHeader copy** (offer.ts had no sections.pricing).
+   APPLIED: added `sections.pricing {label,title,description}` to offer.ts; Pricing sources from it —
+   now consistent with every sibling section (single source of truth for section copy).
+
+Post-apply: lint + tsc + build green; og:image:alt subscription-forward; OG image renders correctly.
 
 ## Areas examined and rejected
-_(battery)_
+
+From battery `areasExamined` (59 entries; consolidated):
+- **Stripe CTA wiring + safety** — each tier maps a distinct NEXT_PUBLIC_STRIPE_LINK_* via stripeLink();
+  founding banner uses foundingRate.stripeUrl; all external links target=_blank rel=noopener noreferrer
+  (no reverse tabnabbing). Rebuilt with test env → verbatim URLs in HTML; unset → "#". No hardcoded URL.
+- **pricing accuracy** — $3,995 / $6,995 (highlighted) / $2,995, /mo, 75% guarantee all from offer.ts.
+- **founding gating + framing** — banner only under foundingRate.active, slim pill above the grid
+  (not the headline).
+- **metadata flip no-regression** — only SITE_TITLE/SITE_DESCRIPTION strings changed; metadataBase,
+  per-page canonical, twitter:card, opengraph-image auto-injection all intact (byte-diffed).
+- **single h1** — only Hero; pricing/RecentWork use h2/h3.
+- **SSR** — no 'use client' on the page; PricingCard imports the client CalPopupButton (standard);
+  RecentWork returns null cleanly when caseStudies empty.
+- **reveal** — new .reveal elements (banner/tiers/guarantee/RecentWork) observed + revealed.
+- **offer.ts symmetry** — recentWork + pricing added to SectionsContent interface AND sections const.
 
 ## Open items NOT addressed in this PR
 - caseStudies content (D5) — typed placeholder; RecentWork hidden until content exists.
@@ -63,3 +91,4 @@ _(battery)_
 - worktree: /Users/brunomaurino/projects/codirity-bd-pricing
 - worktree_entry: path
 - cron: (none — bundle-loop owns the resume-watchdog; --bundle-id set)
+- battery_run_id: wf_9f0e3697-1e8 (Phase 4/5/5.5)

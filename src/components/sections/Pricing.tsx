@@ -2,7 +2,7 @@ import { Sparkles } from "lucide-react";
 import { Section, Container } from "@/components/layout";
 import { SectionHeader } from "@/components/ui";
 import { PricingCard } from "./PricingCard";
-import { tiers, foundingRate, guarantee } from "@/config/offer";
+import { tiers, foundingRate, guarantee, sections } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 export function Pricing() {
@@ -10,9 +10,9 @@ export function Pricing() {
     <Section id="pricing" variant="default" className="reveal">
       <Container>
         <SectionHeader
-          label="Pricing"
-          title="Simple, monthly pricing"
-          description="One flat rate, unlimited requests, and no contracts. Pause or cancel anytime."
+          label={sections.pricing.label}
+          title={sections.pricing.title}
+          description={sections.pricing.description}
           className="mb-12"
         />
 

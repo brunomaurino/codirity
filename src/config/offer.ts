@@ -116,6 +116,7 @@ export interface SectionsContent {
   whatWeBuild: SectionCopy;
   benefits: SectionCopy;
   recentWork: SectionCopy;
+  pricing: SectionCopy;
 }
 
 export interface Offer {
@@ -186,6 +187,12 @@ export const sections: SectionsContent = {
     title: "What we've shipped",
     description:
       "A look at recent automations and systems we've built for teams like yours.",
+  },
+  pricing: {
+    label: "Pricing",
+    title: "Simple, monthly pricing",
+    description:
+      "One flat rate, unlimited requests, and no contracts. Pause or cancel anytime.",
   },
 };
 

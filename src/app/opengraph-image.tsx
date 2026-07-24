@@ -3,7 +3,7 @@ import { SITE_NAME } from "@/lib/site";
 
 // Generated 1200x630 Open Graph image (also used as the Twitter card fallback).
 // Brand palette: brand-dark #103B13 background, brand green #32CD32 accent.
-export const alt = "Codirity — AI & automation engineering";
+export const alt = "Codirity — your AI & automation team, on subscription";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -54,8 +54,8 @@ export default function OpengraphImage() {
             fontWeight: 500,
           }}
         >
-          AI-powered automation and custom systems that help businesses move
-          faster.
+          Your AI &amp; automation team, on subscription. Unlimited requests,
+          one flat monthly rate.
         </div>
         <div
           style={{
