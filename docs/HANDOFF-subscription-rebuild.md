@@ -29,6 +29,8 @@ a fresh conversation and the loop continues from the first non-`[x]` row.
 
 ## §2 — Bundle status surface
 
+Dashboard: https://claude.ai/code/artifact/2f247ee0-f635-4601-870d-7267de77cbe5
+
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
 |---|---|---|---|---|---|
 | **0** | Fix server rendering (remove ThemeProvider mount-gate) | — | [ ] not started | — | — |
