@@ -1,7 +1,7 @@
 import { Check, X } from "lucide-react";
 import { Section, Container } from "@/components/layout";
 import { SectionHeader, Card } from "@/components/ui";
-import { included, notIncluded, sections } from "@/config/offer";
+import { included, notIncluded, scopeLabels, sections } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 export function Services() {
@@ -19,7 +19,7 @@ export function Services() {
           {/* Included */}
           <Card padding="lg" className="reveal">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              What&rsquo;s included
+              {scopeLabels.included}
             </h3>
             <ul className="space-y-4">
               {included.map((item) => (
@@ -38,7 +38,7 @@ export function Services() {
           {/* Not included */}
           <Card padding="lg" className="reveal">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              Not included
+              {scopeLabels.notIncluded}
             </h3>
             <ul className="space-y-4">
               {notIncluded.map((item) => (

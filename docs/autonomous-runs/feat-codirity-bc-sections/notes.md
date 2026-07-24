@@ -49,10 +49,38 @@ _(none)_
   render. Responsive uses standard Tailwind grids (grid-cols-1 md:grid-cols-3 / lg:grid-cols-2).
 
 ## Review findings + resolutions
-_(Phase 4/5)_
+
+Battery `wf_0c7ad4b8-981` (2 adv + 2 QA, verify-voters=2): 5 raw → 5 confirmed, 0 refuted, 0
+deferrals, 63 areas examined. All 5 MINOR, all resolved:
+
+1. **Services scope labels hardcoded** → APPLIED: added `scopeLabels {included,notIncluded}` to
+   offer.ts; Services reads from it (all copy now from the source of truth).
+2. **Benefits CardIcon hover dead** (needs `.group` ancestor) → APPLIED: added `group` to the
+   Benefits Card so `group-hover:scale-110` fires.
+3. **Hero trust-line no stagger** (reused animation-delay-500) → APPLIED: added
+   `.animation-delay-600` to globals.css and used it on the trust line.
+4. **index.ts Benefits export grouping** → NO CHANGE NEEDED: the export already has a blank-line
+   group separating it (consistent with the file's pattern); a scope-creep-category nitpick.
+5. **CTA "Book a 15-min intro call" links a 30-min Cal event** → APPLIED: relabeled to duration-
+   neutral "Book an intro call" in offer.ts (the configured CAL_LINK is a 30-min event; the spec's
+   "15-min" would understate the actual booking, and creating a 15-min Cal event is Bruno's config).
+
+Post-apply: lint + tsc + build green; served HTML shows "Book an intro call" (no "15-min"), scope
+labels from offer.ts.
 
 ## Areas examined and rejected
-_(battery)_
+
+From battery `areasExamined` (63 entries; consolidated):
+- **offer.ts hero/sections additions** — Offer interface + default updated symmetrically, purely
+  additive, existing consumers untouched; tsc exit 0.
+- **single <h1>** — prerendered HTML has exactly one h1 (Hero); SectionHeader=h2, cards=h3.
+- **SSR with client leaf** — Hero (server) renders CalPopupButton ('use client') validly; `/` stays
+  Static; hero/trust-line/Cal-button markup in server HTML.
+- **benefits icon map** — all 6 offer.benefits icons covered, Infinity aliased, unknown→Zap fallback.
+- **#pricing anchor** — href="#pricing" + id="pricing" both in HTML; resolves.
+- **reveal** — new sections reuse the exact `.reveal`/`.visible` pattern; content server-rendered regardless.
+- **no regression** — layout.tsx metadata not in the diff (stays positioning-neutral for Bundle D);
+  ThemeProvider mount-gate still gone (Bundle 0 intact).
 
 ## Open items NOT addressed in this PR
 - Pricing section still the old consultative "Let's Talk" card (Bundle D replaces it; merge C+D
@@ -63,3 +91,4 @@ _(battery)_
 - worktree: /Users/brunomaurino/projects/codirity-bc-sections
 - worktree_entry: path
 - cron: (none — bundle-loop owns the resume-watchdog; --bundle-id set)
+- battery_run_id: wf_0c7ad4b8-981 (Phase 4/5/5.5)

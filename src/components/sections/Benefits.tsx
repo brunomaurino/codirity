@@ -37,7 +37,7 @@ export function Benefits() {
           {benefits.map((benefit) => {
             const Icon = ICONS[benefit.icon] ?? Zap;
             return (
-              <Card key={benefit.title} padding="lg" className="reveal">
+              <Card key={benefit.title} padding="lg" className="group reveal">
                 <CardIcon className="mb-5 text-brand">
                   <Icon className="h-6 w-6" strokeWidth={2} />
                 </CardIcon>

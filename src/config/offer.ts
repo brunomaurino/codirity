@@ -149,9 +149,17 @@ export const hero: HeroContent = {
   subhead:
     "Unlimited requests, senior engineering, and AI-accelerated delivery — for one flat monthly rate. Pause or cancel anytime.",
   primaryCta: { label: "See pricing", href: "#pricing" },
-  secondaryCta: { label: "Book a 15-min intro call" },
+  // Duration-neutral: the configured Cal event (CAL_LINK) is a 30-minute call, so a
+  // "15-min" label would understate the actual booking. Kept short and low-friction.
+  secondaryCta: { label: "Book an intro call" },
   trustLine: "Built by engineers from Globant & Ualá",
 };
+
+/** Column headings for the "What we build" included / not-included lists. */
+export const scopeLabels = {
+  included: "What's included",
+  notIncluded: "Not included",
+} as const;
 
 export const sections: SectionsContent = {
   howItWorks: {

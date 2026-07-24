@@ -96,7 +96,7 @@ export function Hero() {
             <p
               className={cn(
                 "mt-6 text-sm font-medium text-gray-500 dark:text-gray-400",
-                "opacity-0 animate-slide-up animation-delay-500"
+                "opacity-0 animate-slide-up animation-delay-600"
               )}
             >
               {hero.trustLine}
