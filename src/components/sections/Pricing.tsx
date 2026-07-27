@@ -2,12 +2,14 @@ import { Sparkles } from "lucide-react";
 import { Section, Container } from "@/components/layout";
 import { SectionHeader } from "@/components/ui";
 import { PricingCard } from "./PricingCard";
+import { PricingViewedTracker } from "./PricingViewedTracker";
 import { tiers, foundingRate, guarantee, sections } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 export function Pricing() {
   return (
     <Section id="pricing" variant="default" className="reveal">
+      <PricingViewedTracker />
       <Container>
         <SectionHeader
           label={sections.pricing.label}
@@ -59,6 +61,11 @@ export function Pricing() {
               ctaText={tier.cta}
               ctaHref={tier.stripeUrl}
               ctaExternal
+              analyticsEvent={
+                tier.id === "pro"
+                  ? "checkout_click_pro"
+                  : "checkout_click_standard"
+              }
               featured={tier.highlighted}
               className="reveal"
             />

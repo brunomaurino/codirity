@@ -2,9 +2,15 @@
 
 import { useState, FormEvent } from "react";
 import { Send, Lock, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { Input, Select, Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+
+// sonner is dynamically imported on use (see showToast) so it stays out of the
+// initial bundle — toasts only fire after a form interaction.
+async function showToast(type: "success" | "error", message: string) {
+  const { toast } = await import("sonner");
+  toast[type](message);
+}
 
 const serviceOptions = [
   { value: "automation", label: "Process Automation" },
@@ -48,7 +54,7 @@ export function ContactForm() {
 
     // Client-side validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
-      toast.error("Please fill in all required fields");
+      showToast("error", "Please fill in all required fields");
       return;
     }
 
@@ -67,12 +73,10 @@ export function ContactForm() {
         throw new Error(data.error || "Failed to send message");
       }
 
-      toast.success("Message sent successfully! We'll get back to you soon.");
+      showToast("success", "Message sent successfully! We'll get back to you soon.");
       setFormData(initialFormData);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to send message. Please try again."
-      );
+      showToast("error", error instanceof Error ? error.message : "Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

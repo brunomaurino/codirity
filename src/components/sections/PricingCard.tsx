@@ -1,6 +1,7 @@
 import { Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CalPopupButton } from "@/components/ui";
+import { CalPopupButton, TrackedLink } from "@/components/ui";
+import type { AnalyticsEvent } from "@/lib/analytics";
 
 export interface PricingCardProps {
   name: string;
@@ -14,6 +15,8 @@ export interface PricingCardProps {
   ctaHref: string;
   /** External link target (e.g. Stripe). When true, opens in a new tab with rel=noopener. */
   ctaExternal?: boolean;
+  /** GA4 event fired on CTA click (e.g. checkout_click_standard). */
+  analyticsEvent?: AnalyticsEvent;
   calLink?: string;
   featured?: boolean;
   className?: string;
@@ -29,6 +32,7 @@ export function PricingCard({
   ctaText,
   ctaHref,
   ctaExternal,
+  analyticsEvent,
   calLink,
   featured,
   className,
@@ -159,6 +163,16 @@ export function PricingCard({
           {ctaText}
           <ArrowRight className="w-5 h-5" />
         </CalPopupButton>
+      ) : analyticsEvent ? (
+        <TrackedLink
+          href={ctaHref}
+          event={analyticsEvent}
+          external={ctaExternal}
+          className={buttonStyles}
+        >
+          {ctaText}
+          <ArrowRight className="w-5 h-5" />
+        </TrackedLink>
       ) : (
         <a
           href={ctaHref}
