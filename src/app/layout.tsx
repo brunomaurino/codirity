@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Space_Mono } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
-import { LazyToaster } from "@/components/ui/LazyToaster";
+import { Toaster } from "@/components/ui/Toaster";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, getSiteUrl } from "@/lib/site";
@@ -88,7 +88,7 @@ export default function RootLayout({
           <Footer />
 
           {/* Toast Notifications */}
-          <LazyToaster />
+          <Toaster />
         </ThemeProvider>
 
         {/* Organization structured data (server-rendered for crawlers) */}
