@@ -39,7 +39,7 @@ Dashboard: https://claude.ai/code/artifact/2f247ee0-f635-4601-870d-7267de77cbe5
 | **C** | Hero + How it works + What we build + Benefits (S1–S4) | B | [x] complete | [#4](https://github.com/brunomaurino/codirity/pull/4) | `59b2287` |
 | **D** | Pricing two-tier + Stripe + Recent work (S5–S6) | C | [x] complete | [#5](https://github.com/brunomaurino/codirity/pull/5) | `f627236` |
 | **E** | FAQ + JSON-LD FAQPage + Book a call + Footer (S7–S9) | D | [x] complete | [#6](https://github.com/brunomaurino/codirity/pull/6) | `3b14d88` |
-| **F** | Analytics events + performance close-out + acceptance | E | [ ] not started | — | — |
+| **F** | Analytics events + performance close-out + acceptance | E | [x] complete | [#7](https://github.com/brunomaurino/codirity/pull/7) | `e956848` |
 
 ## §3 — Per-bundle launch commands
 

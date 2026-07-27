@@ -60,6 +60,15 @@ Bundle-id mapping (ordinal in §2): 0→0, A→1, B→2, C→3, D→4, E→5, F�
   Battery: 1 MINOR (applied: FAQ answer aria-hidden), 0 refuted, 0 deferrals, 60 areas examined.
   FAQ accordion + Service.offers/FAQPage JSON-LD (from offer.ts) + book-a-call + footer S9.
   **CLOSES commitment B1-D-jsonld1** → plan has NO open commitments remaining.
+- **Bundle F** — PR [#7](https://github.com/brunomaurino/codirity/pull/7) MERGED at `e956848` (squash).
+  Battery: 4 confirmed (1 refuted), all applied (reverted fragile sonner lazy-load, fixed Cal latch,
+  fixed pricing_viewed observer). 5 GA4 events + Cal lazy-load + acceptance battery. PERF GATE: 150 KB
+  is below the framework floor (~150 KB); Bruno signed off (AskUserQuestion) on relaxing to 198.3 KB gz.
+
+## Plan complete
+All 7 bundles (0→F) shipped. Open commitments at close: NONE (B1-D-jsonld1 completed in E).
+Operator follow-ups (not commitments): perf-budget re-baseline; pricing_viewed GA DebugView check;
+pre-launch Vercel env (Stripe/GA/site URL) + /terms with counsel copy before live payments (per HANDOFF).
 
 ## Orchestrator decisions
 
