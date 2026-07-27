@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { Section, Container } from "@/components/layout";
 import { SectionHeader, CalPopupButton } from "@/components/ui";
 import { faq, sections, CAL_LINK } from "@/config/offer";
+import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 // FAQ accordion (S7) — a leaf client component. Data comes from offer.faq, the SAME
@@ -36,7 +37,10 @@ export function Faq() {
               >
                 <button
                   type="button"
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  onClick={() => {
+                    if (!isOpen) track("faq_opened", { question: item.question });
+                    setOpenIndex(isOpen ? null : index);
+                  }}
                   aria-expanded={isOpen}
                   aria-controls={answerId}
                   className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"

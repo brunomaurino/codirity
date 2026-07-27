@@ -70,9 +70,7 @@ export function ContactForm() {
       toast.success("Message sent successfully! We'll get back to you soon.");
       setFormData(initialFormData);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to send message. Please try again."
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

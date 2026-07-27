@@ -27,3 +27,5 @@ export { SectionHeader, sectionHeaderVariants } from "./SectionHeader";
 export type { SectionHeaderProps } from "./SectionHeader";
 
 export { CalPopupButton } from "./CalPopupButton";
+
+export { TrackedLink } from "./TrackedLink";
