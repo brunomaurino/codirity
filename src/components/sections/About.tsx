@@ -7,8 +7,8 @@ export function About() {
     <Section id="about" variant="default" className="reveal">
       <Container size="narrow">
         <SectionHeader
-          label="About us"
-          title="Two brothers, one workshop"
+          label="About Us"
+          title="Two Brothers. One Mission."
           className="mb-12"
         />
 
@@ -16,22 +16,24 @@ export function About() {
           <div
             className={cn(
               "bg-white dark:bg-gray-800 rounded-3xl p-8 md:p-12",
-              "border border-[var(--border)]"
+              "border border-[var(--border)]",
+              "shadow-sm"
             )}
           >
             <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-              We&apos;re two brothers who spent years building software at
-              Globant, Ualá, and Kelity. We started Codirity after watching
-              too many businesses pay people to do, by hand and every week,
-              work a machine should have taken over years ago.
+              We&apos;re two brothers who&apos;ve spent years building technology at
+              companies like Globant, Ualá, and Kelity. We started Codirity
+              because we saw too many businesses stuck with outdated processes
+              and systems that hold them back.
             </p>
             <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-              The AI made that work cheap to automate. It didn&apos;t make it
-              automatic — someone still has to build the thing, connect it to
-              your systems, and own it when it breaks. That&apos;s the job we do.
+              We believe AI isn&apos;t just the future—it&apos;s the present. Every
+              company, regardless of size, should be leveraging intelligent
+              automation as their competitive advantage. That&apos;s what we&apos;re here
+              to help you do.
             </p>
-            <p className="text-gray-900 dark:text-white font-semibold text-lg">
-              Bring us the task your team redoes every Monday.
+            <p className="text-brand font-semibold text-lg">
+              Let&apos;s modernize your business together.
             </p>
           </div>
         </div>

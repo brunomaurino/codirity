@@ -29,6 +29,3 @@ export type { SectionHeaderProps } from "./SectionHeader";
 export { CalPopupButton } from "./CalPopupButton";
 
 export { TrackedLink } from "./TrackedLink";
-
-export { StatusDot } from "./StatusDot";
-export type { StatusDotVariant } from "./StatusDot";

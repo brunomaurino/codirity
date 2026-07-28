@@ -3,10 +3,9 @@ import { RevealProvider } from "@/components/layout";
 import { ServiceJsonLd, FaqPageJsonLd } from "@/components/seo/JsonLd";
 import {
   Hero,
-  Clients,
   Process,
   Services,
-  Ledger,
+  Benefits,
   RecentWork,
   About,
   Pricing,
@@ -28,14 +27,12 @@ export default function Home() {
       <FaqPageJsonLd />
       <RevealProvider>
         <Hero />
-        {/* RC — Clients ledger ("Already on the board") */}
-        <Clients />
         {/* S2 — How it works */}
         <Process />
         {/* S3 — What we build */}
         <Services />
-        {/* R2 — The Ledger (cost comparison as a receipt; replaced the Benefits grid) */}
-        <Ledger />
+        {/* S4 — Membership benefits */}
+        <Benefits />
         {/* S5 — Recent work (hidden until offer.caseStudies has content) */}
         <RecentWork />
         <About />

@@ -1,15 +1,16 @@
 export { Hero } from "./Hero";
 export { HeroBackground } from "./HeroBackground";
-export { HeroWorkbench } from "./HeroWorkbench";
-export { Clients } from "./Clients";
+export { HeroCards } from "./HeroCards";
 
 export { Services } from "./Services";
 export { ServiceCard } from "./ServiceCard";
 export type { ServiceCardProps } from "./ServiceCard";
 
 export { Process } from "./Process";
+export { ProcessStep } from "./ProcessStep";
+export type { ProcessStepProps } from "./ProcessStep";
 
-export { Ledger } from "./Ledger";
+export { Benefits } from "./Benefits";
 
 export { RecentWork } from "./RecentWork";
 

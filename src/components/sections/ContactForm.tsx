@@ -114,10 +114,10 @@ export function ContactForm() {
       {/* Header */}
       <div className="mb-8">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          What&apos;s the task?
+          Send Us a Message
         </h3>
         <p className="text-[0.95rem] text-gray-500 dark:text-gray-400">
-          Plain words are fine. We reply within 24 hours.
+          Fill out the form below and we&apos;ll get back to you shortly.
         </p>
       </div>
 

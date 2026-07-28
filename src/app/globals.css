@@ -374,9 +374,6 @@ body {
 .animation-delay-600 {
   animation-delay: 0.6s;
 }
-.animation-delay-700 {
-  animation-delay: 0.7s;
-}
 .animation-delay-1000 {
   animation-delay: 1s;
 }
@@ -405,15 +402,6 @@ body {
 }
 
 /* Staggered reveal delays for grid items */
-/* The nth-child stagger below is meant for GRID ITEMS. Top-level sections are
-   direct children of <main> whose child index shifts whenever a section (or a
-   JSON-LD script) is added — so their delay must stay uniform at 0s or a page
-   reorder silently reshuffles reveal timing. :nth-child(n) matches every
-   element and exists only to out-specify the numbered rules below. */
-main > .reveal:nth-child(n) {
-  transition-delay: 0s;
-}
-
 .reveal:nth-child(1) {
   transition-delay: 0s;
 }
@@ -462,68 +450,19 @@ main > .reveal:nth-child(n) {
 }
 
 /* ========================================
-   Workbench artifacts (redesign groundwork)
-   ========================================
-   The redesign's visual grammar (HANDOFF-redesign §1): ARTIFACTS — things that
-   present real work (queue rows, the ledger, the board) — are set in mono with
-   1px hairline borders and square corners. CONTROLS (buttons, nav) keep the
-   rounded brand language. Green is reserved for live/actionable elements only,
-   which is why the old decorative .gradient-text utility is gone. */
+   Gradient Text
+   ======================================== */
 
-.hairline {
-  border: 1px solid var(--border);
-  border-radius: 0;
-}
-
-.hairline-t {
-  border-top: 1px solid var(--border);
-}
-
-/* Hero workbench vignette: CSS-only typed prompt + blinking caret.
-   The prompt's width and step count are supplied per-element by
-   HeroWorkbench.tsx (--wb-w custom property + inline animation-timing-function
-   derived from the config string's length), so a copy edit in offer.ts cannot
-   desynchronize the animation. The caret is a SIBLING span of the clipped
-   typing span — placed inside, it would fall outside the overflow clip and
-   never render. */
-.wb-typing {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  vertical-align: bottom;
-  width: var(--wb-w, 17ch);
-  animation: wb-type 2.2s steps(17, end) 0.9s both;
-}
-
-.wb-caret::after {
-  content: "_";
-  color: var(--green-main);
-  animation: wb-blink 1.1s steps(1) infinite;
-}
-
-@keyframes wb-type {
-  from {
-    width: 0;
-  }
-  to {
-    width: var(--wb-w, 17ch);
-  }
-}
-
-@keyframes wb-blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wb-typing {
-    animation: none;
-    width: var(--wb-w, 17ch);
-  }
-  .wb-caret::after {
-    animation: none;
-  }
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--green-dark) 0%,
+    var(--green-main) 50%,
+    var(--green-light) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ========================================

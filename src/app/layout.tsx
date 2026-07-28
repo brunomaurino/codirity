@@ -21,12 +21,13 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
 });
 
-// Kept in sync with the live hero copy (R0 voice pass) so search snippets and
-// OG share cards never contradict the page — the same invariant Bundle D
-// established. Singular "a senior engineer" per the 2026-07-28 decision.
+// Subscription-forward copy (Bundle D): the live body now leads with the subscription
+// model (Bundle C hero + Bundle D pricing), so the title/description/OG match it. This
+// closes the positioning-neutral deferral from Bundle A — the OG card scrapers cache no
+// longer contradicts the page.
 const SITE_TITLE = "Codirity — Your AI & automation team, on subscription";
 const SITE_DESCRIPTION =
-  "Your AI & automation team, on subscription. Drop requests on a board; a senior engineer works them one at a time and most ship in days. One flat monthly rate — pause or cancel any month. Ex-Globant & Ualá.";
+  "Your AI & automation team, on subscription. Unlimited requests, senior engineering, and AI-accelerated delivery for one flat monthly rate — pause or cancel anytime. Built by engineers from Globant & Ualá.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),

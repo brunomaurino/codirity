@@ -2,8 +2,8 @@ import { ArrowRight } from "lucide-react";
 import { Badge, CalPopupButton, TrackedLink } from "@/components/ui";
 import { Container } from "@/components/layout";
 import { HeroBackground } from "./HeroBackground";
-import { HeroWorkbench } from "./HeroWorkbench";
-import { hero, proofLine, CAL_LINK } from "@/config/offer";
+import { HeroCards } from "./HeroCards";
+import { hero, CAL_LINK } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 export function Hero() {
@@ -98,36 +98,18 @@ export function Hero() {
 
             <p
               className={cn(
-                "mt-5 font-mono text-xs text-gray-500 dark:text-gray-400",
+                "mt-6 text-sm font-medium text-gray-500 dark:text-gray-400",
                 "opacity-0 animate-slide-up animation-delay-600"
               )}
             >
-              {hero.microcopy}
+              {hero.trustLine}
             </p>
           </div>
 
-          {/* The workbench vignette — the queue IS the hero image. Visible on
-              every breakpoint (stacks below the copy on mobile, reduced rows). */}
-          <div>
-            <HeroWorkbench />
+          {/* Hero Visual */}
+          <div className="hidden lg:block">
+            <HeroCards />
           </div>
-        </div>
-
-        {/* Proof line: evidence, not a logo marquee (HANDOFF-redesign §6.R1). */}
-        <div
-          className={cn(
-            "hairline-t mt-16 pt-5",
-            "font-mono text-xs text-gray-500 dark:text-gray-400",
-            "flex flex-wrap gap-x-3 gap-y-1",
-            "opacity-0 animate-slide-up animation-delay-700"
-          )}
-        >
-          {proofLine.map((segment, i) => (
-            <span key={segment}>
-              {i > 0 && <span aria-hidden="true">·&nbsp;&nbsp;</span>}
-              {segment}
-            </span>
-          ))}
         </div>
       </Container>
     </section>
