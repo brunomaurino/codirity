@@ -125,6 +125,22 @@ export interface WorkbenchItem {
   days?: number;
 }
 
+/**
+ * One row of the clients ledger (HANDOFF-redesign §6.RC). The honesty framing
+ * is load-bearing: `provenance` is rendered as a visible tag so a visitor never
+ * has to guess which names are clients and which are our own products, and a
+ * pre-launch product says so instead of wearing a "live" dot.
+ */
+export interface ClientEntry {
+  name: string;
+  /** What it is, in a few words — rendered next to the name. */
+  tagline: string;
+  provenance: "client" | "ours";
+  status: "in_production" | "pre_launch";
+  /** The second ledger line: what went through the queue for this name. */
+  detail: string;
+}
+
 /** Header copy (eyebrow label + title + optional description) for a marketing section. */
 export interface SectionCopy {
   label: string;
@@ -133,6 +149,7 @@ export interface SectionCopy {
 }
 
 export interface SectionsContent {
+  clients: SectionCopy;
   howItWorks: SectionCopy;
   whatWeBuild: SectionCopy;
   benefits: SectionCopy;
@@ -216,6 +233,15 @@ export const scopeLabels = {
 } as const;
 
 export const sections: SectionsContent = {
+  // Approved framing (Bruno, 2026-07-28): Option A from the storytelling doc —
+  // lead with the honesty, don't bury it. Two of the three names are ours and
+  // the copy says so before any visitor has to find it in the footer.
+  clients: {
+    label: "Clients",
+    title: "Already on the board",
+    description:
+      "Three names have been through this queue. One is a client. Two are our own products — we built the subscription by running it on ourselves first. Same board, same rules, tagged so you can tell which is which.",
+  },
   howItWorks: {
     label: "How it works",
     title: "You add a card. We ship it.",
@@ -428,6 +454,42 @@ export const faq: FaqItem[] = [
       "Native mobile apps, brand design, staffing manual operations, and anything that's really a full-time hire. If we're not the fit, we'll say so and save you a month's fee.",
   },
 ];
+
+/**
+ * The clients ledger (storytelling doc §1, approved 2026-07-28). Facts trace to
+ * the brain record: eDairyCorp is the active client (est. 2003, marketplace
+ * rebuild in place); Meshio and Vivi are our own products, tagged `ours`; Vivi
+ * has not shipped to the App Store and says so.
+ */
+export const clients: ClientEntry[] = [
+  {
+    name: "eDairyCorp",
+    tagline: "dairy B2B marketplace, est. 2003",
+    provenance: "client",
+    status: "in_production",
+    detail:
+      "legacy rebuild in place · stripe seller tiers · 27 dead URLs found & fixed",
+  },
+  {
+    name: "Meshio",
+    tagline: "AI content-ideation SaaS",
+    provenance: "ours",
+    status: "in_production",
+    detail:
+      "onboarding rebuilt around one activation metric · sign-in friction pushed past first value",
+  },
+  {
+    name: "Vivi",
+    tagline: "outfit-scoring iOS app",
+    provenance: "ours",
+    status: "pre_launch",
+    detail:
+      "photo → score → history · scoring pipeline + paywall, built one card at a time",
+  },
+];
+
+/** Closer row under the ledger — the open slot. Rendered with the blinking caret. */
+export const clientsCloser = "next row: yours";
 
 /** Typed placeholder — real case studies supplied later (D5). */
 export const caseStudies: CaseStudy[] = [];

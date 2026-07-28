@@ -1,6 +1,7 @@
 export { Hero } from "./Hero";
 export { HeroBackground } from "./HeroBackground";
 export { HeroWorkbench } from "./HeroWorkbench";
+export { Clients } from "./Clients";
 
 export { Services } from "./Services";
 export { ServiceCard } from "./ServiceCard";
