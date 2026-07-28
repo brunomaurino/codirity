@@ -85,10 +85,26 @@ export interface CostLedger {
   footnote: string;
 }
 
-export interface HowItWorksStep {
-  number: string;
-  title: string;
-  description: string;
+/**
+ * One entry of the "a week with us" log (HANDOFF-redesign §6.R3) — the diary
+ * of a typical request. `done` entries wear the filled green dot; the open
+ * Friday entry stays inert.
+ */
+export interface WeekLogEntry {
+  /** Mono timestamp, e.g. "mon 09:12". */
+  when: string;
+  text: string;
+  /** Optional client quote rendered inside the entry. */
+  quote?: string;
+  done: boolean;
+}
+
+/** One column of the mock queue board rendered under the week log. */
+export interface BoardColumn {
+  label: string;
+  /** Status-dot variant for the column header (green-means-live grammar). */
+  dot: "live" | "active" | "inert";
+  cards: string[];
 }
 
 export interface FaqItem {
@@ -190,7 +206,8 @@ export interface Offer {
   included: string[];
   notIncluded: string[];
   costLedger: CostLedger;
-  howItWorks: HowItWorksStep[];
+  weekLog: WeekLogEntry[];
+  weekBoard: BoardColumn[];
   faq: FaqItem[];
   caseStudies: CaseStudy[];
 }
@@ -415,26 +432,64 @@ export const costLedger: CostLedger = {
     "figures, rounded down · ¹ BLS OES 15-1252 (2025), 75th percentile $171,980/yr as the senior proxy · ² 20% of year-one salary ÷ 24 mo · ³ BLS ECEC, private-industry benefits 29.8% of compensation · ⁴ Workable engineering time-to-fill ≈ 62 days · retrieved 2026-07-28",
 };
 
-export const howItWorks: HowItWorksStep[] = [
+/**
+ * The Mon–Fri log — storytelling doc §3, verbatim. A diary of a real-shaped
+ * request (drawn from the eDairy dead-URL class of work), not abstract steps.
+ */
+export const weekLog: WeekLogEntry[] = [
   {
-    number: "01",
-    title: "Subscribe",
-    description:
-      "Pick a plan. The board is yours the same day — drop the first card whenever you're ready.",
+    when: "mon 09:12",
+    text: "you drop a card:",
+    quote: "customers say our product links are dead. No idea how many.",
+    done: true,
   },
   {
-    number: "02",
-    title: "Request",
-    description:
-      "Add cards to the queue in your own words. We ask two questions — that's usually all of them.",
+    when: "mon 11:40",
+    text: "we ask two questions. That's usually all of them.",
+    done: true,
   },
   {
-    number: "03",
-    title: "Ship",
-    description:
-      "Review, revise, done. The next card starts the moment one ships.",
+    when: "tue 10:00",
+    text: "the plan appears on the card: crawl the sitemap, diff it against live pages, fix the URL scheme, patch the sitemap. You drag it above the reporting task. Dragging is the whole management interface.",
+    done: true,
+  },
+  {
+    when: "thu 16:05",
+    text: "fixed. 27 of 273 pages were dead; the card links the list, the fix, and a 3-minute Loom. No meeting was scheduled at any point.",
+    done: true,
+  },
+  {
+    when: "fri",
+    text: "the card is boring now. Boring is the goal. Next card starts.",
+    done: false,
   },
 ];
+
+/**
+ * The mock queue board under the log. Cards reuse the hero vignette's row
+ * universe with CONSISTENT states — one story, told twice, never contradicting
+ * itself. Labeled illustrative by weekBoardCaption (mandatory, storytelling §3).
+ */
+export const weekBoard: BoardColumn[] = [
+  {
+    label: "Queued",
+    dot: "inert",
+    cards: ["weekly KPI digest email", "invoice parser + searchable archive"],
+  },
+  {
+    label: "In progress",
+    dot: "active",
+    cards: ["wordpress fleet cost cut"],
+  },
+  {
+    label: "Shipped",
+    dot: "live",
+    cards: ["dead product URLs — 27 found · 1d", "admin table filters · 3d"],
+  },
+];
+
+/** Mandatory honesty caption (storytelling §3) — rendered mono under the board. */
+export const weekBoardCaption = "a typical week's board — illustrative, not a live feed";
 
 export const faq: FaqItem[] = [
   {
@@ -521,7 +576,8 @@ export const offer: Offer = {
   included,
   notIncluded,
   costLedger,
-  howItWorks,
+  weekLog,
+  weekBoard,
   faq,
   caseStudies,
 };
