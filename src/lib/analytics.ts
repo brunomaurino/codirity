@@ -69,14 +69,19 @@ declare global {
   }
 }
 
-// Vercel Web Analytics rejects event names, property keys, and property values
-// longer than this. Enforced here because the one free-text property in use
-// (`faq_opened`'s question) comes from editable config, so a copy change could
-// cross the limit without producing any type error.
+// Vercel caps event names, property keys, and property values at 255 characters
+// each, and (on Pro) accepts at most 2 properties per event.
 // https://vercel.com/docs/analytics/custom-events#limitations
+//
+// Only the VALUE cap is enforced below, and deliberately so: values are the one
+// place free text enters — `faq_opened` carries a question string sourced from
+// editable config, so a copy change could cross 255 characters with no type
+// error. Event names and property keys are string literals written here in
+// source, and the property count is visible at each call site, so both are
+// reviewable rather than clamped at runtime.
 const MAX_PROPERTY_VALUE_LENGTH = 255;
 
-function withinProviderLimits(params: AnalyticsParams): AnalyticsParams {
+function clampPropertyValues(params: AnalyticsParams): AnalyticsParams {
   const clamped: AnalyticsParams = {};
   for (const [key, value] of Object.entries(params)) {
     clamped[key] =
@@ -92,11 +97,12 @@ function withinProviderLimits(params: AnalyticsParams): AnalyticsParams {
  *
  * Keep `params` to at most two properties: that is the per-event ceiling on
  * Vercel's Pro plan, and properties past it are dropped rather than reported.
+ * This is a review-time rule, not a runtime check — see the note above.
  */
 export function track(event: AnalyticsEvent, params?: AnalyticsParams): void {
   if (typeof window === "undefined") return;
 
-  const data = params ? withinProviderLimits(params) : undefined;
+  const data = params ? clampPropertyValues(params) : undefined;
 
   if (typeof window.gtag === "function") {
     window.gtag("event", event, data);

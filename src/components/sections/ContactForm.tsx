@@ -61,12 +61,20 @@ export function ContactForm() {
     const service = formData.service || "unspecified";
     track("contact_form_submitted", { service });
 
+    // A bounded reason code for analytics — deliberately NOT the user-facing
+    // error message. That message is display copy (locale-dependent for network
+    // failures), and if the API ever echoed submitted input back in an error it
+    // would otherwise flow straight into the analytics payload unnoticed.
+    let reason = "network_error";
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
+      reason = response.ok ? "malformed_response" : `http_${response.status}`;
 
       const data = await response.json();
 
@@ -80,13 +88,14 @@ export function ContactForm() {
       toast.success("Message sent successfully! We'll get back to you soon.");
       setFormData(initialFormData);
     } catch (error) {
-      const message =
+      // A silent delivery failure loses a lead, so failures are measured too —
+      // carrying `service` like its sibling events so the funnel stays joinable.
+      track("contact_form_error", { service, reason });
+      toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to send message. Please try again.";
-      // A silent delivery failure loses a lead, so failures are measured too.
-      track("contact_form_error", { reason: message });
-      toast.error(message);
+          : "Failed to send message. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
