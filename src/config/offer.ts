@@ -69,6 +69,9 @@ export interface LedgerRow {
   value: string;
   /** Superscript footnote marker rendered after the label. */
   footnote?: number;
+  /** Render the value as the green checkmark (green-means-live). Explicit flag
+   *  rather than string-matching "✓", so no future row goes green by accident. */
+  check?: boolean;
 }
 
 export interface CostLedger {
@@ -397,11 +400,16 @@ export const costLedger: CostLedger = {
     { label: "time to a signed offer", value: "~9 weeks", footnote: 4 },
   ],
   us: [
-    { label: "Codirity, Standard", value: "$3,995/mo" },
+    // Derived from the Standard tier — the single authoritative price — so a
+    // tier change can never silently drift from this receipt.
+    {
+      label: "Codirity, Standard",
+      value: `${tiers[0].price}${tiers[0].period}`,
+    },
     // D5 (capacity number) unresolved, so no "this week" claim — this line is
     // true by construction: the board exists the day the subscription starts.
     { label: "first card starts", value: "day one" },
-    { label: "pause any month", value: "✓" },
+    { label: "pause any month", value: "✓", check: true },
   ],
   footnote:
     "figures, rounded down · ¹ BLS OES 15-1252 (2025), 75th percentile $171,980/yr as the senior proxy · ² 20% of year-one salary ÷ 24 mo · ³ BLS ECEC, private-industry benefits 29.8% of compensation · ⁴ Workable engineering time-to-fill ≈ 62 days · retrieved 2026-07-28",

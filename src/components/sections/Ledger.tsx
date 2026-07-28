@@ -18,13 +18,24 @@ function Row({
   label,
   value,
   footnote,
+  check,
   bold,
 }: {
   label: string;
   value: string;
   footnote?: number;
+  check?: boolean;
   bold?: boolean;
 }) {
+  // The value's color branches exclusively: the checkmark row is brand green
+  // in BOTH themes (a competing dark:text-gray utility would win the cascade
+  // and gray it out in dark mode — the exact bug this branching prevents).
+  const valueColor = check
+    ? "text-brand"
+    : bold
+      ? "font-bold text-gray-900 dark:text-white"
+      : "text-gray-800 dark:text-gray-200";
+
   return (
     <div className="flex items-baseline gap-2 py-[3px]">
       <span
@@ -45,17 +56,7 @@ function Row({
         aria-hidden="true"
         className="flex-1 border-b border-dotted border-[var(--border)] translate-y-[-3px]"
       />
-      <span
-        className={cn(
-          "whitespace-nowrap",
-          bold
-            ? "font-bold text-gray-900 dark:text-white"
-            : "text-gray-800 dark:text-gray-200",
-          value === "✓" && "text-brand"
-        )}
-      >
-        {value}
-      </span>
+      <span className={cn("whitespace-nowrap", valueColor)}>{value}</span>
     </div>
   );
 }
