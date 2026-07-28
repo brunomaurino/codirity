@@ -6,7 +6,7 @@ import {
   Clients,
   Process,
   Services,
-  Benefits,
+  Ledger,
   RecentWork,
   About,
   Pricing,
@@ -34,8 +34,8 @@ export default function Home() {
         <Process />
         {/* S3 — What we build */}
         <Services />
-        {/* S4 — Membership benefits */}
-        <Benefits />
+        {/* R2 — The Ledger (cost comparison as a receipt; replaced the Benefits grid) */}
+        <Ledger />
         {/* S5 — Recent work (hidden until offer.caseStudies has content) */}
         <RecentWork />
         <About />
