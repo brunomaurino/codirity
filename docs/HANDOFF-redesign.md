@@ -73,7 +73,7 @@ claims, more receipts.
 | **R1** | Hero rework: workbench vignette (terminal-queue), microcopy, proof line | R0 | [x] complete | [#10](https://github.com/brunomaurino/codirity/pull/10) | `029a772` |
 | **RC** | Clients ledger — eDairyCorp, Meshio, Vivi (honest portfolio framing) | R0, storytelling doc | [x] complete | [#11](https://github.com/brunomaurino/codirity/pull/11) | `fddcf15` |
 | **R2** | The Ledger (cost comparison as receipt) + kill/fold Benefits grid | R0 | [x] complete | [#12](https://github.com/brunomaurino/codirity/pull/12) | `4fe8c12` |
-| **R3** | "A week with us" (process rework) + mock queue board | R0 | [ ] pending | | |
+| **R3** | "A week with us" (process rework) + mock queue board | R0 | [x] complete | [#13](https://github.com/brunomaurino/codirity/pull/13) | `f1a8069` |
 | **R4** | "Things we've been asked to build" (services rework) + "Things we'll say no to" | R0 | [ ] pending | | |
 | **R5** | Pricing as rate card + payback calculator + guarantee cluster | R2, decisions D3/D5 | [ ] pending | | |
 | **R6** | FAQ deepen (~12 Qs, voice-rewritten) + final CTA close | R0 | [ ] pending | | |
