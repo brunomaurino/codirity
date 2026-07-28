@@ -65,6 +65,18 @@ claims, more receipts.
 
 ---
 
+## ⚠️ PLAN HALTED BY OPERATOR — 2026-07-28
+
+Bruno reviewed the deployed result after R3 and rejected the visual direction: the
+mono/terminal/hairline "Workbench" aesthetic reads as AI-made — the exact failure the plan was
+meant to avoid. The concept is being redesigned from scratch with a trust-first direction (see
+the direction-picker artifact + the forthcoming HANDOFF-redesign-v2). WHAT SURVIVES: the §4
+voice + anti-slop rules, all approved storytelling content (clients framing, sourced receipt
+figures, week narrative, asks, no-list), the analytics funnel, and decisions D1–D8. WHAT DIES:
+the terminal/mono visual system, hairline artifacts, status dots, neon green as accent. R4/R5/R6
+were NOT built under this direction (R4's in-flight build was discarded unmerged). Do not launch
+further bundles from this document.
+
 ## §2 — Bundle status surface
 
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |

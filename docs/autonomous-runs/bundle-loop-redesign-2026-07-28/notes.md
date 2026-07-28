@@ -60,3 +60,13 @@ R5 (7) is skipped this run.
 ## Cross-bundle drift / surfaced concerns
 
 _(none yet)_
+
+## LOOP HALTED BY OPERATOR (2026-07-28, after R3)
+
+Bruno rejected the visual direction ("me suena a hecho por IA") and ordered a restart with a
+trust-first approach. Actions taken: R4 battery `wf_27879a6f-e8b` stopped mid-run; R4 worktree
+discarded (never reached PR); heartbeat + watchdog `ef65bb95` stopped; loop + bundle markers
+cleared. Shipped state at halt: R0 #9, R1 #10, RC #11, R2 #12, R3 #13 all merged and live.
+R4/R6 not built; R5/R7/R8 never started. This is an OPERATOR HALT, not a hard stop — recorded
+per the loop's interrupt semantics. The content work (voice, storytelling, sourced figures)
+carries into the v2 direction; the visual system does not.
