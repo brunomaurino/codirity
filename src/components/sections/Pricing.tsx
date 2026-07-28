@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { Section, Container } from "@/components/layout";
-import { SectionHeader } from "@/components/ui";
+import { SectionHeader, TrackedLink } from "@/components/ui";
 import { PricingCard } from "./PricingCard";
 import { PricingViewedTracker } from "./PricingViewedTracker";
 import { tiers, foundingRate, guarantee, sections } from "@/config/offer";
@@ -20,13 +20,15 @@ export function Pricing() {
 
         {/* Founding-rate launch banner — a limited offer layered on the anchor prices,
             never the headline. Gated on the config flag so it disappears (one line) when
-            the slots fill. Links to the founding-rate Stripe checkout. */}
+            the slots fill. Links to the founding-rate Stripe checkout — tracked like
+            the two tier CTAs, since it is a live checkout link and its click-through
+            is what tells us whether the launch offer is doing any work. */}
         {foundingRate.active && (
           <div className="max-w-4xl mx-auto mb-10 reveal">
-            <a
+            <TrackedLink
               href={foundingRate.stripeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              event="checkout_click_founding"
+              external
               className={cn(
                 "group flex flex-col sm:flex-row items-center justify-center gap-x-3 gap-y-1 text-center",
                 "rounded-2xl px-6 py-4",
@@ -43,7 +45,7 @@ export function Pricing() {
               <span className="text-sm opacity-80">
                 ({foundingRate.slots} spots)
               </span>
-            </a>
+            </TrackedLink>
           </div>
         )}
 

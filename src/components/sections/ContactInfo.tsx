@@ -1,6 +1,6 @@
 import { Mail, MapPin, Clock, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CalPopupButton } from "@/components/ui";
+import { CalPopupButton, TrackedLink } from "@/components/ui";
 
 const CAL_LINK = "support-codirity-lz8rjc/30min";
 
@@ -15,12 +15,14 @@ const contactMethods: ContactMethod[] = [
     icon: <Mail className="w-[22px] h-[22px] stroke-white" />,
     title: "Email Us",
     content: (
-      <a
+      <TrackedLink
         href="mailto:support@codirity.com"
+        event="email_click"
+        eventParams={{ location: "contact_section" }}
         className="text-brand font-semibold hover:text-brand-dark transition-colors"
       >
         support@codirity.com
-      </a>
+      </TrackedLink>
     ),
   },
   {

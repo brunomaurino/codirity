@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TrackedLink } from "@/components/ui";
 import { BRAND, LEGAL_ENTITY, CONTACT_EMAIL } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
@@ -140,12 +141,17 @@ export function Footer() {
               reserved.
             </p>
             <div className="flex items-center gap-6">
-              <a
+              {/* Emailing us directly is a lead action, so it is tracked. The
+                  `location` property separates it from the same address in the
+                  contact section. */}
+              <TrackedLink
                 href={`mailto:${CONTACT_EMAIL}`}
+                event="email_click"
+                eventParams={{ location: "footer" }}
                 className="text-white/40 text-sm hover:text-brand transition-colors duration-300"
               >
                 {CONTACT_EMAIL}
-              </a>
+              </TrackedLink>
               <Link
                 href="/privacy"
                 className="text-white/40 text-sm hover:text-brand transition-colors duration-300"

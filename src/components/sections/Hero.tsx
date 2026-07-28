@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { Badge, CalPopupButton } from "@/components/ui";
+import { Badge, CalPopupButton, TrackedLink } from "@/components/ui";
 import { Container } from "@/components/layout";
 import { HeroBackground } from "./HeroBackground";
 import { HeroCards } from "./HeroCards";
@@ -66,8 +66,11 @@ export function Hero() {
                 "opacity-0 animate-slide-up animation-delay-500"
               )}
             >
-              <a
+              {/* Top of the funnel: this is the click that sends a visitor from
+                  the hero to pricing, so it's the denominator for pricing_viewed. */}
+              <TrackedLink
                 href={hero.primaryCta.href}
+                event="hero_cta_click"
                 className={cn(
                   "inline-flex items-center justify-center gap-2",
                   "px-8 py-4 text-base font-semibold rounded-full",
@@ -78,7 +81,7 @@ export function Hero() {
               >
                 {hero.primaryCta.label}
                 <ArrowRight className="w-5 h-5" />
-              </a>
+              </TrackedLink>
               <CalPopupButton
                 calLink={CAL_LINK}
                 className={cn(

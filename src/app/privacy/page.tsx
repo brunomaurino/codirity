@@ -31,6 +31,9 @@ export default function PrivacyPolicy() {
           <p className="text-lg text-gray-600 dark:text-gray-400">
             Effective date: December 17, 2024
           </p>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            Last updated: July 28, 2026
+          </p>
         </div>
       </section>
 
@@ -310,6 +313,18 @@ export default function PrivacyPolicy() {
                 </p>
                 <p>
                   We also encourage you to review Google&apos;s policy for safeguarding your data: https://support.google.com/analytics/answer/6004245.
+                </p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 space-y-4 mt-4">
+                <p className="font-semibold text-gray-900 dark:text-white">Vercel Web Analytics</p>
+                <p>
+                  Vercel Web Analytics is a privacy-friendly analytics service provided by Vercel Inc., the platform that hosts this website. It reports aggregate traffic to our Service — page views, referring sites, approximate location (country, region, city), device type, operating system, and browser.
+                </p>
+                <p>
+                  Vercel Web Analytics does not use cookies. Rather than storing an identifier on your device, visitors are counted using a hash derived from the incoming request, which is discarded and regenerated every 24 hours. No personal identifiers are collected, and the recorded data points are not tied to any individual visitor or IP address.
+                </p>
+                <p>
+                  For more information on Vercel&apos;s privacy practices, please visit: https://vercel.com/legal/privacy-policy and https://vercel.com/docs/analytics/privacy-policy.
                 </p>
               </div>
             </div>
