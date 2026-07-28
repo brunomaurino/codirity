@@ -11,6 +11,8 @@
  * Components import from this module and never hardcode these values.
  */
 
+import type { StatusDotVariant } from "@/components/ui/StatusDot";
+
 /** Stripe Payment Links come from env with a safe placeholder so the site builds
  *  without real URLs in v1 (D2). Set the real Production-scoped values in Vercel. */
 const STRIPE_PLACEHOLDER = "#";
@@ -102,8 +104,10 @@ export interface WeekLogEntry {
 /** One column of the mock queue board rendered under the week log. */
 export interface BoardColumn {
   label: string;
-  /** Status-dot variant for the column header (green-means-live grammar). */
-  dot: "live" | "active" | "inert";
+  /** Status-dot variant for the column header — derived from the shared
+   *  StatusDot primitive (type-only import, erased at compile time; keeps this
+   *  file rendering-free while preventing the two unions from drifting). */
+  dot: StatusDotVariant;
   cards: string[];
 }
 
@@ -466,15 +470,17 @@ export const weekLog: WeekLogEntry[] = [
 ];
 
 /**
- * The mock queue board under the log. Cards reuse the hero vignette's row
- * universe with CONSISTENT states — one story, told twice, never contradicting
- * itself. Labeled illustrative by weekBoardCaption (mandatory, storytelling §3).
+ * The mock queue board under the log. Every card traces to the approved
+ * universe: In-progress/Shipped reuse the hero vignette's rows with CONSISTENT
+ * states, and the Queued card is the storytelling doc's approved §4 ask #6 (the
+ * anonymized AI-document-extraction composite). A near-empty queue is also the
+ * honest picture. Labeled illustrative by weekBoardCaption (mandatory, §3).
  */
 export const weekBoard: BoardColumn[] = [
   {
     label: "Queued",
     dot: "inert",
-    cards: ["weekly KPI digest email", "invoice parser + searchable archive"],
+    cards: ["AI document extraction, human review step"],
   },
   {
     label: "In progress",

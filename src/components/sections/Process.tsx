@@ -13,7 +13,10 @@ import { cn } from "@/lib/utils";
  */
 export function Process() {
   return (
-    <Section id="process" variant="gradient" className="relative">
+    // variant="gray", not "gradient": the gradient variant is a green
+    // background wash, which §1 rule 2 bans outright — removing only the radial
+    // overlay while keeping the green gradient would have been half a sweep.
+    <Section id="process" variant="gray" className="relative">
       <Container size="narrow">
         <SectionHeader
           label={sections.howItWorks.label}
