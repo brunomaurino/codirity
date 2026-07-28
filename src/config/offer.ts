@@ -159,13 +159,15 @@ export const CAL_LINK = "support-codirity-lz8rjc/30min";
 export const hero: HeroContent = {
   badge: "AI & automation, on subscription",
   headline: "Your AI & automation team, on subscription.",
+  // Storytelling doc §2 option 1 — the mechanism in four checkable sentences.
   subhead:
-    "Unlimited requests, senior engineering, and AI-accelerated delivery — for one flat monthly rate. Pause or cancel anytime.",
+    "Drop requests on a board. A senior engineer works them one at a time. Most ship in days. One flat rate.",
   primaryCta: { label: "See pricing", href: "#pricing" },
   // Duration-neutral: the configured Cal event (CAL_LINK) is a 30-minute call, so a
   // "15-min" label would understate the actual booking. Kept short and low-friction.
   secondaryCta: { label: "Book an intro call" },
-  trustLine: "Built by engineers from Globant & Ualá",
+  // Singular by decision (2026-07-28): one senior engineer works your queue.
+  trustLine: "Built by a senior engineer, ex-Globant & Ualá",
 };
 
 /** Column headings for the "What we build" included / not-included lists. */
@@ -177,39 +179,42 @@ export const scopeLabels = {
 export const sections: SectionsContent = {
   howItWorks: {
     label: "How it works",
-    title: "From idea to shipped, on repeat",
+    title: "You add a card. We ship it.",
     description:
-      "Subscribe, add tasks to your queue, and we build them one at a time. No scoping calls, no contracts.",
+      "Subscribe, drop requests on the board, and we work them one at a time. No scoping calls, no contracts.",
   },
   whatWeBuild: {
     label: "What we build",
     title: "AI, automation, and custom systems",
     description:
-      "If it's software that makes your business run faster, it's in scope. Here's where we focus — and where we don't.",
+      "If it's software that deletes manual work, it's probably in scope. Here's where we focus — and what we'll say no to.",
   },
   benefits: {
-    label: "Membership benefits",
-    title: "Why teams subscribe",
+    label: "The subscription",
+    title: "What the flat rate buys you",
     description:
-      "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
+      "The parts of an agency you actually want, without hourly billing or lock-in.",
   },
   recentWork: {
     label: "Recent work",
     title: "What we've shipped",
     description:
-      "A look at recent automations and systems we've built for teams like yours.",
+      "Recent automations and systems, and the manual work each one deleted.",
   },
   pricing: {
     label: "Pricing",
-    title: "Simple, monthly pricing",
+    title: "One flat rate",
+    // Task counts live in each tier card (one lane on Standard, two on Pro) —
+    // this shared header must not state a count that only fits one tier.
     description:
-      "One flat rate, unlimited requests, and no contracts. Pause or cancel anytime.",
+      "Unlimited queue. Pick your lane count below. Pause or cancel any month.",
   },
   faq: {
     label: "FAQ",
-    title: "Questions, answered",
+    title: "The questions everyone asks",
+    // 30 minutes — must match the configured Cal event (see CAL_LINK comment).
     description:
-      "Everything you might want to know before subscribing. Still unsure? Book a quick call.",
+      "Answered plainly. Anything else — book a 30-minute call or write to us.",
   },
 };
 
@@ -226,9 +231,9 @@ export const tiers: Tier[] = [
     // repeated here to keep a single authoritative copy of that fact.
     features: [
       "Unlimited requests & revisions",
-      "AI-accelerated senior engineering",
-      "Async delivery, tracked in Trello",
-      "Pause or cancel anytime",
+      "A senior engineer on your queue; the AI drafts",
+      "Async delivery on a shared Trello board",
+      "Pause or cancel any month",
     ],
     stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_STANDARD),
     cta: "Get started",
@@ -241,15 +246,15 @@ export const tiers: Tier[] = [
     priceAmount: 6995,
     period: "/mo",
     tasks: "Two active tasks at a time",
-    description: "For teams that need two things moving in parallel, faster.",
+    description: "For teams that need two things moving at once.",
     // Active-task limit lives in `tasks` (not repeated here); Priority delivery is
     // the Pro-only differentiator and stays in the list.
     features: [
       "Priority delivery",
       "Unlimited requests & revisions",
-      "AI-accelerated senior engineering",
-      "Async delivery, tracked in Trello",
-      "Pause or cancel anytime",
+      "A senior engineer on your queue; the AI drafts",
+      "Async delivery on a shared Trello board",
+      "Pause or cancel any month",
     ],
     stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_PRO),
     cta: "Get started",
@@ -297,37 +302,37 @@ export const benefits: Benefit[] = [
     icon: "CreditCard",
     title: "One flat monthly rate",
     description:
-      "No hourly billing and no surprise invoices. One price, unlimited requests.",
+      "No hourly billing, no surprise invoices. The price is the price.",
   },
   {
     icon: "Infinity",
     title: "Unlimited requests & revisions",
     description:
-      "Queue as many tasks as you like and revise each one until it's right.",
+      "Queue as much as you like; revise each card until it's right.",
   },
   {
     icon: "Zap",
-    title: "Senior engineering, AI-accelerated",
+    title: "The AI drafts. An engineer owns it.",
     description:
-      "Work is shipped by senior engineers using AI to move faster than an agency.",
+      "Every line that ships was reviewed and owned by a senior engineer.",
   },
   {
     icon: "Rocket",
-    title: "Fast, async delivery",
+    title: "Async, no meetings",
     description:
-      "Most tasks land in days. Track everything in a shared Trello board.",
+      "Most cards ship in days. Everything lives on a shared board — you get a Loom, not a call.",
   },
   {
     icon: "PauseCircle",
-    title: "Pause or cancel anytime",
+    title: "Pause or cancel any month",
     description:
-      "No lock-in. Pause when your queue is empty and resume when you need us.",
+      "Pause when the queue is empty; come back when there's work.",
   },
   {
     icon: "TrendingUp",
-    title: "Scales with you",
+    title: "Two lanes when you need them",
     description:
-      "Move up to Pro when you need two tasks running in parallel.",
+      "Move to Pro when you need two cards moving at once.",
   },
 ];
 
@@ -336,52 +341,52 @@ export const howItWorks: HowItWorksStep[] = [
     number: "01",
     title: "Subscribe",
     description:
-      "Pick a plan and get instant access to your Trello board. Add your first task right away.",
+      "Pick a plan. The board is yours the same day — drop the first card whenever you're ready.",
   },
   {
     number: "02",
     title: "Request",
     description:
-      "Add tasks to your queue. We work them one (or two) at a time and deliver async.",
+      "Add cards to the queue in your own words. We ask two questions — that's usually all of them.",
   },
   {
     number: "03",
     title: "Ship",
     description:
-      "Review, revise, and ship. Keep the queue full — we keep building.",
+      "Review, revise, done. The next card starts the moment one ships.",
   },
 ];
 
 export const faq: FaqItem[] = [
   {
-    question: "Who does the work?",
+    question: "Who actually writes the code — you or the AI?",
     answer:
-      "A senior engineer with years at companies like Globant and Ualá, working AI-accelerated. You work directly with the person building your systems — no account managers, no offshore hand-offs.",
+      "Engineers. The AI drafts; a senior engineer — ex-Globant, ex-Ualá — owns what ships. You talk to the person building your systems, not an account manager.",
   },
   {
-    question: "How fast will I get my work?",
+    question: "How fast is it, really?",
     answer:
-      "Most individual tasks are delivered within a few days. Larger builds are broken into milestones so you see progress continuously.",
+      "Most cards ship in 2–4 days. Bigger builds get split into cards, so something lands every few days — the board shows you which day.",
   },
   {
     question: "What counts as one task?",
     answer:
-      "A task is a single focused piece of work — an automation, an integration, a tool, or a fix. We work one active task at a time on Standard and two on Pro, moving to the next as soon as one ships.",
+      "One focused piece of work: an automation, an integration, a tool, a fix. Standard works one at a time, Pro two; the next starts the moment one ships.",
   },
   {
     question: "What if I don't like the result?",
     answer:
-      "Unlimited revisions are included, so we iterate until it's right. Every plan is also backed by our guarantee: try it for a week, and if you're not convinced, get 75% back.",
+      "Revisions are part of the request — we iterate until it's right. And the first week carries the guarantee: not convinced, 75% back.",
   },
   {
     question: "Can I pause or cancel?",
     answer:
-      "Anytime. Pause your subscription when your queue is empty and resume when you need us again. No contracts, no lock-in.",
+      "Any month. Billing stops at the end of the cycle; your board, your code, and your history stay put. Come back when there's work.",
   },
   {
     question: "What don't you do?",
     answer:
-      "We focus on AI, automation, and custom systems. We don't do native mobile apps, brand or marketing design, or staffing for manual operations. If we're not the right fit, we'll tell you.",
+      "Native mobile apps, brand design, staffing manual operations, and anything that's really a full-time hire. If we're not the fit, we'll say so and save you a month's fee.",
   },
 ];
 

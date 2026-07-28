@@ -450,19 +450,21 @@ body {
 }
 
 /* ========================================
-   Gradient Text
-   ======================================== */
+   Workbench artifacts (redesign groundwork)
+   ========================================
+   The redesign's visual grammar (HANDOFF-redesign §1): ARTIFACTS — things that
+   present real work (queue rows, the ledger, the board) — are set in mono with
+   1px hairline borders and square corners. CONTROLS (buttons, nav) keep the
+   rounded brand language. Green is reserved for live/actionable elements only,
+   which is why the old decorative .gradient-text utility is gone. */
 
-.gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--green-dark) 0%,
-    var(--green-main) 50%,
-    var(--green-light) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.hairline {
+  border: 1px solid var(--border);
+  border-radius: 0;
+}
+
+.hairline-t {
+  border-top: 1px solid var(--border);
 }
 
 /* ========================================
