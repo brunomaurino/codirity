@@ -9,6 +9,22 @@ interface CalPopupButtonProps {
   className?: string;
 }
 
+// The Cal.com embed API is a page-level singleton shared by every
+// CalPopupButton on the page (Hero, Faq and ContactInfo — three instances
+// today), so the booking listener must be registered exactly once. Registering
+// per instance would emit one duplicate `call_booking_completed` per mounted
+// button for a single real booking.
+//
+// The latch lives on `window`, not in module scope, because a module-scope flag
+// is reset by React Fast Refresh while the listener it guards — held by the Cal
+// singleton on the same `window` — survives the refresh. That mismatch would
+// re-register a second listener during development and double-count bookings.
+declare global {
+  interface Window {
+    __codirityCalBookingListener?: boolean;
+  }
+}
+
 export function CalPopupButton({
   calLink,
   children,
@@ -36,6 +52,20 @@ export function CalPopupButton({
         hideEventTypeDetails: false,
         layout: "month_view",
       });
+      if (!window.__codirityCalBookingListener) {
+        // The real conversion, as opposed to the `call_booked` click above.
+        // `bookingSuccessfulV2` is the supported action — the older
+        // `bookingSuccessful` is marked deprecated in @calcom/embed-core and
+        // carries the organizer's name and email, which we have no reason to
+        // touch. The payload is ignored entirely: the event name is the signal.
+        cal("on", {
+          action: "bookingSuccessfulV2",
+          callback: () => {
+            track("call_booking_completed");
+          },
+        });
+        window.__codirityCalBookingListener = true;
+      }
       ready.current = true;
     } catch {
       // Leave `ready` false so a later interaction retries the load.

@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { Send, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input, Select, Button } from "@/components/ui";
+import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 const serviceOptions = [
@@ -54,6 +55,18 @@ export function ContactForm() {
 
     setIsSubmitting(true);
 
+    // The only field forwarded to analytics is the service dropdown — a fixed
+    // enum. Name, email, company, and the message body are personal data and
+    // never leave the request.
+    const service = formData.service || "unspecified";
+    track("contact_form_submitted", { service });
+
+    // A bounded reason code for analytics — deliberately NOT the user-facing
+    // error message. That message is display copy (locale-dependent for network
+    // failures), and if the API ever echoed submitted input back in an error it
+    // would otherwise flow straight into the analytics payload unnoticed.
+    let reason = "network_error";
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
@@ -61,16 +74,28 @@ export function ContactForm() {
         body: JSON.stringify(formData),
       });
 
+      reason = response.ok ? "malformed_response" : `http_${response.status}`;
+
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to send message");
       }
 
+      // Fires only after the API accepted it — this is the event that counts a
+      // captured lead, as distinct from an attempt.
+      track("contact_form_success", { service });
       toast.success("Message sent successfully! We'll get back to you soon.");
       setFormData(initialFormData);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to send message. Please try again.");
+      // A silent delivery failure loses a lead, so failures are measured too —
+      // carrying `service` like its sibling events so the funnel stays joinable.
+      track("contact_form_error", { service, reason });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to send message. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }

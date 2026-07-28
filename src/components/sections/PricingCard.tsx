@@ -15,7 +15,8 @@ export interface PricingCardProps {
   ctaHref: string;
   /** External link target (e.g. Stripe). When true, opens in a new tab with rel=noopener. */
   ctaExternal?: boolean;
-  /** GA4 event fired on CTA click (e.g. checkout_click_standard). */
+  /** Conversion event fired on CTA click (e.g. checkout_click_standard). Goes to
+   *  both GA4 and Vercel Web Analytics — see src/lib/analytics.ts. */
   analyticsEvent?: AnalyticsEvent;
   calLink?: string;
   featured?: boolean;

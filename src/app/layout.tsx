@@ -3,6 +3,7 @@ import { Outfit, Space_Mono } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/Toaster";
+import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, getSiteUrl } from "@/lib/site";
@@ -94,8 +95,13 @@ export default function RootLayout({
         {/* Organization structured data (server-rendered for crawlers) */}
         <OrganizationJsonLd />
 
-        {/* Analytics */}
+        {/* Analytics. Two providers, deliberately: GA4 carries the conversion
+            events and their history, while Vercel Web Analytics supplies the
+            cookieless pageview/referrer/geo picture in the deploy dashboard.
+            `@vercel/analytics/next` ships its own "use client" + Suspense
+            boundary, so mounting it here keeps this layout a server component. */}
         <GoogleAnalytics />
+        <Analytics />
       </body>
     </html>
   );

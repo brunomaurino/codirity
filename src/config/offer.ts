@@ -93,12 +93,22 @@ export interface Cta {
   href?: string;
 }
 
+/**
+ * A CTA that definitely navigates somewhere. `Cta.href` is optional because
+ * some CTAs are buttons (the Cal.com popup), but a link CTA without a target
+ * is not a link — this narrows the two cases apart at the type level.
+ */
+export interface LinkCta extends Cta {
+  href: string;
+}
+
 export interface HeroContent {
   badge: string;
   /** The page's single <h1>. */
   headline: string;
   subhead: string;
-  primaryCta: Cta;
+  /** Always a link (currently to #pricing) — see LinkCta. */
+  primaryCta: LinkCta;
   /** Secondary CTA opens the Cal.com popup (no href — uses calLink). */
   secondaryCta: Cta;
   trustLine: string;

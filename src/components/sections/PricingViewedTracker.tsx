@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 import { track } from "@/lib/analytics";
 
 /**
- * Fires the `pricing_viewed` GA4 event once, when the pricing section scrolls into
+ * Fires the `pricing_viewed` conversion event once (to GA4 and Vercel Web
+ * Analytics — see src/lib/analytics.ts), when the pricing section scrolls into
  * view. Observes the actual `#pricing` section element (which has real height) — a
  * zero-height sentinel div never satisfies an IntersectionObserver threshold. Renders
  * nothing; the pricing data itself stays server-rendered.

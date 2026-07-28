@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { TrackedLink } from "@/components/ui";
 
 export const metadata: Metadata = {
   // "Privacy Policy" only — the root layout's title.template ("%s | Codirity")
@@ -28,8 +29,11 @@ export default function PrivacyPolicy() {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-6">
             Privacy Policy
           </h1>
+          {/* Section 14 commits us to updating THIS date when the policy changes,
+              so adding a processor bumps it rather than leaving a stale date with a
+              separate "last updated" line beside it. */}
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Effective date: December 17, 2024
+            Effective date: July 28, 2026
           </p>
         </div>
       </section>
@@ -312,6 +316,21 @@ export default function PrivacyPolicy() {
                   We also encourage you to review Google&apos;s policy for safeguarding your data: https://support.google.com/analytics/answer/6004245.
                 </p>
               </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 space-y-4 mt-4">
+                <p className="font-semibold text-gray-900 dark:text-white">Vercel Web Analytics</p>
+                <p>
+                  Vercel Web Analytics is a privacy-friendly analytics service provided by Vercel Inc., the platform that hosts this website. It reports aggregate traffic to our Service — page views, referring sites, approximate location (country, region, city), device type, operating system, and browser.
+                </p>
+                <p>
+                  We also send Vercel a small set of named conversion events describing how visitors interact with the site — for example opening an FAQ entry, following a pricing or checkout link, clicking an email address, or submitting the contact form, together with the outcome of that submission. These events carry only the interaction itself and, where relevant, a non-identifying label such as the selected service category or the section of the page the link appeared in. They never include your name, email address, company, or the content of your message.
+                </p>
+                <p>
+                  Vercel Web Analytics does not use cookies. Rather than storing an identifier on your device, visitors are counted using a hash derived from the incoming request, which is discarded and regenerated every 24 hours. No personal identifiers are collected, and the recorded data points are not tied to any individual visitor or IP address.
+                </p>
+                <p>
+                  For more information on Vercel&apos;s privacy practices, please visit: https://vercel.com/legal/privacy-policy and https://vercel.com/docs/analytics/privacy-policy.
+                </p>
+              </div>
             </div>
 
             {/* Section 12 - Links to Other Sites */}
@@ -372,7 +391,15 @@ export default function PrivacyPolicy() {
               </p>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6">
                 <p>
-                  By email: <a href="mailto:support@codirity.com" className="text-brand hover:underline">support@codirity.com</a>
+                  By email:{" "}
+                  <TrackedLink
+                    href="mailto:support@codirity.com"
+                    event="email_click"
+                    eventParams={{ location: "privacy_page" }}
+                    className="text-brand hover:underline"
+                  >
+                    support@codirity.com
+                  </TrackedLink>
                 </p>
               </div>
             </div>
