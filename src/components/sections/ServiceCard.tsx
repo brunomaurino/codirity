@@ -30,7 +30,7 @@ export function ServiceCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-3xl p-8 md:p-10",
+        "group relative overflow-hidden rounded-2xl p-8 md:p-10",
         "transition-all duration-400",
         featured
           ? [

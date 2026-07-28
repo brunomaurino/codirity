@@ -64,15 +64,37 @@ _(none)_
 
 ## Review findings + resolutions
 
-_(Phase 4/5)_
+Battery `wf_d22cfc77-4da` (2 adv + 2 QA): **25 raw → 11 unique → 3 confirmed, 8 refuted.
+55 areas examined. 0 deferrals, 0 escalations. All 3 applied.**
+
+**Degradation note (recorded honestly):** 18 Fable verify-voter calls failed on a session-usage
+limit mid-battery; the battery's built-in `judgeFallback` (Opus) completed the adjudication as
+designed, so no finding was dropped — but the verify layer for this bundle ran on the fallback
+tier. All three confirmed findings were additionally re-verified BY HAND in the main thread
+before applying (each is a directly checkable fact: a grep, a hex, a class name).
+
+| # | Sev | Finding | Resolution |
+|---|---|---|---|
+| 1 | MINOR | Dark scrollbar hardcoded the removed cold-gray ramp values | Now rides the warm dark tokens |
+| 2 | MINOR | CLAUDE.md (and design-system.md, found in the same sweep) still listed the retired neon hexes | Both updated to the La Firma palette |
+| 3 | MINOR | Card radii inconsistent (16/20/24/28px across Card/PricingCard/ContactInfo/ContactForm/HeroCards/ServiceCard) | ALL card surfaces normalized to `rounded-2xl` (16px), per §1.3 |
+
+Refuted (8) — recorded, not acted on: includes several dark-mode unpaired-gray suspicions the
+voters traced to fully-paired classes, and contrast concerns disproved by computed ratios
+(forest-on-paper 7.34:1; dark button 4.6:1; OG text 4.5–7.3:1 — all AA).
 
 ## Areas examined and rejected
 
-_(from battery)_
+**55 areas** (full list in `wf_d22cfc77-4da`); highlights: the inverted-ramp removal traced
+token-by-token and confirmed as a REAL pre-existing-bug fix; header/inputs/toaster/footer all
+fully dark-paired; cascade-layer analysis confirms the unlayered h1–h4 serif rule wins over
+Tailwind utilities by design; email-template recolor introduces no injection surface (sanitize()
+intact); OG contrast AA; no old green hex anywhere; brass unused in components (constraint holds
+trivially); Fraunces wiring valid.
 
 ## Items deferred from this PR
 
-_(Phase 5.5)_
+**None — all review findings resolved.**
 
 ## Durable handles
 
@@ -80,3 +102,4 @@ _(Phase 5.5)_
 - `worktree: /Users/brunomaurino/projects/codirity/.claude/worktrees/redesign-v2-v0`
 - `worktree_entry: name`
 - `cron: (none)`
+- `battery_run_id: wf_d22cfc77-4da`

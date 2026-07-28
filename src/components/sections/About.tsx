@@ -15,7 +15,7 @@ export function About() {
         <div className="max-w-3xl mx-auto">
           <div
             className={cn(
-              "bg-white dark:bg-gray-800 rounded-3xl p-8 md:p-12",
+              "bg-white dark:bg-gray-800 rounded-2xl p-8 md:p-12",
               "border border-[var(--border)]",
               "shadow-sm"
             )}

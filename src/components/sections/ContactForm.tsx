@@ -105,7 +105,7 @@ export function ContactForm() {
     <div
       className={cn(
         "relative overflow-hidden",
-        "bg-white dark:bg-gray-800 border border-[var(--border)] rounded-[28px]",
+        "bg-white dark:bg-gray-800 border border-[var(--border)] rounded-2xl",
         "p-8 md:p-10 shadow-lg",
         "before:absolute before:top-0 before:left-0 before:right-0 before:h-1",
         "before:bg-gradient-to-r before:from-brand-dark before:via-brand before:to-brand-light"

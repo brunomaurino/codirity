@@ -77,7 +77,7 @@ export function ContactInfo() {
         className={cn(
           "relative overflow-hidden",
           "bg-gradient-to-br from-brand-dark to-[#1a5a1d]",
-          "rounded-[20px] p-8 text-white",
+          "rounded-2xl p-8 text-white",
           "before:absolute before:-top-1/2 before:-right-1/2",
           "before:w-[150%] before:h-[150%]",
           "before:bg-[radial-gradient(circle,rgba(220,229,220,0.12)_0%,transparent_50%)]",

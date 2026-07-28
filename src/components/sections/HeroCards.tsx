@@ -27,7 +27,7 @@ function HeroCard({
   return (
     <div
       className={cn(
-        "absolute bg-white dark:bg-gray-800 border border-[var(--border)] rounded-[20px] p-6",
+        "absolute bg-white dark:bg-gray-800 border border-[var(--border)] rounded-2xl p-6",
         "shadow-lg transition-all duration-400",
         "hover:-translate-y-2 hover:shadow-xl hover:border-brand/30",
         className

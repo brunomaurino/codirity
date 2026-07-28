@@ -56,7 +56,7 @@ export function PricingCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl p-8 md:p-10",
+        "relative overflow-hidden rounded-2xl p-8 md:p-10",
         "transition-all duration-400",
         featured
           ? [
