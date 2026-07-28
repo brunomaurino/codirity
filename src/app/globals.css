@@ -471,14 +471,18 @@ body {
 }
 
 /* Hero workbench vignette: CSS-only typed prompt + blinking caret.
-   "your request here" is 17 characters — the steps() count and ch width must
-   both match the string in HeroWorkbench.tsx / offer.ts if it ever changes. */
+   The prompt's width and step count are supplied per-element by
+   HeroWorkbench.tsx (--wb-w custom property + inline animation-timing-function
+   derived from the config string's length), so a copy edit in offer.ts cannot
+   desynchronize the animation. The caret is a SIBLING span of the clipped
+   typing span — placed inside, it would fall outside the overflow clip and
+   never render. */
 .wb-typing {
   display: inline-block;
   overflow: hidden;
   white-space: nowrap;
   vertical-align: bottom;
-  width: 17ch;
+  width: var(--wb-w, 17ch);
   animation: wb-type 2.2s steps(17, end) 0.9s both;
 }
 
@@ -493,7 +497,7 @@ body {
     width: 0;
   }
   to {
-    width: 17ch;
+    width: var(--wb-w, 17ch);
   }
 }
 
@@ -506,7 +510,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .wb-typing {
     animation: none;
-    width: 17ch;
+    width: var(--wb-w, 17ch);
   }
   .wb-caret::after {
     animation: none;

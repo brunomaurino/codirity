@@ -1,4 +1,5 @@
-import { workbenchQueue } from "@/config/offer";
+import type { CSSProperties } from "react";
+import { workbenchQueue, workbenchPrompt } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 /**
@@ -7,8 +8,10 @@ import { cn } from "@/lib/utils";
  * CSS/SSR: the typing prompt and blinking caret are keyframe animations defined
  * in globals.css with a prefers-reduced-motion static fallback.
  *
- * Artifact grammar: mono type, hairline border, square corners. The only green
- * in the panel is the status dot on shipped rows — green means live.
+ * Artifact grammar: mono type, hairline border, square corners. Green appears
+ * only where §1 rule 2 blesses it — the status dots (filled = shipped,
+ * outlined = in progress) and the active prompt line (the ▸ marker and the
+ * caret). Nothing decorative is green.
  */
 
 function StatusDot({ status }: { status: "shipped" | "in_progress" | "queued" }) {
@@ -34,6 +37,24 @@ const STATUS_TEXT: Record<"shipped" | "in_progress" | "queued", string> = {
 };
 
 export function HeroWorkbench() {
+  // The label narrates whatever the config actually contains, so refreshing
+  // workbenchQueue can never leave a screen reader describing stale counts.
+  const count = (s: "shipped" | "in_progress" | "queued") =>
+    workbenchQueue.filter((item) => item.status === s).length;
+  const parts = [
+    `${count("shipped")} requests shipped`,
+    count("in_progress") > 0 ? `${count("in_progress")} in progress` : null,
+    count("queued") > 0 ? `${count("queued")} queued` : null,
+  ].filter(Boolean);
+  const ariaLabel = `A typical delivery board: ${parts.join(", ")}, and an open slot for your request.`;
+
+  // Width and step count are derived from the prompt string so a copy edit in
+  // offer.ts can never desynchronize the typing animation.
+  const promptStyle = {
+    "--wb-w": `${workbenchPrompt.length}ch`,
+    animationTimingFunction: `steps(${workbenchPrompt.length}, end)`,
+  } as CSSProperties;
+
   return (
     <div
       className={cn(
@@ -42,7 +63,7 @@ export function HeroWorkbench() {
         "opacity-0 animate-slide-up animation-delay-500"
       )}
       role="img"
-      aria-label="A typical delivery board: four requests shipped in one to four days, one in progress, and an open slot for your request."
+      aria-label={ariaLabel}
     >
       {workbenchQueue.map((item, i) => (
         <div
@@ -51,7 +72,7 @@ export function HeroWorkbench() {
             "flex items-baseline gap-3 px-4 py-3",
             "border-b border-[var(--border)]",
             // Reduced height on mobile: the vignette stacks under the copy, so
-            // rows 4-5 only appear from md up (spec: §6.R1 mobile behavior).
+            // only the first three rows show below md (spec: §6.R1).
             i >= 3 && "hidden md:flex"
           )}
         >
@@ -74,8 +95,18 @@ export function HeroWorkbench() {
         <span aria-hidden="true" className="text-brand">
           ▸
         </span>
-        <span className="wb-typing wb-caret text-gray-800 dark:text-gray-200">
-          your request here
+        {/* The caret is a SIBLING of the clipped typing span, not inside it —
+            inside, it would sit past the clip box and never be visible. Both
+            share one wrapper so the row's flex gap can't separate them: as the
+            span's width animates, the caret rides tight on the typing edge. */}
+        <span className="min-w-0 whitespace-nowrap">
+          <span
+            className="wb-typing text-gray-800 dark:text-gray-200"
+            style={promptStyle}
+          >
+            {workbenchPrompt}
+          </span>
+          <span aria-hidden="true" className="wb-caret" />
         </span>
       </div>
     </div>

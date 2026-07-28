@@ -61,15 +61,31 @@ _(none)_
 
 ## Review findings + resolutions
 
-_(Phase 4/5)_
+Battery `wf_227b3048-935` (2 adv + 2 QA, 3 verify voters): **14 raw → 5 unique → 5 confirmed,
+0 refuted. 58 areas examined. 0 deferrals, 0 escalations. All 5 applied.**
+
+| # | Sev | Finding | Resolution |
+|---|---|---|---|
+| 1 | MAJOR | **The blinking caret was invisible in every rendering state** — `::after` on the clipped typing span lands at [17ch,18ch), outside the `overflow:hidden` box. Confirmed by all 7 finder sources | Caret moved to a sibling span of the clipped element; as the width animates, the caret rides the typing edge. Verified visible in the browser after the fix |
+| 2 | MAJOR | Proof line shipped "Córdoba, AR — working your timezone" — an unapproved clause beyond Bruno's resolved string, and false for most visitors | Trimmed to the approved "Córdoba, AR" |
+| 3 | MAJOR | Prompt text hardcoded in JSX (source-of-truth violation) with the 17ch/steps(17) coupling enforced only by a comment | `workbenchPrompt` exported from offer.ts; width + step count now derived mechanically (`--wb-w` custom property + inline `animation-timing-function` from `.length`) — a copy edit cannot desynchronize the animation |
+| 4 | MINOR | aria-label hardcoded the queue's composition (stale after any config refresh) | Label now composed from `workbenchQueue` counts at render |
+| 5 | MINOR | Docstring claimed "the only green is the shipped dot" while the code also greens the in-progress outline, ▸, and caret (all sanctioned by §1 rule 2's status-dots + active-line carve-out) | Docstring now names exactly the sanctioned green elements |
 
 ## Areas examined and rejected
 
-_(from battery)_
+**58 areas** examined by the battery (full list in `wf_227b3048-935`); highlights: server-component
+purity (no hooks/handlers — no hydration risk); no dangling HeroCards/trustLine references
+(runtime greps clean; remaining hits are historical docs); 17-char count verified exact;
+`animation-delay-700` added once (the pre-existing delay-600 duplicate is on main, untouched);
+green-discipline verdict — outlined in-progress dot and active-line green are *within* §1 rule 2;
+queue rows match the approved storytelling strings exactly, no client names, no fabricated
+numbers; pedigree preserved across proof line + meta + FAQ + About; width animation causes no
+CLS (fixed-height single-line row); reduced-motion fallback correct.
 
 ## Items deferred from this PR
 
-_(Phase 5.5)_
+**None — all review findings resolved.** (0 proposed deferrals.)
 
 ## Durable handles
 
@@ -77,4 +93,5 @@ _(Phase 5.5)_
 - `worktree: /Users/brunomaurino/projects/codirity/.claude/worktrees/redesign-r1-hero`
 - `worktree_entry: name`
 - `cron: (none — bundle-loop owns ef65bb95)`
-- `dev_server_pid: 47301`
+- `dev_server_pid: 47301 (stopped)`
+- `battery_run_id: wf_227b3048-935`

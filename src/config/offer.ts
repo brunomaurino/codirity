@@ -194,13 +194,18 @@ export const workbenchQueue: WorkbenchItem[] = [
   { id: "#235", label: "wordpress fleet cost cut", status: "in_progress" },
 ];
 
+/** Prompt text for the vignette's typed row. The typing animation derives its
+ *  width and step count from this string's length mechanically (see
+ *  HeroWorkbench.tsx), so editing it cannot break the animation. */
+export const workbenchPrompt = "your request here";
+
 /**
  * Proof line under the hero — evidence, not a logo marquee. Singular engineer,
  * Córdoba, and the real stack per the resolved facts (2026-07-28, storytelling §2).
  */
 export const proofLine: string[] = [
   "built by a senior engineer, ex-Globant & Ualá",
-  "Córdoba, AR — working your timezone",
+  "Córdoba, AR",
   "stack: claude / next.js / nestjs / aws / stripe",
 ];
 
