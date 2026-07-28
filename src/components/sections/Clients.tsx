@@ -1,5 +1,6 @@
 import { Section, Container } from "@/components/layout";
-import { SectionHeader } from "@/components/ui";
+import { SectionHeader, StatusDot } from "@/components/ui";
+import type { StatusDotVariant } from "@/components/ui";
 import { sections, clients, clientsCloser } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
@@ -15,13 +16,10 @@ import { cn } from "@/lib/utils";
 
 const STATUS: Record<
   "in_production" | "pre_launch",
-  { text: string; dotClass: string }
+  { text: string; dot: StatusDotVariant }
 > = {
-  in_production: { text: "in production", dotClass: "bg-brand" },
-  pre_launch: {
-    text: "pre-launch",
-    dotClass: "border-[1.5px] border-brand bg-transparent",
-  },
+  in_production: { text: "in production", dot: "live" },
+  pre_launch: { text: "pre-launch", dot: "active" },
 };
 
 export function Clients() {
@@ -57,13 +55,7 @@ export function Clients() {
                   {client.provenance}
                 </span>
                 <span className="ml-auto whitespace-nowrap text-gray-500 dark:text-gray-400">
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "inline-block w-[7px] h-[7px] rounded-full mr-2 align-middle",
-                      STATUS[client.status].dotClass
-                    )}
-                  />
+                  <StatusDot variant={STATUS[client.status].dot} />
                   {STATUS[client.status].text}
                 </span>
               </div>

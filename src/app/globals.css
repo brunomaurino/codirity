@@ -405,6 +405,15 @@ body {
 }
 
 /* Staggered reveal delays for grid items */
+/* The nth-child stagger below is meant for GRID ITEMS. Top-level sections are
+   direct children of <main> whose child index shifts whenever a section (or a
+   JSON-LD script) is added — so their delay must stay uniform at 0s or a page
+   reorder silently reshuffles reveal timing. :nth-child(n) matches every
+   element and exists only to out-specify the numbered rules below. */
+main > .reveal:nth-child(n) {
+  transition-delay: 0s;
+}
+
 .reveal:nth-child(1) {
   transition-delay: 0s;
 }

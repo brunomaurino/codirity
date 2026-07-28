@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import { StatusDot } from "@/components/ui";
+import type { StatusDotVariant } from "@/components/ui";
 import { workbenchQueue, workbenchPrompt } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
@@ -14,26 +16,13 @@ import { cn } from "@/lib/utils";
  * caret). Nothing decorative is green.
  */
 
-function StatusDot({ status }: { status: "shipped" | "in_progress" | "queued" }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "inline-block w-[7px] h-[7px] rounded-full mr-2 align-middle",
-        status === "shipped" && "bg-brand",
-        status === "in_progress" &&
-          "border-[1.5px] border-brand bg-transparent",
-        status === "queued" &&
-          "border-[1.5px] border-gray-300 dark:border-gray-600 bg-transparent"
-      )}
-    />
-  );
-}
-
-const STATUS_TEXT: Record<"shipped" | "in_progress" | "queued", string> = {
-  shipped: "shipped",
-  in_progress: "in progress",
-  queued: "queued",
+const STATUS: Record<
+  "shipped" | "in_progress" | "queued",
+  { text: string; dot: StatusDotVariant }
+> = {
+  shipped: { text: "shipped", dot: "live" },
+  in_progress: { text: "in progress", dot: "active" },
+  queued: { text: "queued", dot: "inert" },
 };
 
 export function HeroWorkbench() {
@@ -83,8 +72,8 @@ export function HeroWorkbench() {
             {item.label}
           </span>
           <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
-            <StatusDot status={item.status} />
-            {STATUS_TEXT[item.status]}
+            <StatusDot variant={STATUS[item.status].dot} />
+            {STATUS[item.status].text}
             {item.status === "shipped" && item.days !== undefined && (
               <span> · {item.days}d</span>
             )}
