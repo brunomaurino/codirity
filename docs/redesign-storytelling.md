@@ -245,10 +245,9 @@ parenthetical is for Bruno's review, not for the site):
 5. *"We pay about $800 a month to host five WordPress sites."* → consolidation and right-sizing
    of the fleet. *(eDairyNews infra — print no savings figure until the after-cost is confirmed)*
 6. *"Can an AI read these PDFs and load them into the system — without us trusting it blindly?"*
-   → document extraction with a human review step before anything is committed. *(advice.ai
-   onboarding pattern: upload → extract → review → commit. [UNVERIFIED — Bruno to confirm he
-   wants an advice.ai-derived pattern on the Codirity site at all, given the undocumented formal
-   relationship — now.md gap #6])*
+   → document extraction with a human review step before anything is committed. *(Composite
+   pattern; deliberately anonymous. RESOLVED 2026-07-28: Bruno approved keeping it, anonymized —
+   the site never names where the pattern comes from.)*
 
 Category chips (static mono labels, no JS): `ops · admin tools · billing · infra cost · data & AI`
 
@@ -392,11 +391,10 @@ read from the same `offer.ts` field as the badge.
 2. ~~**"engineer" vs "engineers"**~~ — **RESOLVED 2026-07-28: singular, everywhere** (R0 fixes
    the live trust line).
 3. ~~**Proof-line details**~~ — **RESOLVED 2026-07-28: no n8n; Córdoba.**
-4. **eDairyNews after-cost** — needed before any savings number prints (§1b, §4.5). Until then,
-   the ask copy states only the recorded BEFORE cost (~$800/mo) and describes the fix without a
-   savings claim — shippable as-is.
-5. **advice.ai-derived ask (#6 in §4)** — include or drop, given the undocumented formal
-   relationship.
+4. ~~**eDairyNews after-cost**~~ — **RESOLVED 2026-07-28: number not available.** No savings
+   figure ever prints; the ask copy states only the recorded BEFORE cost (~$800/mo) and
+   describes the fix. Final copy as written in §4.5.
+5. ~~**advice.ai-derived ask (#6 in §4)**~~ — **RESOLVED 2026-07-28: keep, anonymized.**
 6. **Ledger figures** — all four salary-side numbers need the §6 sourcing pass at build time (D4).
 7. **Capacity field (D5)** — gates "this week" in the ledger, CTA option 3, and the R5 badge.
 
