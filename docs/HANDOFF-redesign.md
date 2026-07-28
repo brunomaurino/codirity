@@ -218,12 +218,13 @@ Vivi       — <one-liner>                ◐ building
 ```
 
 **The honesty problem is the design problem.** These are Bruno's own ventures, not arm's-length
-clients. The framing must not pretend otherwise — the candidate angle is the strongest version of
-the truth ("our own companies run on the same subscription" / we-eat-our-own-cooking), which is
-*more* credible than fake client logos, not less. The storytelling pass owns this framing and the
-per-venture one-liners; Bruno approves before RC launches. Status dots must reflect reality
-(a "building" dot is honest and interesting; three identical "live" dots that aren't true are
-banned by §5).
+clients (except eDairyCorp — a client, per Bruno 2026-07-28). **FRAMING APPROVED by Bruno
+2026-07-28: Option A** from `docs/redesign-storytelling.md` §1 — "Already on the board"; one is a
+client, two are our own products, we built the subscription by running it on ourselves first;
+mono provenance tags `client` / `ours` per row; closer row `next row: yours_`. Copy and the three
+one-liners come from the storytelling doc (facts resolved, including: Vivi is `pre-launch` and
+says so). Status dots must reflect reality — three identical "live" dots that aren't true are
+banned by §5. RC is CLEAR TO LAUNCH.
 
 ### R2 — The Ledger (cost comparison) + Benefits funeral
 
