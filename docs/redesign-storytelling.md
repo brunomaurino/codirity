@@ -26,11 +26,9 @@ three names are Bruno's own companies. The copy below doesn't hide that. It lead
 **The facts as the brain records them:**
 
 - **eDairyCorp** is Codirity's only *active, listed client* (WIKI client roster, status: active).
-  It is also deeply entangled with Bruno: the WIKI keeps a "venture lens" on it, the CEO-attributed
-  quote on its corporate site is from an **Alejandro Maurino**, and the dev collaborator is
-  **Juan Maurino**. It reads as a family company. **[UNVERIFIED — Bruno to confirm the exact
-  relationship wording: "family company"? "long-term client"? both?]** Commercials (retainer,
-  amount) are recorded as TBC.
+  **RESOLVED 2026-07-28 (Bruno): eDairyCorp is presented as a client, plain.** The copy uses
+  `client` as its provenance tag and does not editorialize the family relationship. Commercials
+  (retainer, amount) are recorded as TBC and never appear on the site.
 - **Meshio** and **Vivi** are explicitly Bruno's own indie products ("deliberately separate from
   agency work — his personal bet on recurring income").
 - **Meshio and Codirity share the same legal entity — BOMAU LLC** (`offer.ts` `LEGAL_ENTITY` +
@@ -164,12 +162,15 @@ next row: yours_
 **Subhead options** (replacing the current banned-adjacent "Unlimited requests… AI-accelerated
 delivery"):
 
-1. "Drop requests on a board. Senior engineers work them one at a time. Most ship in days. One
+1. "Drop requests on a board. A senior engineer works them one at a time. Most ship in days. One
    flat rate."
-2. "A queue, a board, and engineers who ship. Flat monthly rate; the AI drafts, we own what goes
-   live."
+2. "A queue, a board, and an engineer who ships. Flat monthly rate; the AI drafts, we own what
+   goes live."
 3. "You add work to a queue. We build it, ship it, and start the next one. No scoping calls, no
    hourly invoices."
+
+*(RESOLVED 2026-07-28: singular — "a senior engineer" — everywhere. Note: the LIVE hero trust
+line still says "Built by engineers from Globant & Ualá"; the R0 voice pass fixes it to singular.)*
 
 Recommendation: **1** — it's the mechanism in four sentences and each clause is checkable against
 the board.
@@ -196,15 +197,11 @@ day-log record: favorites landed 2026-07-08, the product-page revamp in one day 
 fix inside the 07-10 six-PR day, table filters as a 3-PR build over 07-10/11. If the reviewer
 wants zero derivation, drop the day figures and ship dots only.)
 
-**Proof line** (hairline-topped, mono, under hero — per §6.R1):
+**Proof line** (hairline-topped, mono, under hero — per §6.R1) — **RESOLVED 2026-07-28
+(Bruno: singular; no n8n; Córdoba):**
 ```
-built by engineers ex-Globant & Ualá · Buenos Aires · stack: claude / n8n / aws / stripe
+built by a senior engineer ex-Globant & Ualá · Córdoba, AR · stack: claude / next.js / nestjs / aws / stripe
 ```
-**[UNVERIFIED — Bruno to confirm]:** (a) "engineers" plural vs the FAQ's "a senior engineer"
-singular — the two currently contradict; pick one and use it everywhere. (b) that n8n belongs in
-the stack list — it appears in the HANDOFF's example but nowhere in the brain; swap for `nestjs`
-or `next.js` if it's not real tooling. (c) Buenos Aires — the brain ties Bruno to Córdoba (moving
-to San Francisco, Córdoba); confirm which city, or drop the city.
 
 ---
 
@@ -391,11 +388,13 @@ read from the same `offer.ts` field as the badge.
 
 ## 9. Open items for Bruno (blocking facts, consolidated)
 
-1. **eDairyCorp relationship wording** — family company? client? both? (§1b) — blocks the
-   clients section headline.
-2. **"engineer" vs "engineers"** — singular or plural, everywhere (§2).
-3. **Proof-line details** — n8n real? Buenos Aires vs Córdoba? (§2).
-4. **eDairyNews after-cost** — needed before any savings number prints (§1b, §4.5).
+1. ~~**eDairyCorp relationship wording**~~ — **RESOLVED 2026-07-28: client.**
+2. ~~**"engineer" vs "engineers"**~~ — **RESOLVED 2026-07-28: singular, everywhere** (R0 fixes
+   the live trust line).
+3. ~~**Proof-line details**~~ — **RESOLVED 2026-07-28: no n8n; Córdoba.**
+4. **eDairyNews after-cost** — needed before any savings number prints (§1b, §4.5). Until then,
+   the ask copy states only the recorded BEFORE cost (~$800/mo) and describes the fix without a
+   savings claim — shippable as-is.
 5. **advice.ai-derived ask (#6 in §4)** — include or drop, given the undocumented formal
    relationship.
 6. **Ledger figures** — all four salary-side numbers need the §6 sourcing pass at build time (D4).
