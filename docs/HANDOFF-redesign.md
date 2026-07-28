@@ -69,7 +69,7 @@ claims, more receipts.
 
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
 |---|---|---|---|---|---|
-| **R0** | Voice pass + anti-slop sweep over ALL existing copy + hairline/green-discipline groundwork | — | [ ] pending | | |
+| **R0** | Voice pass + anti-slop sweep over ALL existing copy + hairline/green-discipline groundwork | — | [x] complete | [#9](https://github.com/brunomaurino/codirity/pull/9) | `3a318d6` |
 | **R1** | Hero rework: workbench vignette (terminal-queue), microcopy, proof line | R0 | [ ] pending | | |
 | **RC** | Clients ledger — eDairyCorp, Meshio, Vivi (honest portfolio framing) | R0, storytelling doc | [ ] pending | | |
 | **R2** | The Ledger (cost comparison as receipt) + kill/fold Benefits grid | R0 | [ ] pending | | |
