@@ -76,7 +76,7 @@ only.
 | `@vercel/analytics@2.0.1` is the current release; App-Router import is `{ Analytics } from "@vercel/analytics/next"`; it ships its own `"use client"` + `Suspense`, so the server-component layout needs no directive | vercel.com/docs/analytics/quickstart + the published tarball; version re-confirmed after install (`node -e require(...)` → `2.0.1`) |
 | Client `track()` is `window.va?.call(...)` — a **silent no-op** when the insights script is absent (ad-blocker, Analytics unmounted, non-Vercel host). It cannot throw out of an event handler | read `node_modules/@vercel/analytics/dist/index.mjs` directly |
 | Property values are limited to `string \| number \| boolean \| null`; names/keys/values capped at **255 characters**; **2 properties per event** on Pro | vercel.com/docs/analytics/custom-events#limitations |
-| **The Vercel account `maurino72` is on the `hobby` plan** | `GET https://api.vercel.com/v2/user` → `billing.plan: hobby` |
+| ⚠️ **CORRECTED — the plan of the account that owns this project is UNKNOWN.** I first read `GET /v2/user` as `maurino72` → `billing.plan: hobby` and wrote that up as verified. The PR's Vercel check then revealed the project actually deploys under a **team scope named `codirity`** (`vercel.com/codirity/codirity`), which is a different account. `GET /v2/teams?slug=codirity` with the available token returns `forbidden`, and `GET /v2/teams` lists only `maurino72s-projects` (hobby). So the Hobby reading describes an unrelated personal scope, **not** the owning team. Whether custom events are recorded is therefore **unverified** — see the corrected operator action below | `GET /v2/user`, `GET /v2/teams`, `GET /v2/teams?slug=codirity` → `forbidden`; team slug read off the PR's Vercel deployment URL |
 | Custom events are **Pro/Enterprise-only**; Hobby records pageviews only (50k events/mo) | vercel.com/docs/analytics/limits-and-pricing |
 | Vercel Web Analytics sets **no cookies**, stores no personal identifiers, and derives a visitor hash that resets every 24h | vercel.com/docs/analytics/privacy-policy |
 | `cal("on", { action: "bookingSuccessfulV2", callback })` exists in the installed `@calcom/embed-core`; plain `bookingSuccessful` is marked `@deprecated` there | read `node_modules/@calcom/embed-core/dist/src/sdk-action-manager.d.ts` |
@@ -128,15 +128,18 @@ requested and each instrumented handler fires without console errors.
 - **D2 — Keep GA4 and run both providers, rather than migrating.** GA4 is a
   deliberate prior decision (HANDOFF D1, live id `G-L33EC99DTX`) with historical
   data behind it. Replacing it was not asked for and would discard that history.
-- **D3 — Ship the custom-event wiring even though the account is on Hobby.**
-  Verified above: `track()` custom events are Pro-only, so on Hobby they reach
-  Vercel and are discarded (no error, no console noise — the call is a plain
-  `window.va` push). Two reasons to wire them anyway: the same `track()` call
-  feeds **GA4, which records them today**, so the new instrumentation delivers
-  the "know what our leads do" goal immediately; and the Vercel side then lights
-  up the moment the account upgrades, with no follow-up code change. The
-  alternative — shipping pageviews only — would have left the site's biggest
-  lead surfaces (the contact form, the founding-rate checkout link) permanently
+- **D3 — Ship the custom-event wiring regardless of the Vercel plan.** `track()`
+  custom events are Pro/Enterprise-only; below that they reach Vercel and are
+  discarded (no error, no console noise — the call is a plain `window.va` push).
+  I originally justified this by "the account is on Hobby, verified", which was
+  **wrong** — see the corrected row above; the owning team's plan could not be
+  determined. The decision is unchanged either way, which is why the correction
+  does not reopen it: the same `track()` call feeds **GA4, which records these
+  events today**, so the instrumentation delivers the "know what our leads do"
+  goal immediately; and the Vercel side is either already recording them or
+  starts the moment the plan allows, with no follow-up code change. The
+  alternative — shipping pageviews only — would have left the site's biggest lead
+  surfaces (the contact form, the founding-rate checkout link) permanently
   uninstrumented on *both* providers, which is the actual gap worth closing.
 - **D4 — Instrument lead-intent surfaces, not navigation.** Anchor-nav links
   (header/footer section jumps, logo, social icons, theme toggle, the privacy
@@ -388,11 +391,22 @@ change (both are account-settings changes), so they are surfaced rather than don
    it, because in development the package always loads the debug script instead.
    **How to confirm after merge:** open www.codirity.com in a browser, and check the
    network panel shows `/_vercel/insights/script.js` returning **200**, not 404.
-2. **Custom events need a Vercel Pro plan.** The account is on Hobby (verified via
-   `GET /v2/user` → `billing.plan: hobby`), so Vercel will record pageviews,
-   referrers, geo and device data but will discard the 12 conversion events. **GA4
-   records those events today**, so the funnel is observable either way — this only
-   decides whether Vercel's dashboard shows them too. No code change on upgrade.
+   This could not be tested on the PR preview: preview deployments for this project
+   sit behind Vercel SSO, so both the page and the script 302 to `vercel.com/login`.
+2. **Check whether the plan covers custom events — I could not.** Vercel custom
+   events are Pro/Enterprise-only. The project deploys under a team scope named
+   `codirity` whose plan is not readable with the credentials on this machine
+   (`GET /v2/teams?slug=codirity` → `forbidden`). If that team is on Hobby, Vercel
+   will show pageviews/referrers/geo/device but discard the 12 conversion events;
+   on Pro it shows everything, capped at 2 properties per event (which every event
+   here respects). **GA4 records the events either way**, so the funnel is
+   observable regardless — this only decides whether Vercel's dashboard shows them
+   too, and needs no code change.
+
+   *(An earlier version of these notes stated the account was verified as Hobby.
+   That reading came from `maurino72`'s personal scope, which turned out not to own
+   this project. Corrected once the PR's Vercel deployment URL revealed the real
+   team.)*
 
 Neither of these is a defect in the change; they are the operating conditions.
 

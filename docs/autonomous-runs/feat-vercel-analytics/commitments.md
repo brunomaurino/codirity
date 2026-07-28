@@ -24,9 +24,11 @@ from this run:
 - **Enable Web Analytics for the project in the Vercel dashboard, then redeploy.**
   Blocking for this feature to collect anything. Confirm `/_vercel/insights/script.js`
   returns 200 on www.codirity.com after merge.
-- **Vercel custom events require a Pro plan.** The account is on Hobby (verified
-  via `GET /v2/user` → `billing.plan: hobby`), so Vercel discards the 12 conversion
-  events while GA4 records them. Upgrading needs no code change.
+- **Confirm the Vercel plan covers custom events.** They are Pro/Enterprise-only.
+  The project deploys under a team scope named `codirity` whose plan is not
+  readable with the credentials on this machine (`GET /v2/teams?slug=codirity` →
+  `forbidden`), so this is **unverified**. Below Pro, Vercel discards the 12
+  conversion events while GA4 still records them. Either way, no code change.
 - **Perf budget re-baseline** (carried from Bundle F, still open): the 150 KB gz
   gate is below the framework floor. `/` is now 200.8 KB gz after this change
   (+1.74 KB).
