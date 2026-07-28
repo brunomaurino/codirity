@@ -59,11 +59,30 @@ export interface Guarantee {
   description: string;
 }
 
-export interface Benefit {
-  /** lucide-react icon name (mapped to a component by the consumer). */
-  icon: string;
-  title: string;
-  description: string;
+/**
+ * One line of the cost-comparison receipt (HANDOFF-redesign §6.R2). Every
+ * dollar value MUST trace to the sourced-figures table in the R2 run notes —
+ * D4 bans invented numbers, and this artifact is the credibility centerpiece.
+ */
+export interface LedgerRow {
+  label: string;
+  value: string;
+  /** Superscript footnote marker rendered after the label. */
+  footnote?: number;
+  /** Render the value as the green checkmark (green-means-live). Explicit flag
+   *  rather than string-matching "✓", so no future row goes green by accident. */
+  check?: boolean;
+}
+
+export interface CostLedger {
+  /** Small-caps mono heading inside the receipt. */
+  heading: string;
+  /** The hire side, one row per cost line. */
+  hire: LedgerRow[];
+  /** The Codirity side, below the rule. First row renders bold as the total. */
+  us: LedgerRow[];
+  /** Mono sources line under the receipt — sources + retrieval date. */
+  footnote: string;
 }
 
 export interface HowItWorksStep {
@@ -152,7 +171,7 @@ export interface SectionsContent {
   clients: SectionCopy;
   howItWorks: SectionCopy;
   whatWeBuild: SectionCopy;
-  benefits: SectionCopy;
+  ledger: SectionCopy;
   recentWork: SectionCopy;
   pricing: SectionCopy;
   faq: SectionCopy;
@@ -170,7 +189,7 @@ export interface Offer {
   guarantee: Guarantee;
   included: string[];
   notIncluded: string[];
-  benefits: Benefit[];
+  costLedger: CostLedger;
   howItWorks: HowItWorksStep[];
   faq: FaqItem[];
   caseStudies: CaseStudy[];
@@ -254,11 +273,11 @@ export const sections: SectionsContent = {
     description:
       "If it's software that deletes manual work, it's probably in scope. Here's where we focus — and what we'll say no to.",
   },
-  benefits: {
-    label: "The subscription",
-    title: "What the flat rate buys you",
+  ledger: {
+    label: "The ledger",
+    title: "What the alternative costs",
     description:
-      "The parts of an agency you actually want, without hourly billing or lock-in.",
+      "A senior hire is the honest comparison. Here is that receipt, next to ours.",
   },
   recentWork: {
     label: "Recent work",
@@ -362,44 +381,39 @@ export const notIncluded: string[] = [
   "Work that needs a dedicated full-time team",
 ];
 
-export const benefits: Benefit[] = [
-  {
-    icon: "CreditCard",
-    title: "One flat monthly rate",
-    description:
-      "No hourly billing, no surprise invoices. The price is the price.",
-  },
-  {
-    icon: "Infinity",
-    title: "Unlimited requests & revisions",
-    description:
-      "Queue as much as you like; revise each card until it's right.",
-  },
-  {
-    icon: "Zap",
-    title: "The AI drafts. An engineer owns it.",
-    description:
-      "Every line that ships was reviewed and owned by a senior engineer.",
-  },
-  {
-    icon: "Rocket",
-    title: "Async, no meetings",
-    description:
-      "Most cards ship in days. Everything lives on a shared board — you get a Loom, not a call.",
-  },
-  {
-    icon: "PauseCircle",
-    title: "Pause or cancel any month",
-    description:
-      "Pause when the queue is empty; come back when there's work.",
-  },
-  {
-    icon: "TrendingUp",
-    title: "Two lanes when you need them",
-    description:
-      "Move to Pro when you need two cards moving at once.",
-  },
-];
+/**
+ * The cost-comparison receipt. Every figure is SOURCED and rounded DOWN (the
+ * conservative direction — the receipt understates the hire cost). Derivations
+ * + sources: docs/autonomous-runs/redesign-r2-ledger/notes.md, and the mono
+ * footnote below renders them on the page. Retrieved 2026-07-28.
+ */
+export const costLedger: CostLedger = {
+  heading: "What a senior engineer costs",
+  hire: [
+    // BLS OES 15-1252 (2025): 75th percentile $171,980/yr as the senior proxy.
+    { label: "salary (US senior, /mo)", value: "$14,300", footnote: 1 },
+    // 20% contingency on year-one salary, amortized over 24 months of tenure.
+    { label: "recruiter fee (amortized)", value: "$1,400", footnote: 2 },
+    // BLS ECEC: private-industry benefits = 29.8% of comp ≈ 42% of wages.
+    { label: "benefits & employer overhead", value: "$6,000", footnote: 3 },
+    // Workable global engineering time-to-fill ≈ 62 days; seniors run slower.
+    { label: "time to a signed offer", value: "~9 weeks", footnote: 4 },
+  ],
+  us: [
+    // Derived from the Standard tier — the single authoritative price — so a
+    // tier change can never silently drift from this receipt.
+    {
+      label: "Codirity, Standard",
+      value: `${tiers[0].price}${tiers[0].period}`,
+    },
+    // D5 (capacity number) unresolved, so no "this week" claim — this line is
+    // true by construction: the board exists the day the subscription starts.
+    { label: "first card starts", value: "day one" },
+    { label: "pause any month", value: "✓", check: true },
+  ],
+  footnote:
+    "figures, rounded down · ¹ BLS OES 15-1252 (2025), 75th percentile $171,980/yr as the senior proxy · ² 20% of year-one salary ÷ 24 mo · ³ BLS ECEC, private-industry benefits 29.8% of compensation · ⁴ Workable engineering time-to-fill ≈ 62 days · retrieved 2026-07-28",
+};
 
 export const howItWorks: HowItWorksStep[] = [
   {
@@ -506,7 +520,7 @@ export const offer: Offer = {
   guarantee,
   included,
   notIncluded,
-  benefits,
+  costLedger,
   howItWorks,
   faq,
   caseStudies,
