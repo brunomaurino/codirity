@@ -20,7 +20,7 @@ export function ProcessStep({
           "w-[100px] h-[100px] mx-auto mb-6",
           "bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-full",
           "flex items-center justify-center",
-          "font-mono text-2xl font-bold text-gray-400",
+          "font-serif text-2xl font-bold text-gray-400",
           "shadow-sm transition-all duration-400",
           "group-hover:bg-brand group-hover:border-brand group-hover:text-white",
           "group-hover:scale-110 group-hover:shadow-brand"

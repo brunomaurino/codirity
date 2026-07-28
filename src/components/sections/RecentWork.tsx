@@ -39,7 +39,7 @@ export function RecentWork() {
                   className="flex h-full flex-col"
                 >
                   <div className="mb-4 flex items-center justify-between gap-2">
-                    <span className="font-mono text-sm font-semibold text-brand">
+                    <span className="font-serif text-sm font-semibold text-brand">
                       {study.result}
                     </span>
                     {study.href && (

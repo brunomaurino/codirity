@@ -49,7 +49,7 @@ function HeroCard({
           <div className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</div>
         </div>
       </div>
-      <div className="font-mono text-4xl font-bold text-brand mb-1">
+      <div className="font-serif text-4xl font-bold text-brand mb-1">
         {metric}
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-400">{metricLabel}</div>

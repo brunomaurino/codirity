@@ -1,0 +1,82 @@
+# Autonomous run — feat/redesign-v2-v0 (redesign-v2 Bundle 101 / V0)
+
+Started: 2026-07-28T18:19:42Z
+
+## Task description
+
+> Redesign v2 Bundle V0 — La Firma foundation flip: forest/paper/ink/sage/brass tokens +
+> Fraunces on headings + mono retired as system voice + soft shapes, across the whole
+> (reverted, pre-redesign) site, NO structural changes. **--no-merge: PR opens as the visual
+> checkpoint with screenshots for Bruno.** `--bundle-id 101 --plan-slug redesign-v2`
+
+## Execution context
+
+- Probes reused (same session/build): Workflow ✓, Agent ✓, args ✓, effortTiers ✓,
+  **customAgents: false**, worktreeNative ✓. No watchdog (standalone-style; short run, operator
+  active in session).
+- Prefix **B101** · identifier **redesign-v2 Bundle 101**. Worktree `redesign-v2-v0` (name
+  form), branch `feat/redesign-v2-v0` off `adde1eb` (the reverted tree + v2 handoff).
+- Incoming commitments: none (v1 bundles all closed with zero deferrals; plan halted).
+
+## Task interpretation (Phase 1.5)
+
+**Deliverable.** The whole-site token flip: (1) `globals.css` — palette values swapped to the
+§1 system (forest primary, warm paper page + card whites, warmed neutral ramp, sage + brass
+tokens added, forest-tinted borders/hovers, warm ink shadows; BOTH dark paths updated); (2)
+Fraunces wired via next/font/google with a `--font-serif` theme token + a global heading rule;
+(3) mono retired as a system voice (SectionHeader labels, metric text → sans; the LOGO wordmark
+stays mono — see D-V0-2); (4) soft-shape pass (cards to 14–18px radius, warm shadows, no glow);
+(5) `opengraph-image.tsx` recolored to the new system. NO section added/removed/reordered.
+
+**Acceptance.** Gates green; SSR intact; screenshots (desktop+mobile × light+dark) attached to
+a PR that is OPENED BUT NOT MERGED; banned grep zero; §1.5 anti-AI-look checklist honest;
+contrast decisions documented; perf delta vs the reverted baseline reported.
+
+## Decisions made unilaterally
+
+- **D-V0-1 — The flip rides the existing token architecture.** `brand`/`brand-dark`/etc. map to
+  `--green-*` vars, and Tailwind 4's `@theme` lets `--color-white` be redefined — so the palette
+  swap happens at token level and propagates to every `bg-white`/`text-brand` class without
+  touching dozens of components. Only semantic misfits (glow shadows, neon gradients, mono
+  labels) are edited by hand.
+- **D-V0-2 — The logo wordmark KEEPS Space Mono.** "Codirity" in mono is the existing brand mark
+  (header + footer + OG image); §1.2 retires mono as a SYSTEM voice (labels, metrics, body),
+  not the wordmark. Changing the logo is a brand decision Bruno hasn't made.
+- **D-V0-3 — Dark-mode brand value picked for contrast, documented:** dark `--green-main` is
+  **#3D8A66** — white button text on it ≈ 4.6:1 (AA normal) and it stays legible as an accent on
+  the dark page (#1A1D1B) for the semibold label/link usages. Brass is decorative/large-text
+  only (≈3.2:1 on paper — never body text).
+- **D-V0-4 — Hero h1 tracking loosened for the serif.** The Outfit-era `tracking-[-2.5px]` is
+  too tight for Fraunces; the global serif heading rule sets `-0.015em` and the h1 class drops
+  its hardcoded override.
+
+## Stop attempts
+
+_(none)_
+
+## Drift flags
+
+_(none)_
+
+## Round-skip requests
+
+_(none)_
+
+## Review findings + resolutions
+
+_(Phase 4/5)_
+
+## Areas examined and rejected
+
+_(from battery)_
+
+## Items deferred from this PR
+
+_(Phase 5.5)_
+
+## Durable handles
+
+- `marker: $HOME/.claude/autonomous-active/autonomous-task-redesign-v2-v0`
+- `worktree: /Users/brunomaurino/projects/codirity/.claude/worktrees/redesign-v2-v0`
+- `worktree_entry: name`
+- `cron: (none)`

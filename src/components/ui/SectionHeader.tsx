@@ -55,7 +55,7 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         {...props}
       >
         {label && (
-          <span className="inline-block font-mono text-sm font-medium text-brand uppercase tracking-wider mb-4">
+          <span className="inline-block font-sans text-[13px] font-semibold text-brand uppercase tracking-[0.12em] mb-4">
             {label}
           </span>
         )}

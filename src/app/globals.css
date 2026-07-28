@@ -8,68 +8,81 @@
    ======================================== */
 
 :root {
-  /* Brand Colors */
-  --green-dark: #103B13;
-  --green-main: #32CD32;
-  --green-light: #59F359;
-  --green-pale: rgba(50, 205, 50, 0.08);
-  --green-glow: rgba(50, 205, 50, 0.12);
+  /* Brand Colors — "La Firma" (HANDOFF-redesign-v2 §1): the green grows up.
+     Forest is the primary; the old neon lime family is retired. */
+  --green-dark: #163f31;
+  --green-main: #1e5c46;
+  --green-light: #4e8d74;
+  --green-pale: rgba(30, 92, 70, 0.08);
+  --green-glow: rgba(30, 92, 70, 0.1);
 
-  /* Neutral Colors */
-  --white: #ffffff;
-  --off-white: #fafafa;
-  --gray-50: #f8f9fa;
-  --gray-100: #f1f3f4;
-  --gray-200: #e8eaed;
-  --gray-300: #dadce0;
-  --gray-400: #9aa0a6;
-  --gray-500: #80868b;
-  --gray-600: #5f6368;
-  --gray-700: #3c4043;
-  --gray-800: #202124;
-  --gray-900: #171717;
+  /* Supporting brand tones */
+  --sage: #dce5dc;
+  --brass: #b3873f; /* rare accent only — decorative / large text, never body */
+
+  /* Neutral Colors — warmed toward paper (picked, not defaulted) */
+  --white: #fffdf9;
+  --off-white: #faf7f1;
+  --gray-50: #f5f2eb;
+  --gray-100: #ede9e0;
+  --gray-200: #e2ddd2;
+  --gray-300: #d1cbbf;
+  --gray-400: #a29c90;
+  --gray-500: #837e73;
+  --gray-600: #6d685e;
+  --gray-700: #46443c;
+  --gray-800: #22261f;
+  --gray-900: #1a1d1b;
   --black: #000000;
 
   /* Borders */
-  --border: rgba(0, 0, 0, 0.06);
-  --border-hover: rgba(50, 205, 50, 0.3);
+  --border: rgba(34, 38, 31, 0.08);
+  --border-hover: rgba(30, 92, 70, 0.35);
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.12);
-  --shadow-green: 0 12px 32px rgba(50, 205, 50, 0.2);
+  /* Shadows — warm ink, soft (no glow) */
+  --shadow-xs: 0 1px 2px rgba(34, 38, 31, 0.05);
+  --shadow-sm: 0 2px 8px rgba(34, 38, 31, 0.06);
+  --shadow-md: 0 4px 16px rgba(34, 38, 31, 0.07);
+  --shadow-lg: 0 12px 32px rgba(34, 38, 31, 0.09);
+  --shadow-xl: 0 24px 48px rgba(34, 38, 31, 0.1);
+  --shadow-green: 0 8px 24px rgba(30, 92, 70, 0.16);
 
   /* Transitions */
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Background/Foreground */
-  --background: var(--white);
+  /* Background/Foreground — paper page, ink text */
+  --background: var(--off-white);
   --foreground: var(--gray-800);
 }
 
 /* Dark Mode Variables */
 [data-theme="dark"] {
-  --background: var(--gray-900);
+  --background: #1a1d1b;
   --foreground: var(--gray-100);
 
-  /* Inverted grays for dark mode */
-  --gray-50: #1a1a1a;
-  --gray-100: #242424;
-  --gray-200: #2e2e2e;
-  --gray-300: #3d3d3d;
-  --gray-400: #5c5c5c;
-  --gray-500: #7a7a7a;
-  --gray-600: #a0a0a0;
-  --gray-700: #c4c4c4;
-  --gray-800: #e0e0e0;
-  --gray-900: #f5f5f5;
+  /* Brand in the dark: forest lifted for legibility. #3D8A66 keeps white
+     button text at ≈4.6:1 (AA) and reads as an accent on the dark page;
+     the deep fill variant backs pale surfaces. (Decision D-V0-3.) */
+  --green-dark: #174635;
+  --green-main: #3d8a66;
+  --green-light: #6db894;
+  --green-pale: rgba(109, 184, 148, 0.1);
+  --green-glow: rgba(109, 184, 148, 0.1);
+  --sage: #242b26;
+  --brass: #c9a05e;
+
+  /* The gray ramp is NOT inverted here (it was in the old system — a latent
+     conflict: components already carry explicit dark: pairs like
+     `bg-white dark:bg-gray-800`, and inverting the ramp made dark:bg-gray-900
+     resolve to near-white, painting light panels over the dark page. With the
+     ramp constant, the dark: utilities theme the page the classic way.)
+     Only the LOW grays are re-tuned so dark surfaces sit warm, not black. */
+  --gray-800: #23271f;
+  --gray-900: #171a17;
 
   /* Dark mode borders */
-  --border: rgba(255, 255, 255, 0.1);
-  --border-hover: rgba(50, 205, 50, 0.4);
+  --border: rgba(236, 238, 233, 0.1);
+  --border-hover: rgba(109, 184, 148, 0.4);
 
   /* Dark mode shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -77,7 +90,7 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.6);
-  --shadow-green: 0 12px 32px rgba(50, 205, 50, 0.3);
+  --shadow-green: 0 8px 24px rgba(61, 138, 102, 0.25);
 }
 
 /* ========================================
@@ -94,6 +107,12 @@
   --color-brand-light: var(--green-light);
   --color-brand-pale: var(--green-pale);
   --color-brand-glow: var(--green-glow);
+  --color-sage: var(--sage);
+  --color-brass: var(--brass);
+
+  /* Warm card white — redefines Tailwind's bg-white/text-white at token level
+     so the whole site picks up the paper register without class sweeps. */
+  --color-white: var(--white);
 
   --color-gray-50: var(--gray-50);
   --color-gray-100: var(--gray-100);
@@ -106,8 +125,10 @@
   --color-gray-800: var(--gray-800);
   --color-gray-900: var(--gray-900);
 
-  /* Fonts */
+  /* Fonts — serif speaks (headlines), sans supports (body/UI). Mono survives
+     only as the logo wordmark (brand mark, decision D-V0-2). */
   --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
   --font-mono: var(--font-space-mono), monospace;
 
   /* Shadows */
@@ -134,6 +155,21 @@ body {
   font-family: var(--font-outfit), system-ui, sans-serif;
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+/* La Firma: every heading speaks in the serif (HANDOFF-redesign-v2 §1.2).
+   Tracking is set for Fraunces — looser than the old geometric-sans values;
+   component-level tighter overrides were removed alongside this rule. */
+h1,
+h2,
+h3,
+h4 {
+  /* var(--font-fraunces) directly (not --font-serif): @theme inline values are
+     inlined into utilities and never emitted as runtime CSS variables, so the
+     theme token can't be referenced from a plain element rule. */
+  font-family: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
 }
 
 ::selection {

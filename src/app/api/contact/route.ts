@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Build email HTML
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #103B13; border-bottom: 2px solid #32CD32; padding-bottom: 10px;">
+        <h2 style="color: #163F31; border-bottom: 2px solid #1E5C46; padding-bottom: 10px;">
           New Contact Form Submission
         </h2>
 
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
           <tr>
             <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Email</td>
             <td style="padding: 10px; border-bottom: 1px solid #eee;">
-              <a href="mailto:${sanitize(email)}" style="color: #32CD32;">${sanitize(email)}</a>
+              <a href="mailto:${sanitize(email)}" style="color: #1E5C46;">${sanitize(email)}</a>
             </td>
           </tr>
           ${
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         </table>
 
         <div style="margin-top: 20px;">
-          <h3 style="color: #103B13; margin-bottom: 10px;">Message</h3>
+          <h3 style="color: #163F31; margin-bottom: 10px;">Message</h3>
           <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${sanitize(message)}</div>
         </div>
 

@@ -87,7 +87,7 @@ export function PricingCard({
       <div className="mb-4">
         <span
           className={cn(
-            "font-mono text-5xl md:text-6xl font-bold tracking-tight",
+            "font-serif text-5xl md:text-6xl font-bold tracking-tight",
             featured ? "text-white" : "text-gray-900 dark:text-white"
           )}
         >
