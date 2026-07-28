@@ -41,11 +41,11 @@ export function ContactInfo() {
   return (
     <div className="lg:sticky lg:top-[120px]">
       <h2 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold tracking-tight text-gray-900 dark:text-white mb-4">
-        Let&apos;s Build Something Great Together
+        Tell us what&apos;s eating your week
       </h2>
       <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-10">
-        Ready to transform your business with AI-powered solutions? Get in touch
-        and let&apos;s discuss how we can help you modernize your processes.
+        Describe the task your team keeps redoing by hand. We&apos;ll tell you
+        whether a bot can take it — and if we&apos;re not the fit, we&apos;ll say so.
       </p>
 
       {/* Contact Methods */}
@@ -85,11 +85,11 @@ export function ContactInfo() {
         )}
       >
         <h4 className="text-xl font-bold mb-2 relative z-[1]">
-          Prefer a Live Conversation?
+          Prefer to talk it through?
         </h4>
         <p className="text-sm opacity-85 mb-6 relative z-[1]">
-          Book a free 30-minute consultation call to discuss your project
-          requirements and how we can help.
+          Book a free 30-minute call. Bring the messy version — we&apos;ll ask
+          the two questions that matter.
         </p>
         <CalPopupButton
           calLink={CAL_LINK}

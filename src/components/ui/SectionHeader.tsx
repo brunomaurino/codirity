@@ -30,8 +30,6 @@ export interface SectionHeaderProps
   title: string;
   /** Description text below the title */
   description?: string;
-  /** Use gradient text for the title */
-  gradientTitle?: boolean;
 }
 
 const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
@@ -43,7 +41,6 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       label,
       title,
       description,
-      gradientTitle,
       ...props
     },
     ref
@@ -61,8 +58,7 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         )}
         <h2
           className={cn(
-            "text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-white",
-            gradientTitle && "gradient-text"
+            "text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-white"
           )}
         >
           {title}
