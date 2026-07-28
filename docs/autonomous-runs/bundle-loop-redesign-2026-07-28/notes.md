@@ -45,7 +45,17 @@ R5 (7) is skipped this run.
 
 ## PR ledger
 
-_(filled as bundles complete)_
+- R0 → [#9](https://github.com/brunomaurino/codirity/pull/9) merged `3a318d6` · battery 10→5→4 confirmed (1 refuted) · 0 deferrals
+- R1 → [#10](https://github.com/brunomaurino/codirity/pull/10) merged `029a772` · battery 14→5→5 confirmed · 0 deferrals · homepage −1.3 KB gz
+
+## Session interruptions
+
+- After R1's post-merge cleanup (flip committed at `9c9a4ac`, dashboard file updated), the Claude
+  Code process exited before the dashboard redeploy and the RC launch. The resume-watchdog
+  (`ef65bb95`) fired in the fresh process; state verified from disk (main, §2, no open PRs, no
+  orphan worktrees) and the loop resumed: dashboard redeployed, heartbeat restarted (new task
+  `ba44jfzgd`), RC launched. Note: a sibling marker `autonomous-task-home-announcement-bar`
+  exists in autonomous-active — NOT this loop's; left untouched (parallel-run isolation).
 
 ## Cross-bundle drift / surfaced concerns
 
