@@ -71,6 +71,7 @@ claims, more receipts.
 |---|---|---|---|---|---|
 | **R0** | Voice pass + anti-slop sweep over ALL existing copy + hairline/green-discipline groundwork | — | [ ] pending | | |
 | **R1** | Hero rework: workbench vignette (terminal-queue), microcopy, proof line | R0 | [ ] pending | | |
+| **RC** | Clients ledger — eDairyCorp, Meshio, Vivi (honest portfolio framing) | R0, storytelling doc | [ ] pending | | |
 | **R2** | The Ledger (cost comparison as receipt) + kill/fold Benefits grid | R0 | [ ] pending | | |
 | **R3** | "A week with us" (process rework) + mock queue board | R0 | [ ] pending | | |
 | **R4** | "Things we've been asked to build" (services rework) + "Things we'll say no to" | R0 | [ ] pending | | |
@@ -90,6 +91,10 @@ R1–R4 and R6 are independent after R0 and can interleave. R7/R8 ship whenever 
 ### §3.R1
 ```
 /autonomous-task Redesign Bundle R1 — hero workbench vignette. Read docs/HANDOFF-redesign.md §6.R1. Replace the floating stat cards with the terminal-queue vignette (pure CSS/SSR, no libs), promote "Pause or cancel anytime" to hero microcopy, move the Globant/Ualá line into the proof line under the hero. Keep H1 text and both CTAs (instrumented). Gates: standard + perf delta vs 200.8KB baseline reported in PR + §5 checklist.
+```
+### §3.RC
+```
+/autonomous-task Redesign Bundle RC — clients ledger. Read docs/HANDOFF-redesign.md §6.RC and the approved storytelling doc (framing + one-liners for eDairyCorp, Meshio, Vivi). Build the clients section as ledger rows (artifact treatment) directly under the proof line; all strings in offer.ts. Do NOT launch until Bruno approves the storytelling framing. Gates: standard + §5 checklist.
 ```
 ### §3.R2
 ```
@@ -199,6 +204,26 @@ engineers, things actually ship" — the three things the whole category asserts
 Under the hero, one slim **proof line** (not a marquee): hairline-topped row, mono:
 `built by engineers ex-Globant & Ualá · Buenos Aires · stack: claude / n8n / aws / stripe`.
 Tool names as text, not logo salad — logos join only if/when client logos do (D6).
+
+### RC — The clients ledger (added 2026-07-28, Bruno's call)
+
+A clients section with **eDairyCorp, Meshio, and Vivi**, placed directly under the proof line.
+Treatment: ledger rows (artifact — mono, hairlines, status dots), NOT a logo grid — three logos
+would look thin; three one-line stories don't:
+
+```
+eDairyCorp — b2b dairy marketplace      ● in production
+Meshio     — <one-liner>                ● in production
+Vivi       — <one-liner>                ◐ building
+```
+
+**The honesty problem is the design problem.** These are Bruno's own ventures, not arm's-length
+clients. The framing must not pretend otherwise — the candidate angle is the strongest version of
+the truth ("our own companies run on the same subscription" / we-eat-our-own-cooking), which is
+*more* credible than fake client logos, not less. The storytelling pass owns this framing and the
+per-venture one-liners; Bruno approves before RC launches. Status dots must reflect reality
+(a "building" dot is honest and interesting; three identical "live" dots that aren't true are
+banned by §5).
 
 ### R2 — The Ledger (cost comparison) + Benefits funeral
 
@@ -318,7 +343,7 @@ company but keep the diagram real.
 | D3 | The guarantee (7-day preview / first-week partial refund / none) | R5 | open |
 | D4 | Which aggregate stats are real enough to publish (else: none ship) | R1 proof line | open |
 | D5 | Maintain a real capacity number in `offer.ts` (else: no badge) | R5 | open |
-| D6 | Client logos with permission (else: text-only proof line stays) | R1 | open |
+| D6 | Client logos with permission (else: text-only proof line stays) | R1 | **updated 2026-07-28**: Bruno named eDairyCorp, Meshio, Vivi → RC bundle; framing pending storytelling approval |
 
 ## §8 — Measurement
 
