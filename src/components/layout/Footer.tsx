@@ -57,8 +57,8 @@ export function Footer() {
                 <span className="w-2.5 h-2.5 bg-brand rounded-full animate-pulse-dot" />
               </Link>
               <p className="text-white/60 text-[0.95rem] leading-relaxed max-w-xs mb-6">
-                AI-powered automation and system development that transforms
-                businesses and accelerates growth.
+                We build the automations and systems that delete manual work.
+                One subscription, one senior engineer, one card at a time.
               </p>
               {/* Social Links */}
               <div className="flex gap-3">

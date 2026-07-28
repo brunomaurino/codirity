@@ -99,15 +99,37 @@ _(none)_
 
 ## Review findings + resolutions
 
-_(Phase 4/5)_
+Battery `wf_1ef55798-e2b` (2 adv + 2 QA, mixed opus/sonnet finders, 3 verify voters):
+**10 raw → 5 unique → 4 confirmed, 1 refuted. 58 areas examined. 0 deferrals, 0 escalations.
+All 4 applied.**
+
+| # | Sev | Where | Finding | Resolution |
+|---|---|---|---|---|
+| 1 | MAJOR | `layout.tsx:29` | `SITE_DESCRIPTION` (meta/OG on every page — search snippets, share cards) still carried the plural "engineers" + retired phrasing, contradicting the new singular hero three lines below. A miss in the Phase-2 copy inventory, confirmed by all 6 finder sources | Rewritten to the new voice, singular, mechanism-first; in-file comment updated to restate the keep-in-sync invariant |
+| 2 | MAJOR | `Footer.tsx:60` | Footer tagline "AI-powered automation … transforms businesses and accelerates growth" — read-aloud-test slop rendering on every page; missed, not scoped out | Rewritten: "We build the automations and systems that delete manual work. One subscription, one senior engineer, one card at a time." |
+| 3 | MAJOR | `offer.ts` pricing description | New "one active task at a time" in the shared pricing header contradicted Pro's "Two active tasks" directly below it | Header no longer states a count: "Unlimited queue. Pick your lane count below." + code comment pinning the invariant |
+| 4 | MAJOR | `offer.ts` faq description | "book fifteen minutes" vs the configured 30-minute Cal event | "book a 30-minute call" + comment referencing CAL_LINK |
+
+Refuted (1): recorded by the battery as a false positive; not acted on.
+
+The four fixes are exactly the kind of cross-file consistency a copy sweep misses from inside
+the diff — the reviewers grepped the whole tree. Gates re-run green after applying.
 
 ## Areas examined and rejected
 
-_(from battery)_
+The battery examined and ruled out **58** areas; highlights (full list in the battery output,
+`wf_1ef55798-e2b`): banned-word grep re-verified over diff AND whole src/ (zero, including
+HeroCards' untouched copy); `.gradient-text`/`gradientTitle` deletion has no dangling consumers;
+JSON-LD (FAQPage/Service/Organization) reads offer.ts so rewritten copy flows through with
+unchanged shape; guarantee 7-day/75% consistent across guarantee + FAQ + tiers; 24-hour reply
+claim consistent across both contact surfaces; remaining "Engineers." in FAQ answer 1 is the
+approved storytelling one-liner, not a pedigree plural; hairline utilities are plain CSS with no
+@layer conflict; no track()/analytics event touched; About's shadow-sm drop is register, not
+structure.
 
 ## Items deferred from this PR
 
-_(Phase 5.5)_
+**None — all review findings resolved.** (0 proposed deferrals from the battery.)
 
 ## Durable handles
 
@@ -115,3 +137,5 @@ _(Phase 5.5)_
 - `worktree: /Users/brunomaurino/projects/codirity/.claude/worktrees/redesign-r0-voice`
 - `worktree_entry: name`
 - `cron: (none — bundle-loop owns the watchdog ef65bb95; do not delete it at this bundle's teardown)`
+- `battery_run_id: wf_1ef55798-e2b`
+- `dev_server_pid: 44997`

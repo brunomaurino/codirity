@@ -204,14 +204,17 @@ export const sections: SectionsContent = {
   pricing: {
     label: "Pricing",
     title: "One flat rate",
+    // Task counts live in each tier card (one lane on Standard, two on Pro) —
+    // this shared header must not state a count that only fits one tier.
     description:
-      "Unlimited queue, one active task at a time. Pause or cancel any month.",
+      "Unlimited queue. Pick your lane count below. Pause or cancel any month.",
   },
   faq: {
     label: "FAQ",
     title: "The questions everyone asks",
+    // 30 minutes — must match the configured Cal event (see CAL_LINK comment).
     description:
-      "Answered plainly. Anything else — book fifteen minutes or write to us.",
+      "Answered plainly. Anything else — book a 30-minute call or write to us.",
   },
 };
 
