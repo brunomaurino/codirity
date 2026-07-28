@@ -111,7 +111,18 @@ export interface HeroContent {
   primaryCta: LinkCta;
   /** Secondary CTA opens the Cal.com popup (no href — uses calLink). */
   secondaryCta: Cta;
-  trustLine: string;
+  /** Mono annotation under the CTA row (the category's de-facto second headline). */
+  microcopy: string;
+}
+
+/** One row of the hero workbench vignette (HANDOFF-redesign §6.R1). */
+export interface WorkbenchItem {
+  /** Board id, e.g. "#231". Illustrative but shaped like the real board. */
+  id: string;
+  label: string;
+  status: "shipped" | "in_progress" | "queued";
+  /** Days on the board — shown only for shipped rows. */
+  days?: number;
 }
 
 /** Header copy (eyebrow label + title + optional description) for a marketing section. */
@@ -166,9 +177,32 @@ export const hero: HeroContent = {
   // Duration-neutral: the configured Cal event (CAL_LINK) is a 30-minute call, so a
   // "15-min" label would understate the actual booking. Kept short and low-friction.
   secondaryCta: { label: "Book an intro call" },
-  // Singular by decision (2026-07-28): one senior engineer works your queue.
-  trustLine: "Built by a senior engineer, ex-Globant & Ualá",
+  microcopy: "pause or cancel any month · no contracts",
 };
+
+/**
+ * The hero workbench vignette — the queue as the hero image. Rows are
+ * illustrative but shaped like real board items (each traces to shipped work in
+ * the day-log record; day figures approved in docs/redesign-storytelling.md §2).
+ * Green status dots appear ONLY on shipped rows — the green-means-live rule.
+ */
+export const workbenchQueue: WorkbenchItem[] = [
+  { id: "#231", label: "dead product URLs — 27 found via sitemap", status: "shipped", days: 1 },
+  { id: "#232", label: "guest favorites, merge on login", status: "shipped", days: 2 },
+  { id: "#233", label: "admin table filters, server-side", status: "shipped", days: 3 },
+  { id: "#234", label: "stripe seller tiers", status: "shipped", days: 4 },
+  { id: "#235", label: "wordpress fleet cost cut", status: "in_progress" },
+];
+
+/**
+ * Proof line under the hero — evidence, not a logo marquee. Singular engineer,
+ * Córdoba, and the real stack per the resolved facts (2026-07-28, storytelling §2).
+ */
+export const proofLine: string[] = [
+  "built by a senior engineer, ex-Globant & Ualá",
+  "Córdoba, AR — working your timezone",
+  "stack: claude / next.js / nestjs / aws / stripe",
+];
 
 /** Column headings for the "What we build" included / not-included lists. */
 export const scopeLabels = {
