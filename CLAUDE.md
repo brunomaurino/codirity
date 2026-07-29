@@ -28,7 +28,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Refer to `docs/design-system.md` for all styling decisions. Key points:
 
-- **Brand colors**: Green palette (`brand-dark: #103B13`, `brand: #32CD32`, `brand-light: #59F359`)
+- **Brand colors**: "La Firma" forest palette (`brand-dark: #163F31`, `brand: #1E5C46`, `brand-light: #4E8D74`, paper background `#FAF7F1`; supporting `sage #DCE5DC`, rare `brass #B3873F`)
 - **Fonts**: Outfit (headings/body), Space Mono (code/metrics)
 - **Components**: Shadcn UI with custom styling (rounded-full buttons, rounded-3xl cards)
 - **Icons**: Lucide React

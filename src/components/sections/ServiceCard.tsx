@@ -30,7 +30,7 @@ export function ServiceCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-3xl p-8 md:p-10",
+        "group relative overflow-hidden rounded-2xl p-8 md:p-10",
         "transition-all duration-400",
         featured
           ? [
@@ -116,7 +116,7 @@ export function ServiceCard({
                   "bg-white/10 border border-white/15"
                 )}
               >
-                <div className="font-mono text-2xl md:text-3xl font-bold text-brand-light mb-1">
+                <div className="font-serif text-2xl md:text-3xl font-bold text-brand-light mb-1">
                   {stat.value}
                 </div>
                 <div className="text-sm text-white/70">{stat.label}</div>

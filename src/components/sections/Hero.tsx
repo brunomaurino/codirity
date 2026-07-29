@@ -22,7 +22,7 @@ export function Hero() {
       <div
         className={cn(
           "absolute top-0 right-0 w-[60%] h-full z-0",
-          "bg-[radial-gradient(ellipse_at_70%_30%,rgba(50,205,50,0.08)_0%,transparent_60%)]"
+          "bg-[radial-gradient(ellipse_at_70%_30%,rgba(30,92,70,0.07)_0%,transparent_60%)]"
         )}
       />
 
@@ -42,7 +42,7 @@ export function Hero() {
             <h1
               className={cn(
                 "text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem]",
-                "font-extrabold leading-[1.08] tracking-[-2.5px]",
+                "font-semibold leading-[1.1]",
                 "text-gray-900 dark:text-white mb-6",
                 "opacity-0 animate-slide-up animation-delay-300"
               )}

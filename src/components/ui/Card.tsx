@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const cardVariants = cva(
   [
-    "rounded-3xl",
+    "rounded-2xl",
     "transition-all duration-400",
   ],
   {

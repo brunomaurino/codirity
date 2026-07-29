@@ -12,7 +12,7 @@ export function Process() {
       className={cn(
         "relative",
         "before:absolute before:inset-0",
-        "before:bg-[radial-gradient(ellipse_at_50%_50%,rgba(50,205,50,0.08)_0%,transparent_70%)]",
+        "before:bg-[radial-gradient(ellipse_at_50%_50%,rgba(30,92,70,0.06)_0%,transparent_70%)]",
         "before:pointer-events-none"
       )}
     >

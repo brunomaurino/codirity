@@ -56,7 +56,7 @@ export function PricingCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl p-8 md:p-10",
+        "relative overflow-hidden rounded-2xl p-8 md:p-10",
         "transition-all duration-400",
         featured
           ? [
@@ -87,7 +87,7 @@ export function PricingCard({
       <div className="mb-4">
         <span
           className={cn(
-            "font-mono text-5xl md:text-6xl font-bold tracking-tight",
+            "font-serif text-5xl md:text-6xl font-bold tracking-tight",
             featured ? "text-white" : "text-gray-900 dark:text-white"
           )}
         >

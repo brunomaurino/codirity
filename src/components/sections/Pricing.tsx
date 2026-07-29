@@ -39,7 +39,7 @@ export function Pricing() {
               <Sparkles className="h-5 w-5 text-brand shrink-0" strokeWidth={2} />
               <span className="font-semibold">Founding offer</span>
               <span>
-                <span className="font-mono font-bold">{foundingRate.price}</span>{" "}
+                <span className="font-serif font-bold">{foundingRate.price}</span>{" "}
                 — {foundingRate.label}
               </span>
               <span className="text-sm opacity-80">

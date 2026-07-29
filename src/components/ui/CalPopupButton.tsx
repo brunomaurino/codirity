@@ -48,7 +48,7 @@ export function CalPopupButton({
       const { getCalApi } = await import("@calcom/embed-react");
       const cal = await getCalApi();
       cal("ui", {
-        styles: { branding: { brandColor: "#32CD32" } },
+        styles: { branding: { brandColor: "#1E5C46" } },
         hideEventTypeDetails: false,
         layout: "month_view",
       });

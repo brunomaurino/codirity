@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Space_Mono } from "next/font/google";
+import { Outfit, Space_Mono, Fraunces } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/Toaster";
@@ -19,6 +19,14 @@ const spaceMono = Space_Mono({
   variable: "--font-space-mono",
   subsets: ["latin"],
   weight: ["400", "700"],
+});
+
+// La Firma (redesign v2): the display serif that carries every heading. Variable
+// font with the optical-size axis on, so large headlines get the display cut.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  axes: ["opsz"],
 });
 
 // Subscription-forward copy (Bundle D): the live body now leads with the subscription
@@ -73,7 +81,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body
-        className={`${outfit.variable} ${spaceMono.variable} font-sans antialiased`}
+        className={`${outfit.variable} ${spaceMono.variable} ${fraunces.variable} font-sans antialiased`}
       >
         <ThemeProvider>
           {/* Background Pattern */}

@@ -27,7 +27,7 @@ function HeroCard({
   return (
     <div
       className={cn(
-        "absolute bg-white dark:bg-gray-800 border border-[var(--border)] rounded-[20px] p-6",
+        "absolute bg-white dark:bg-gray-800 border border-[var(--border)] rounded-2xl p-6",
         "shadow-lg transition-all duration-400",
         "hover:-translate-y-2 hover:shadow-xl hover:border-brand/30",
         className
@@ -49,7 +49,7 @@ function HeroCard({
           <div className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</div>
         </div>
       </div>
-      <div className="font-mono text-4xl font-bold text-brand mb-1">
+      <div className="font-serif text-4xl font-bold text-brand mb-1">
         {metric}
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-400">{metricLabel}</div>

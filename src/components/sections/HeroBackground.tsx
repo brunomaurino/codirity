@@ -111,7 +111,7 @@ export function HeroBackground() {
       <div
         className={cn(
           "absolute top-0 right-0 w-1/2 h-full z-0 opacity-40",
-          "bg-[linear-gradient(rgba(50,205,50,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(50,205,50,0.05)_1px,transparent_1px)]",
+          "bg-[linear-gradient(rgba(30,92,70,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(30,92,70,0.05)_1px,transparent_1px)]",
           "bg-[size:60px_60px]",
           "[mask-image:radial-gradient(ellipse_at_70%_50%,black_20%,transparent_70%)]"
         )}

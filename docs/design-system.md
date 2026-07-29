@@ -10,9 +10,9 @@
 
 ```css
 /* Green - Primary Brand Color */
---green-dark: #103B13      /* Dark green for text, dark backgrounds */
---green-main: #32CD32      /* Primary actions, CTAs, accents */
---green-light: #59F359     /* Highlights, gradients, hover states */
+--green-dark: #163F31      /* Dark green for text, dark backgrounds */
+--green-main: #1E5C46      /* Primary actions, CTAs, accents */
+--green-light: #4E8D74     /* Highlights, gradients, hover states */
 ```
 
 ### Tailwind Config
@@ -24,9 +24,9 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          dark: '#103B13',
-          DEFAULT: '#32CD32',
-          light: '#59F359',
+          dark: '#163F31',
+          DEFAULT: '#1E5C46',
+          light: '#4E8D74',
         },
         gray: {
           50: '#f8f9fa',
@@ -50,13 +50,13 @@ module.exports = {
 
 | Use Case | Color | Tailwind Class |
 |----------|-------|----------------|
-| Primary buttons | `#32CD32` | `bg-brand` |
-| Button hover | `#103B13` | `hover:bg-brand-dark` |
-| Links | `#32CD32` | `text-brand` |
-| Success states | `#32CD32` | `text-brand` |
-| Accent borders | `#32CD32` | `border-brand` |
+| Primary buttons | `#1E5C46` | `bg-brand` |
+| Button hover | `#163F31` | `hover:bg-brand-dark` |
+| Links | `#1E5C46` | `text-brand` |
+| Success states | `#1E5C46` | `text-brand` |
+| Accent borders | `#1E5C46` | `border-brand` |
 | Subtle backgrounds | `rgba(50,205,50,0.08)` | `bg-brand/[0.08]` |
-| Focus rings | `#32CD32` | `ring-brand` |
+| Focus rings | `#1E5C46` | `ring-brand` |
 
 ---
 
@@ -378,7 +378,7 @@ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-br
 | Border | `gray-200` | `gray-700` |
 | Text primary | `gray-900` | `white` |
 | Text secondary | `gray-600` | `gray-400` |
-| Brand | `#32CD32` | `#59F359` |
+| Brand | `#1E5C46` | `#4E8D74` |
 
 ### Implementation
 
