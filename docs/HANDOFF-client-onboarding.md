@@ -85,7 +85,7 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
    and pass it to `stripe.webhooks.constructEvent(rawBody, sig, secret)`. Do **not** `await req.json()`
    first — parsing mutates the body and breaks signature verification.
 3. **No secrets in logs.** Log event id + type + plan only; never customer PII, keys, or full payloads.
-   Client credentials NEVER flow through Trello/email (that's the access form + 1Password, §4 O5/O7).
+   Client credentials NEVER flow through Trello/email (that's the access form + a secure one-time link, §4 O5/O7).
 4. **Side effects are independently guarded AND per-step recorded (§1.1c).** Wrap each of Trello /
    invite / email / founder-alert / ops-card in its own try/catch; on success, record that step's
    completion (and any id it produced) in the event record before the next step. A step failure does not
@@ -226,7 +226,11 @@ These are external accounts / config the build cannot create; the loop verifies 
   green):** register the PROD endpoint + set the prod secret. Registering prod earlier means a real
   checkout gets 200-ACKed by a handler with no provisioning behind it — Stripe stops retrying, the event is
   marked done, and that paying client silently never gets a board or email.
-- **O7 — 1Password shared vault** for client secrets (process, not code; Appendix C references it).
+- **O7 — Secure credential handoff (Bitwarden Send, decided 2026-08-14).** Free, no vault infrastructure
+  to run: the client creates a one-time encrypted Bitwarden Send link (bitwarden.com/send) and drops it in
+  the access form (Appendix C, Q10) — no account needed on their end, no per-client invite for Bruno to
+  manage. Bruno opens it once and moves anything long-lived into his own secrets manager (process, not
+  code; Appendix C references it).
 - **O8 — Sequencing.** Launch this loop only after the rebuild loop has merged all its bundles.
   **SATISFIED 2026-08-10** — the rebuild merged completely (PRs #1–#7); the general one-loop-at-a-time
   rule still applies to any other loop (e.g. redesign).
@@ -236,7 +240,8 @@ These are external accounts / config the build cannot create; the loop verifies 
 
 ## 5. Out of scope (v1)
 Native access-form page (Tally in v1, native in v2), a client dashboard/portal, automated secret exchange
-(1Password invite is manual), analytics on onboarding funnel, multi-seat/team provisioning.
+(the Bitwarden Send link is client-initiated, no invite to manage), analytics on onboarding funnel,
+multi-seat/team provisioning.
 
 ## 6. Acceptance (whole plan) — from the PRD
 1. End-to-end in test mode with a REAL O6 test price (real test Payment-Link checkout, or `stripe trigger --override` pinning an O6 test price_id — never a bare `stripe trigger`, which mints a throwaway price and can't validate the plan map): board created + invite sent + email delivered with correct planName + ops card created, < 5 min.
@@ -306,7 +311,7 @@ Billing cycles are 31 days. Pause anytime: unused days are banked and available 
 
 **Card 6 — "🔐 Grant us access (do this first)"**
 Before we can ship, we need access to your tools: {accessFormUrl}
-Security rules we live by: • Never paste passwords or API keys in Trello, email, or Loom. • We'll send you a 1Password shared-vault invite (or use your own secrets manager). • We request least-privilege access and keep a registry of everything you grant us — when you pause or cancel, we revoke it all and confirm in writing.
+Security rules we live by: • Never paste passwords or API keys in Trello, email, or Loom. • Share credentials with us via a secure one-time link (Bitwarden Send — no account needed) or your own secrets manager. • We request least-privilege access and keep a registry of everything you grant us — when you pause or cancel, we revoke it all and confirm in writing.
 
 **Card 7 — "✍️ Example request (steal this format)"** _(place in 📥 Backlog)_
 Title: Auto-sync new Stripe customers to our CRM
@@ -326,9 +331,9 @@ Done looks like: New test subscription appears in HubSpot within 1 minute, corre
 5. GitHub org or repo URLs (we'll request an invite — never send credentials)
 6. Hosting/cloud provider + who manages DNS
 7. Third-party services we'll likely touch (Stripe, HubSpot, Zapier, etc.)
-8. How will you share credentials? ○ Accept our 1Password vault invite ○ Your own secrets manager (tell us which) ○ Not sure — help me
+8. How will you share credentials? ○ Send us a secure one-time link (E.G: Bitwarden Send) ○ Use my own secrets manager (tell us which) ○ Not sure — help me
 9. Anything we should NOT touch? (production systems, data, tools) (long text)
-10. Best email for the 1Password invite
+10. Best email for the secure link
 11. Anything else we should know? (long text)
 
 ### Appendix D — Day-5 check-in (Bundle 4 — comment on their most recent card, or email)
