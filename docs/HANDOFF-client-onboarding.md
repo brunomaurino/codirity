@@ -1,7 +1,7 @@
 # HANDOFF — Codirity Client Onboarding: Automation + Content Kit
 
 **Derived from:** PRD "Codirity Client Onboarding: Automation + Content Kit" (Bruno, v1, 2026-07-24)
-**Author of handoff:** Claude Code · **Date:** 2026-07-24
+**Author of handoff:** Claude Code · **Date:** 2026-07-24 · **Revised:** 2026-08-10 (spec-review `wf_e8b0d24d-245`: 2 blockers + 4 majors + minors folded in)
 **Repo:** `~/projects/codirity` (Next.js 16, App Router) · **Deploy:** Vercel (`www.codirity.com`)
 **Consumer:** `/autonomous-bundle-loop` → `/autonomous-task` (one bundle = one PR).
 
@@ -11,6 +11,8 @@
 > onboarding webhook's `price_id → plan` map depends on the rebuild's Stripe Payment Links being finalized
 > (rebuild decision D2). Onboarding is otherwise near-independent (all-new files: `api/webhooks/stripe`,
 > `lib/onboarding/`, `scripts/`, email templates) — near-zero overlap with the rebuild's SEO/landing bundles.
+> **Status 2026-08-10:** the rebuild loop HAS fully merged (PRs #1–#7) — this gate is SATISFIED. The general
+> rule still applies to any other loop on this repo (e.g. the redesign): never two loops at once on `main`.
 
 ---
 
@@ -33,18 +35,29 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
 1. **Idempotency is the load-bearing invariant — and a plain read-then-write is NOT enough** (spec-review
    MAJOR ×2). Stripe retries deliveries **only on a non-2xx response or a timeout** (a `2xx` tells Stripe
    "done, stop retrying"), and can deliver the same `event.id` **concurrently**. The design MUST be:
-   - **(a) Atomic reservation WITH A LEASE.** Reserve `event.id` with an *atomic set-if-absent that also
-     writes a lease expiry* (Vercel KV `SET key <record> NX EX <leaseSeconds>` — e.g. 90s; or a DB row
-     with `INSERT … ON CONFLICT DO NOTHING` + a `lease_until` column). The value written IS the initial
-     event record (so reservation and record are one atomic write). Only the delivery that WINS proceeds.
+   - **(a) Atomic reservation WITH A LEASE — the record is DURABLE; the lease is a FIELD, never a key TTL.**
+     (Spec-review BLOCKER, 2026-08-10: the earlier recipe `SET key <record> NX EX 90` was wrong — Redis `EX`
+     is a TTL on the KEY, so at t+90s the ENTIRE record (per-step resume flags, `status`, Bundle 5's
+     customerId association) would be silently deleted, making the lease-expired state unreachable and
+     turning any Stripe retry past 90s into a full re-run of side effects. Never put a short TTL on the
+     record key.) Reserve `event.id` with an *atomic set-if-absent whose value IS the initial event record
+     and CONTAINS `lease_until` as a timestamp field*: Redis/Vercel KV `SET key <record-json> NX` with **no
+     expiry** (a hygiene TTL ≥ 90 days is acceptable, never seconds); or a DB row
+     `INSERT … ON CONFLICT DO NOTHING` with a `lease_until` column. Lease validity is decided by comparing
+     the `lease_until` FIELD to now, in app code. Only the delivery that WINS the set-if-absent proceeds.
+     `leaseSeconds` (e.g. 90s) must be ≥ the serverless function's max execution time.
    - **(b) Deterministic action when the key is already present** (this is the piece the first draft left
      contradictory — one rule, no ambiguity):
      · `status: done` → return **200** (no-op, the work is finished).
      · reserved, not done, **lease still valid** → another worker is live; return **non-2xx (5xx)** so
        Stripe retries later — do NOT touch the event.
-     · reserved, not done, **lease EXPIRED** (previous worker crashed) → atomically renew the lease (take
-       over) and **resume the missing steps**. A live winner and a crashed one are distinguished by the
-       lease, so there is exactly one action per state — never both "do nothing" and "resume" at once.
+     · reserved, not done, **lease EXPIRED** (previous worker crashed) → **take over via an atomic
+       compare-and-set on the old `lease_until`** (Redis: Lua script or `WATCH`+`MULTI`; DB:
+       `UPDATE … SET lease_until = <new> WHERE event_id = … AND lease_until = <old>`) and **resume the
+       missing steps**. The CAS is the mutual-exclusion mechanism — two workers racing the same expired
+       lease cannot both win; the loser re-reads and lands in the lease-valid branch. A live winner and a
+       crashed one are distinguished by the lease, so there is exactly one action per state — never both
+       "do nothing" and "resume" at once.
    - **(c) Per-step records + resume.** Record each step's completion under the event record
      `{ boardId, boardUrl, inviteSent, emailSent, alertSent, cardId, status, lease_until }`. On resume,
      do only the steps whose record is missing. Mark `status: done` and return **200** only after every
@@ -54,9 +67,16 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
      window: a crash after Trello returns the board but before `boardId` is stored would otherwise make a
      SECOND board). Stamp the `eventId` into the copied board (in its description) at creation; **before
      copying, search the workspace for an existing board whose description carries this `eventId` and
-     REUSE it** if found. This closes the post-copy/pre-persist window — `POST /1/boards/?idBoardSource`
+     REUSE it** if found. Mechanism: the marker is written ATOMICALLY with the copy (`desc` passed in the
+     same `POST /1/boards/` call as `idBoardSource`), and the search is an enumeration —
+     `GET /1/members/me/boards?fields=name,desc` filtered to `TRELLO_WORKSPACE_ID` + a client-side match on
+     the marker (Trello has no server-side description search; the token sees every board it created). This
+     closes the post-copy/pre-persist window — `POST /1/boards/?idBoardSource`
      has no idempotency key, so the reconcile is the only thing that makes the copy effectively
      exactly-once. (Do NOT over-claim "a retry never double-provisions" without this reconcile in place.)
+     The welcome EMAIL gets the equivalent guarantee its own way: a deterministic Resend
+     `Idempotency-Key "{eventId}-welcome"` (Bundle 3) — the emailSent record alone leaves a
+     crash-between-send-and-record window that would re-send on the resumed retry.
    This is where an error hurts most (duplicate board + duplicate welcome email, or a silently-dropped
    email, to a paying client) — spend the deepest verification here. Test **concurrent** replay (reserve
    once), **forced-single-step-failure → retry resumes** the missing step reusing the same board, AND a
@@ -74,11 +94,17 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
    retry re-enters and resumes only the missing steps (each guarded by its per-step record so completed
    steps are skipped, not re-run). Also surface the partial failure via the founder alert + logs. Return
    200 only when every step has its completion record and `status: done`.
-5. **Unhandled event types → 200 + ignore.** Only `checkout.session.completed` (v1) and the Phase-5
-   subscription events (v1.1) do work.
+5. **Unhandled event types → 200 + ignore.** Only `checkout.session.completed` (v1) and the Bundle-5
+   lifecycle events (v1.1) do work: `customer.subscription.deleted`, `customer.subscription.paused`
+   (trial-end case only), AND `customer.subscription.updated` where `pause_collection` transitions to
+   non-null — a billing-portal pause emits `updated`+`pause_collection`, NOT `.paused` (see Bundle 5).
 6. **All env via Vercel** (Production + Preview scoped): `STRIPE_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`,
-   `TRELLO_KEY`, `TRELLO_TOKEN`, `TRELLO_TEMPLATE_BOARD_ID`, `TRELLO_OPS_BOARD_ID`, `RESEND_API_KEY`,
-   `FOUNDER_ALERT_WEBHOOK_URL`, plus the idempotency-store creds (§4 O1). Document all in `.env.example`.
+   `STRIPE_BILLING_PORTAL_URL` (§4 O9), `TRELLO_KEY`, `TRELLO_TOKEN`, `TRELLO_TEMPLATE_BOARD_ID`,
+   `TRELLO_OPS_BOARD_ID`, `TRELLO_WORKSPACE_ID` (§4 O3), `RESEND_API_KEY`, `FOUNDER_ALERT_WEBHOOK_URL`,
+   `ACCESS_FORM_URL` (§4 O5), plus the idempotency-store creds (§4 O1). Document all in `.env.example`.
+   **AND into the worktrees:** before launching the loop, Bruno also writes the TEST-scoped values into
+   `.env.local` (gitignored) at the repo root — bundle worktrees run the behavioral acceptance locally and
+   Vercel-scoped env never reaches them; without this every bundle stalls on a missing-credential hard-stop.
 7. **Gate list per touched file:** `npm run lint` AND `npx tsc --noEmit` AND `npm run build`.
 8. **All copy in English**, seeded verbatim from the PRD Appendices (A–E) — do not paraphrase client-facing copy.
 
@@ -88,7 +114,7 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
 |---|---|---|---|---|---|
 | **1** | Stripe webhook endpoint + idempotency store + `price_id → plan` map | O1, O6 | [ ] not started | — | — |
 | **2** | Trello provisioning module + `seed-trello-template` script | 1, O3 | [ ] not started | — | — |
-| **3** | Welcome email (Resend + React Email, Appendix A) | 1, O2 | [ ] not started | — | — |
+| **3** | Welcome email (Resend + React Email, Appendix A) | 1, O2, O9 | [ ] not started | — | — |
 | **4** | Founder ops (alert + day-5 card) + wire 2/3/4 into the webhook end-to-end | 2, 3, O4 | [ ] not started | — | — |
 | **5** | Lifecycle events (pause/cancel → revoke card, Appendix E) — v1.1 | 4 | [ ] not started | — | — |
 
@@ -100,36 +126,43 @@ scope + acceptance is in "Bundle specifications" below.
 ### §3.1 — Bundle 1
 
 ```
-Build Bundle 1 (Stripe webhook + idempotency) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob1-webhook on branch feat/codirity-ob1-webhook (off origin/main). Full spec + acceptance: docs/HANDOFF-client-onboarding.md "Bundle 1" + §1. Brief: add the `stripe` dependency and POST /api/webhooks/stripe (App Router route handler). Read the RAW body via await req.text() (never req.json() first) and verify with stripe.webhooks.constructEvent(raw, sig, STRIPE_WEBHOOK_SECRET) — invalid signature → 400. Handle checkout.session.completed only (all other types → 200 ignore). Idempotency per §1.1 (load-bearing): reserve event.id with an ATOMIC set-if-absent + LEASE (Vercel KV `SET <record> NX EX 90` / DB row with lease_until) in the §4 O1 store BEFORE any side effect — the NX value IS the initial record. Only the winner proceeds; a delivery finding the key present follows the deterministic §1.1b rule (done→200; lease-valid→non-2xx retry-later; lease-expired→take over + resume). Establish the durable event-record schema the later bundles extend: {eventId, customerId, email, plan, boardId?, boardUrl?, inviteSent?, emailSent?, alertSent?, cardId?, status, lease_until} — also carries the customerId→boardId/clientName association Bundle 5 needs. Extract customer email (session.customer_details.email), name (session.customer_details.name — may be null, fall back gracefully), and plan via a price_id→plan map; the price_id comes from the session's line items (may need stripe.checkout.sessions.listLineItems / expand — STRIPE_SECRET_KEY is provisioned for that), map in lib/onboarding/plans.ts, fail loudly on an unknown price id via the founder alert. No PII in logs. In this bundle the handler reserves + records the event + logs the parsed {email, plan}; side effects are added in Bundles 2-4. Add all env to .env.example. Acceptance: `stripe trigger checkout.session.completed` in test mode returns 200 and reserves+records the event; invalid signature → 400; SEQUENTIAL replay of the same event id is a no-op; CONCURRENT replay (two overlapping deliveries of the same event id) reserves exactly once (only one record, no double-processing) — this is the load-bearing test, not just sequential; unknown price id fires the founder-alert path (stub ok) not a crash; lint+tsc+build green.
+Build Bundle 1 (Stripe webhook + idempotency) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob1-webhook on branch feat/codirity-ob1-webhook (off origin/main). Full spec + acceptance: docs/HANDOFF-client-onboarding.md "Bundle 1" + §1. Brief: add the `stripe` dependency and POST /api/webhooks/stripe (App Router route handler). Read the RAW body via await req.text() (never req.json() first) and verify with stripe.webhooks.constructEvent(raw, sig, STRIPE_WEBHOOK_SECRET) — invalid signature → 400. Handle checkout.session.completed only (all other types → 200 ignore). Idempotency per §1.1 (load-bearing): reserve event.id with an ATOMIC set-if-absent + LEASE (Redis/Vercel KV `SET <record-json> NX` with NO key TTL — `lease_until` is a FIELD inside the record, NEVER an `EX` on the key: a key TTL would delete the whole record + resume state at expiry; / DB row with a lease_until column) in the §4 O1 store BEFORE any side effect — the NX value IS the initial record, and the record is DURABLE (Bundle 5 reads its customerId association later; lease takeover is an atomic compare-and-set on the old lease_until). Only the winner proceeds; a delivery finding the key present follows the deterministic §1.1b rule (done→200; lease-valid→non-2xx retry-later; lease-expired→take over + resume). Establish the durable event-record schema the later bundles extend: {eventId, customerId, email, plan, boardId?, boardUrl?, inviteSent?, emailSent?, alertSent?, cardId?, status, lease_until} — also carries the customerId→boardId/clientName association Bundle 5 needs. Extract customer email (session.customer_details.email), name (session.customer_details.name — may be null, fall back gracefully), and plan via a price_id→plan map; the price_id comes from the session's line items (may need stripe.checkout.sessions.listLineItems / expand — STRIPE_SECRET_KEY is provisioned for that), map in lib/onboarding/plans.ts, fail loudly on an unknown price id via the founder alert. No PII in logs. In this bundle the handler reserves + records the event + logs the parsed {email, plan}; side effects are added in Bundles 2-4. Add all env to .env.example. Acceptance: `stripe trigger checkout.session.completed` in test mode returns 200 and reserves+records the event; invalid signature → 400; SEQUENTIAL replay of the same event id is a no-op; CONCURRENT replay (two overlapping deliveries of the same event id) reserves exactly once (only one record, no double-processing) — this is the load-bearing test, not just sequential; unknown price id fires the founder-alert path (stub ok) not a crash; lint+tsc+build green.
 ```
 
 ### §3.2 — Bundle 2
 
 ```
-Build Bundle 2 (Trello provisioning) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob2-trello on branch feat/codirity-ob2-trello (off origin/main; Bundle 1 merged). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 2" + Appendix B. Brief: lib/onboarding/trello.ts — copyBoard(clientName, eventId): FIRST reconcile per §1.1d — search the workspace for an existing board whose description carries this eventId (a marker like "codirity-event:{eventId}") and REUSE it if found (closes the crash-after-copy/pre-persist window; the copy has no idempotency key). Else copy TRELLO_TEMPLATE_BOARD_ID via POST /1/boards/?idBoardSource=... (keepFromSource=cards), rename to "Codirity × {clientName}", and write "codirity-event:{eventId}" into the new board's description. Then invite the client email as a normal member (POST /1/boards/{id}/members). Return the board id + URL. All via fetch with TRELLO_KEY/TRELLO_TOKEN; guarded per §1.4. ALSO scripts/seed-trello-template.ts — a one-off Node script that builds the "[TEMPLATE] Codirity Client Board" from Appendix B VERBATIM (lists 👋 Start Here · 📥 Backlog · ⏭️ Up Next · 🔨 In Progress · 👀 In Review · ✅ Done; the 7 Start-Here/Backlog cards with exact copy, {activeTasksNote} and {accessFormUrl} left as template placeholders per Appendix B) and prints the board ID for TRELLO_TEMPLATE_BOARD_ID. Do NOT wire trello.ts into the webhook yet (Bundle 4 does the wiring). Acceptance: running the seed script against a test Trello workspace creates a board matching Appendix B exactly (lists, card order, copy); trello.ts unit-invoked copies+renames+invites and returns a URL; no secrets in logs; lint+tsc+build green.
+Build Bundle 2 (Trello provisioning) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob2-trello on branch feat/codirity-ob2-trello (off origin/main; Bundle 1 merged). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 2" + Appendix B. Brief: lib/onboarding/trello.ts — copyBoard({clientName, eventId, email, plan}): FIRST reconcile per §1.1d — enumerate the boards visible to the token (GET /1/members/me/boards?fields=name,desc, filtered to TRELLO_WORKSPACE_ID) and REUSE any board whose description carries the marker "codirity-event:{eventId}" (closes the crash-after-copy/pre-persist window; the copy has no idempotency key). Else copy TRELLO_TEMPLATE_BOARD_ID via ONE call — POST /1/boards/?idBoardSource=...&keepFromSource=cards passing name="Codirity × {clientName}", desc="codirity-event:{eventId}" AND idOrganization=TRELLO_WORKSPACE_ID in the SAME request (marker + workspace placement must be atomic with the copy; no separate rename/describe step, or the crash window reopens). THEN substitute the template placeholders in the copied board's card descriptions via PUT /1/cards/{id}: {accessFormUrl} → ACCESS_FORM_URL, {activeTasksNote} → per plan ("one active task at a time" for Standard; "two active tasks at a time" for Pro/Founding — mirror src/config/offer.ts, the canonical source). THEN invite the client email as a normal member — PUT /1/boards/{id}/members (Trello's invite-by-email is PUT, not POST). Return the board id + URL. All via fetch with TRELLO_KEY/TRELLO_TOKEN; guarded per §1.4. ALSO scripts/seed-trello-template.ts — a one-off script run via `npx tsx scripts/seed-trello-template.ts` (add `tsx` as devDependency) that builds the "[TEMPLATE] Codirity Client Board" from Appendix B VERBATIM (lists 👋 Start Here · 📥 Backlog · ⏭️ Up Next · 🔨 In Progress · 👀 In Review · ✅ Done; the 7 Start-Here/Backlog cards with exact copy, {activeTasksNote} and {accessFormUrl} left as template placeholders per Appendix B — the TEMPLATE keeps the braces; only COPIED client boards get substitution) and prints the board ID for TRELLO_TEMPLATE_BOARD_ID. Do NOT wire trello.ts into the webhook yet (Bundle 4 does the wiring). Acceptance: running the seed script against a test Trello workspace creates a board matching Appendix B exactly (lists, card order, copy); trello.ts unit-invoked copies+substitutes+invites and returns a URL, and the COPIED board contains NO residual {curlyPlaceholders} in any card; calling copyBoard twice with the same eventId (simulating a crash after the copy, before the caller persisted boardId) returns the SAME board — exactly one board for that eventId exists in the workspace; no secrets in logs; lint+tsc+build green.
 ```
 
 ### §3.3 — Bundle 3
 
 ```
-Build Bundle 3 (welcome email) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob3-email on branch feat/codirity-ob3-email (off origin/main). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 3" + Appendix A. Brief: add `resend` + `@react-email/components`; lib/onboarding/email.ts sends the Appendix A welcome email via Resend from hello@codirity.com, reply-to Bruno's address, using a React Email template with variables clientName (fallback "there" if null), boardUrl, accessFormUrl, planName. Copy is Appendix A VERBATIM (subject "Welcome to Codirity — your board is ready"; the 3 numbered steps; the P.S. with plan name + billing-portal note). Include the Stripe billing-portal link in the footer (from the session's customer, or a configured portal URL). Do NOT wire into the webhook yet (Bundle 4). Guarded per §1.4. Acceptance: a local send (test API key or Resend test mode) renders the template with all variables filled and no missing-var placeholders; from/reply-to correct; lint+tsc+build green. NOTE: hello@codirity.com must be a Resend-verified domain sender (§4 O2) — flag if unverified rather than failing silently.
+Build Bundle 3 (welcome email) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob3-email on branch feat/codirity-ob3-email (off origin/main). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 3" + Appendix A. Brief: add `resend` + `@react-email/components`; lib/onboarding/email.ts sends the Appendix A welcome email via Resend from hello@codirity.com (sender per §4 O2 — Bruno confirms hello@ vs the site's canonical support@codirity.com before launch), reply-to Bruno's address, using a React Email template with variables clientName (fallback "there" if null), boardUrl, accessFormUrl (= ACCESS_FORM_URL), planName, plus an eventId param used ONLY for the idempotency key. Copy is Appendix A VERBATIM (subject "Welcome to Codirity — your board is ready"; the 3 numbered steps; the P.S. with plan name + billing-portal note). Include the Stripe billing-portal link in the footer from STRIPE_BILLING_PORTAL_URL (the permanent Customer-portal login link, §4 O9) — NEVER a per-session portal URL (portal-session URLs are short-lived/single-use and would be dead when the client clicks). Send with Resend Idempotency-Key "{eventId}-welcome" so a webhook retry that crosses the send/record boundary cannot duplicate the email. Do NOT wire into the webhook yet (Bundle 4). Guarded per §1.4. Acceptance: a local send (test API key or Resend test mode) renders the template with all variables filled and no missing-var placeholders; from/reply-to correct; lint+tsc+build green. NOTE: hello@codirity.com must be a Resend-verified domain sender (§4 O2) — flag if unverified rather than failing silently.
 ```
 
 ### §3.4 — Bundle 4
 
 ```
-Build Bundle 4 (founder ops + end-to-end wiring) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob4-ops on branch feat/codirity-ob4-ops (off origin/main; Bundles 1-3 merged). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 4" + Appendices D. Brief: lib/onboarding/ops.ts — (a) founder alert on new client via FOUNDER_ALERT_WEBHOOK_URL (Slack incoming webhook or email per §4 O4): "New client: {name} — {plan}"; (b) create a check-in card on TRELLO_OPS_BOARD_ID titled "Day-5 check-in — {clientName}", due +5 BUSINESS days (skip weekends), description = Appendix D copy verbatim. THEN wire Bundles 2/3/4 into /api/webhooks/stripe: on a reserved checkout.session.completed (§1.1), orchestrate trello.copyBoard(clientName, eventId) → email.sendWelcome (boardUrl from trello) → ops.alertFounder + ops.createCheckin, each independently guarded (§1.4) and RECORDING its per-step completion (+ any id) in the event record before the next step; the board copy REUSES a stored boardId if present, and on a retry with no stored boardId reconciles by eventId (§1.1d) so it never creates a second board; on any step failure return non-2xx (so Stripe retries + the resume path runs), mark status:done + return 200 only when all steps recorded. Acceptance (PRD end-to-end): `stripe trigger checkout.session.completed` in test mode → board created + client invited + welcome email delivered + founder alert + day-5 ops card, all within ~5 min; a replayed event id (sequential AND concurrent) produces NO duplicates of any of them; a FORCED failure in one step (e.g. email) does not abort the others, and the Stripe retry RESUMES only the missing step (email) reusing the same board (no second board) — verify resume, not just "alert"; no secrets in logs; lint+tsc+build green.
+Build Bundle 4 (founder ops + end-to-end wiring) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob4-ops on branch feat/codirity-ob4-ops (off origin/main; Bundles 1-3 merged). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 4" + Appendices D. Brief: lib/onboarding/ops.ts — (a) founder alert on new client via FOUNDER_ALERT_WEBHOOK_URL (Slack incoming webhook or email per §4 O4): "New client: {name} — {plan}"; (b) create a check-in card on TRELLO_OPS_BOARD_ID titled "Day-5 check-in — {clientName}", due +5 BUSINESS days (skip weekends), description = Appendix D copy verbatim. THEN wire Bundles 2/3/4 into /api/webhooks/stripe: on a reserved checkout.session.completed (§1.1), orchestrate trello.copyBoard({clientName, eventId, email, plan}) → email.sendWelcome (boardUrl from trello, eventId for the idempotency key) → ops.alertFounder + ops.createCheckin, each independently guarded (§1.4) and RECORDING its per-step completion (+ any id) in the event record before the next step; the board copy REUSES a stored boardId if present, and on a retry with no stored boardId reconciles by eventId (§1.1d) so it never creates a second board; on any step failure return non-2xx (so Stripe retries + the resume path runs), mark status:done + return 200 only when all steps recorded. Acceptance (PRD end-to-end): drive a test-mode event whose line-item price IS one of the O6 test price_ids — complete a REAL test-mode checkout against an O6 test Payment Link, or `stripe trigger checkout.session.completed --override` pinning the price to an O6 test price_id (a BARE `stripe trigger` mints its own throwaway product/price, can only ever exercise the unknown-price path, and can NEVER validate the price→plan map — do not use it as the happy-path test) → board created + client invited + welcome email delivered (correct planName) + founder alert + day-5 ops card, all within ~5 min; a replayed event id (sequential AND concurrent) produces NO duplicates of any of them; a FORCED failure in one step (e.g. email) does not abort the others, and the Stripe retry RESUMES only the missing step (email) reusing the same board (no second board) — verify resume, not just "alert"; a SIMULATED CRASH after the Trello copy but BEFORE boardId is persisted (kill between the copy call and the record write) → the retry reconciles by eventId and reuses the board — exactly one board for that eventId in the workspace (the §1.1 crash-after-board-copy test, mandatory here); no secrets in logs; lint+tsc+build green. POST-MERGE (operator step, not the build): once this bundle is merged and the test-mode e2e is green, Bruno registers the PROD webhook endpoint + sets the prod STRIPE_WEBHOOK_SECRET (§4 O6 stage 2) — NEVER before this bundle.
 ```
 
 ### §3.5 — Bundle 5
 
 ```
-Build Bundle 5 (lifecycle events, v1.1) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob5-lifecycle on branch feat/codirity-ob5-lifecycle (off origin/main). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 5" + Appendix E. Brief: handle customer.subscription.paused and customer.subscription.deleted in the webhook (same idempotency + guard rules). On either, create an ops card "Revoke access — {clientName}" on TRELLO_OPS_BOARD_ID with the Appendix E on-pause/cancel checklist as the description, and fire the founder alert. Optional: pause/cancel confirmation email to the client (behind a flag, off by default). Map subscription→client via the Stripe customer id (store the customer→clientName/boardId association at onboarding time in Bundle 1's store, or look it up via the Stripe customer). Acceptance: `stripe trigger customer.subscription.deleted` (and .paused) in test mode → one "Revoke access" ops card + founder alert, idempotent on event id; lint+tsc+build green.
+Build Bundle 5 (lifecycle events, v1.1) of Codirity client onboarding. Fresh worktree at /Users/brunomaurino/projects/codirity-ob5-lifecycle on branch feat/codirity-ob5-lifecycle (off origin/main). Full spec: docs/HANDOFF-client-onboarding.md "Bundle 5" + Appendix E. Brief: handle the lifecycle events in the webhook (same idempotency + guard rules). CRITICAL (spec-review major): a billing-portal pause — the pause path the welcome email itself advertises — does NOT emit customer.subscription.paused (that event fires only on the trial-end status=paused transition); it emits customer.subscription.updated with pause_collection transitioning to non-null. Handle THREE cases: (1) customer.subscription.deleted (cancel); (2) customer.subscription.updated where data.object.pause_collection is non-null and previous_attributes shows it was null (portal pause — ignore all other .updated deliveries with 200 per §1.5); (3) customer.subscription.paused (trial-end pause, completeness). On any of them, create an ops card "Revoke access — {clientName}" on TRELLO_OPS_BOARD_ID with the Appendix E on-pause/cancel checklist as the description, and fire the founder alert. Optional: pause/cancel confirmation email to the client (behind a flag, off by default). Map subscription→client via the Stripe customer id — PRIMARY: stripe.customers.retrieve(event's customer id) for name/email (the Bundle-1 store is keyed by eventId and is not queryable by customer; treat its stored association as best-effort only). Acceptance: `stripe trigger customer.subscription.deleted` in test mode → one "Revoke access" ops card + founder alert, idempotent on event id; the PAUSE path is exercised via customer.subscription.updated with pause_collection set (pause a test subscription from the billing portal, or `stripe trigger customer.subscription.updated --override` setting pause_collection) → same card + alert — a bare `stripe trigger customer.subscription.paused` alone does NOT validate the real pause path; an .updated event WITHOUT a pause_collection transition → 200 ignore, no card; lint+tsc+build green.
 ```
 
 ---
 
 ## 1. Phase 0 — Discovery findings (VERIFIED against the repo, 2026-07-24)
+
+> **Staleness note (2026-08-10):** these findings are as-of 2026-07-24, and the rebuild has since merged.
+> `src/config/offer.ts` now carries `stripeLink()` / `NEXT_PUBLIC_STRIPE_LINK_*` env-placeholder Payment
+> Links plus the canonical plan copy — treat **offer.ts as the source of truth** for plan names, task
+> limits, and links. The "no Stripe code anywhere" bullet is stale in that narrow sense (there is still no
+> webhook / server-side Stripe code, which is what matters here). Re-verify against current `main` at build
+> time; the dependency baseline (no stripe/resend/KV deps) was re-confirmed 2026-08-10.
 
 - **Stack is all-new.** `package.json` has only `nodemailer` among the relevant deps — **no `stripe`,
   `resend`, `@react-email/*`, Trello client, or any KV/DB**. Every integration in the PRD is net-new.
@@ -173,26 +206,40 @@ These are external accounts / config the build cannot create; the loop verifies 
   Enable it in the Vercel dashboard and add its env creds. (Alt: Upstash direct, or a Postgres table.)
 - **O2 — Email provider.** *Recommend Resend* (per PRD; React Email templating). Create the account, verify
   the `codirity.com` domain, and confirm `hello@codirity.com` as a sender + Bruno's reply-to. (Alt: reuse
-  the existing nodemailer/SMTP — cheaper, uglier templating.)
-- **O3 — Trello.** API key + token (which account owns the client boards?), a workspace for client boards,
-  and the ops board ID (`TRELLO_OPS_BOARD_ID`). The `seed-trello-template` script (Bundle 2) produces the
-  template board ID.
+  the existing nodemailer/SMTP — cheaper, uglier templating.) **DECIDE the sender:** the plan says
+  `hello@codirity.com` but the site's canonical contact (`src/config/offer.ts` `CONTACT_EMAIL`) is
+  `support@codirity.com` — either verify hello@ deliberately as a distinct onboarding sender, or switch
+  the plan (Bundle 3 + Appendix A footer) to support@. Don't leave it implicit.
+- **O3 — Trello.** API key + token (which account owns the client boards?), a workspace for client boards
+  — capture its id as `TRELLO_WORKSPACE_ID` (client boards are created with `idOrganization` set to it,
+  and the §1.1d reconcile filters on it) — and the ops board ID (`TRELLO_OPS_BOARD_ID`). The
+  `seed-trello-template` script (Bundle 2) produces the template board ID.
 - **O4 — Founder alert channel.** Slack incoming webhook URL, or a plain email address. *Recommend Slack if
   you have a workspace, else email.*
-- **O5 — Access form (Tally).** Build the Tally form from Appendix C; give the loop the public URL for
-  `accessFormUrl`. No build in v1.
-- **O6 — Stripe webhook + prices.** Register the endpoint (`/api/webhooks/stripe`) in Stripe (test + prod),
-  capture `STRIPE_WEBHOOK_SECRET`, and give the exact `price_id`s for Standard / Pro / Founding (must match
-  the rebuild's Payment Links, D2).
+- **O5 — Access form (Tally).** Build the Tally form from Appendix C; the public URL becomes the
+  `ACCESS_FORM_URL` env var (the source of the `{accessFormUrl}` placeholder). No build in v1.
+- **O6 — Stripe webhook + prices — TWO-STAGE (spec-review blocker, 2026-08-10).** **Stage 1 (at launch):**
+  register the endpoint (`/api/webhooks/stripe`) in **TEST mode only**, capture the test
+  `STRIPE_WEBHOOK_SECRET`, and give the exact `price_id`s for Standard / Pro / Founding — test AND live
+  (must match the rebuild's Payment Links, D2 — note D2 shipped env-placeholder links, so the real Payment
+  Links + prices may still need to be CREATED first). **Stage 2 (ONLY after Bundle 4 merges + test e2e
+  green):** register the PROD endpoint + set the prod secret. Registering prod earlier means a real
+  checkout gets 200-ACKed by a handler with no provisioning behind it — Stripe stops retrying, the event is
+  marked done, and that paying client silently never gets a board or email.
 - **O7 — 1Password shared vault** for client secrets (process, not code; Appendix C references it).
 - **O8 — Sequencing.** Launch this loop only after the rebuild loop has merged all its bundles.
+  **SATISFIED 2026-08-10** — the rebuild merged completely (PRs #1–#7); the general one-loop-at-a-time
+  rule still applies to any other loop (e.g. redesign).
+- **O9 — Stripe Customer portal (NEW, spec-review).** Enable the Customer portal (test + live) and capture
+  its permanent login-page link as `STRIPE_BILLING_PORTAL_URL` — the welcome-email footer uses this;
+  per-session portal URLs are single-use and must never go in an email.
 
 ## 5. Out of scope (v1)
 Native access-form page (Tally in v1, native in v2), a client dashboard/portal, automated secret exchange
 (1Password invite is manual), analytics on onboarding funnel, multi-seat/team provisioning.
 
 ## 6. Acceptance (whole plan) — from the PRD
-1. Stripe CLI end-to-end in test mode: board created + invite sent + email delivered + ops card created, < 5 min.
+1. End-to-end in test mode with a REAL O6 test price (real test Payment-Link checkout, or `stripe trigger --override` pinning an O6 test price_id — never a bare `stripe trigger`, which mints a throwaway price and can't validate the plan map): board created + invite sent + email delivered with correct planName + ops card created, < 5 min.
 2. Invalid signature → 400; replayed event id → no duplicate board/email/card.
 3. Trello board matches Appendix B exactly (lists, card order, copy).
 4. No secrets in logs; all keys via env.
