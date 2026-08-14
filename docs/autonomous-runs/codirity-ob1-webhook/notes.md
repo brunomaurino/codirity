@@ -122,6 +122,15 @@ sequential-replay paths; a scripted concurrent-replay test (two overlapping POST
   one — the event never forwarded. Caught because the dev server log showed nothing after a trigger.
   Fixed by re-reading `stripe config --list` and correcting the key in both `.env.local` copies
   (worktree + parent), then restarting the dev server.
+- **Review-battery launch failure caught before trusting it:** the first battery invocation
+  (`wf_cda83614-f73`) passed `customAgents: true` (per Step-0 probe (f), which succeeded ONLY via the
+  plugin-scoped name `autonomous-task:at-reviewer` after the bare `at-reviewer` failed). The battery
+  script itself apparently attempts only the BARE agentType name — all 6 agents errored
+  (`agent type 'at-reviewer' not found`), producing a `rawFindings: 0` / `areasExamined: 0` result that
+  would misread as "clean review" if not checked. Caught by inspecting the notification's `<failures>`
+  block (6/6 `agents_error`) rather than trusting the zero-findings summary — the result object's own
+  `note` field even flags this ("verify areas-examined lists look real before trusting a clean review").
+  Re-invoked with `customAgents: false` (general-purpose inline-prompt fallback) as `wf_36ea54ce-5d7`.
 - Unknown price id → mark `status: done` + return 200 (not left "reserved" / retried forever): a
   Stripe retry cannot fix an unmapped price id — only a human editing the plan map or Stripe config can
   — so retrying indefinitely just repeats a doomed lookup. The founder-alert is the "loud" failure
@@ -181,7 +190,103 @@ localhost:3101/api/webhooks/stripe`, real Stripe test-mode account (`acct_1TyenB
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Battery `wf_36ea54ce-5d7` (customAgents:false, general-purpose inline prompts — see the Decisions section
+for why the first attempt, `wf_cda83614-f73`, was discarded): 6 reviewers (4 adversarial incl. 1 mixed
+sonnet/round + 2 QA), 32 raw findings → 18 unique after semantic dedup → 17 confirmed real / 1 refuted.
+Verify hit partial Fable exhaustion (9/27 voter calls failed on "Fable 5 limit"); the script's own
+`judgeFallback` retried on opus per its log ("fable unavailable/exhausted → retry on opus") for the 7
+`applyInline` MAJORs, which all carry full majority tallies (six 3/3, one 2/3) — trustworthy. 10 MINORs
+could not get a majority verdict and passed through as `unverified-minor`, flagged for the main thread to
+re-check before applying (per Step 3) — I independently re-examined each before applying, below.
+
+**1 REFUTED (correctly, no action):** `idempotency.ts` `ex: HYGIENE_TTL_SECONDS` on the NX write —
+reviewer flagged this as "never an EX on the key," but HANDOFF §1.1(a) explicitly permits a hygiene TTL
+≥90 days; 90 days is exactly at that boundary and `lease_until` genuinely lives as a record field, not a
+key TTL. Confirmed correct as originally written; no change.
+
+**7 MAJOR — all fixed, all re-verified locally against the fix (not just re-reasoned about):**
+1. **Plan never persisted to the durable record** (route.ts / idempotency.ts) — `reserveEvent` seeded
+   `plan: null` and `markDone` never updated it. Fixed by routing every post-reserve write through the
+   new `updateRecordIfLeaseHeld(eventId, leaseUntil, patch)`, which now carries `{ plan }` before
+   `{ status: "done" }`. Re-verified: the concurrent-replay retest (below) shows the winning delivery's
+   fenced update succeeding end-to-end.
+2. **`markDone`/`updateRecord` not lease-fenced** (idempotency.ts) — was a blind GET-then-SET that could
+   overwrite a record a different worker had since taken over. Replaced with a Lua CAS
+   (`updateRecordIfLeaseHeld`) fenced on the exact `lease_until` the caller observed at reserve time —
+   returns `false` (never silently succeeds) if that fence no longer matches. **Empirically verified with
+   a dedicated unit test**, not just reasoned about: a stale/wrong fencing token was rejected
+   (`update with STALE token succeeded: false`) and the real current token was accepted (`true`).
+3. **PII leak via SDK error messages** (route.ts) — Upstash's `UpstashError.message` can embed the full
+   failed command body (including email/name) via `JSON.stringify`. Added `sanitizedErrorTag()`, which
+   logs only `err.constructor.name`, never `.message`, for every catch block in the route. Verified via
+   the updated signature-failure test: the log now reads `StripeSignatureVerificationError`, not the raw
+   message.
+4. **Module-scope `new Stripe(...)` breaks build/runtime on a missing key** (route.ts) — moved the
+   client construction inside the request handler (after an explicit env-presence check that returns 500
+   distinctly), so a missing key can never fail `next build`'s static module-load pass.
+5. **`LEASE_SECONDS` not mechanically pinned against the function's real execution ceiling** (route.ts) —
+   added `export const maxDuration = 60` (Vercel route-segment config), strictly below `LEASE_SECONDS =
+   90`, so the platform actually enforces the invariant the comment only used to assert.
+6. **Lease-expired CAS takeover path never executed in any test** (idempotency.ts) — **fixed by actually
+   exercising it**: seeded a record directly in Upstash with `status: "reserved"` and `lease_until` 5s in
+   the past (simulating a crashed worker), then POSTed a matching signed event. Result: 200 (not the 503
+   a still-valid-lease read would give), and the record read back afterward shows `lease_until` advanced
+   to a NEW future value and `status: "done"` — proof the CAS takeover branch (not just the reserve-NX
+   branch) actually ran and completed correctly. This is now real evidence, not the "reasoned about, never
+   executed" gap the finding flagged.
+7. **Unknown-price alert path not actionable + unrecoverable** (route.ts) — the alert message and the
+   `console.log` now include the actual `priceId` (not PII — a Stripe resource id), and the record gains
+   a new optional `unmappedPriceId` field so an operator inspecting the KV record for triage sees exactly
+   what was wrong. The "mark done, don't retry forever" decision itself stands (documented earlier — a
+   retry can never fix an unmapped price), but triage no longer requires guessing.
+
+**12 MINOR — all applied** (the anti-deferral default; none required an operator decision or introduced a
+risky dependency):
+- Unbounded recursion in `reserveEvent`'s NX-miss retry → bounded to `MAX_RESERVE_ATTEMPTS = 3`, throws
+  loudly past that instead of growing the call stack.
+- Missing `STRIPE_WEBHOOK_SECRET` indistinguishable from a forged signature → split into its own check
+  (alongside the same check for `STRIPE_SECRET_KEY`) returning 500 with a distinct log line, so Stripe
+  keeps retrying a config error instead of being told to permanently stop (which a 400 would do).
+- Only the first line item was consulted for the plan → now scans all line items for the first one whose
+  price maps to a known plan, falling back to the first item's price only for logging/alerting when none
+  match.
+- `customerId`/`email` silently stored as `""` on a null session/customer_details → folded into the same
+  loud-failure policy as unknown price (alert + log + fenced `done`), consistent with the "fail loudly,
+  don't silently propagate an empty value downstream" rule already used elsewhere. Incidentally exercised
+  live during retesting (see below) — a `mode: "payment"` Stripe trigger fixture (vs. our real
+  subscription-mode checkouts) left `customer: null`, and the new branch caught it correctly.
+- `alertSent` bookkeeping never written → now set `true` in the same fenced update that marks the event
+  done in both the missing-identity and unknown-price branches.
+- Redundant type assertion at `event.data.object as Stripe.Checkout.Session` → confirmed necessary (no
+  discriminated narrowing in Stripe's public types), left in place with a comment explaining why and
+  flagging it for Bundle 5's subscription-event branches to follow the same pattern.
+- `OnboardingEventRecord.plan` typed as `string | null` instead of the exact union → tightened to
+  `PlanId | null` (imported from `plans.ts`).
+- Redundant/divergence-prone `eventId` parameter → removed from the caller-supplied `initial` object type
+  (`Omit<..., "eventId">`); the record's `eventId` field is now always derived from the function's own
+  `eventId` argument, so it's structurally impossible for them to disagree.
+- `founder-alert.ts` doc/module-path drift vs. the HANDOFF's declared `lib/onboarding/ops.ts` → updated
+  the docstring to name the real target path and flag this file as throwaway scaffolding for Bundle 4 to
+  fold in, not the final module boundary.
+- Stripe SDK `apiVersion` left unset → pinned explicitly via `Stripe.API_VERSION` (the SDK's own exported
+  constant — self-updating with the installed package version, no hardcoded string to drift).
+
+## Additional local testing (post-fix, Phase 3 continued)
+
+All re-run against the restarted dev server with the fixed code:
+- Invalid signature → 400, confirmed; log now shows `StripeSignatureVerificationError` only (no raw
+  message) — verifies the PII-in-error-logs fix.
+- Concurrent replay (new synthetic event, realistic `customer` id) → one 200 (unknown-price path, now
+  logging `priceId`), one 503, confirming the MAJOR #1/#2 fixes didn't regress the load-bearing invariant.
+  A third sequential request to the same event → 200, no new processing (no-op preserved).
+- **NEW: lease-expired takeover, exercised end-to-end for the first time** — see MAJOR #6 above. Direct
+  Redis inspection after the request shows `lease_until` advanced and `status: "done"`.
+- **NEW: lease-fencing unit test** — `updateRecordIfLeaseHeld` rejects a stale token (`false`) and accepts
+  the real one (`true`), directly exercising the CAS fence outside the HTTP layer.
+- Incidental: a Stripe `mode: "payment"` trigger fixture (as opposed to our real `subscription`-mode
+  checkouts) exercised the new missing-customerId loud-failure branch live, unprompted — confirms it
+  fires correctly, not just in theory.
+- `npm run lint`, `npx tsc --noEmit`, `npm run build`: all green after the fixes.
 
 ## Edge cases considered
 
@@ -207,11 +312,67 @@ localhost:3101/api/webhooks/stripe`, real Stripe test-mode account (`acct_1TyenB
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+The battery returned 62 `areasExamined` entries (heavy overlap across 6 reviewers independently checking
+the same load-bearing spots — full raw list is in the battery's journal.jsonl, `wf_36ea54ce-5d7`,
+recoverable via `resumeFromRunId` if needed). Distinct themes, condensed:
+
+- **Raw-body handling before signature verification** — `req.text()` is the first read, nothing parses
+  or mutates it before `constructEvent`; a missing header lands in the 400 branch, not a 500. Ruled out
+  the classic "parsed-before-verify" defect.
+- **Key TTL vs. the spec's "NEVER an EX on the key" rule** — checked against HANDOFF §1.1(a), which
+  explicitly permits a ≥90-day hygiene TTL; `lease_until` stays a record field. Ruled out (one reviewer's
+  literal-phrasing read of this became the refuted finding above).
+- **Lua CAS atomicity + numeric fidelity** (multiple independent passes) — `EVAL` executes atomically
+  server-side (no split GET/SET across REST round-trips); a 13-digit ms epoch survives Lua's `%.14g`
+  `tostring` and JS's `String()` identically; `@upstash/redis`'s `defaultSerializer`/`parseRecursive`
+  don't double-encode/decode the JSON record. Ruled out a silently-always-failing CAS.
+- **TOCTOU between the failed NX and the follow-up GET / concurrent-replay exactly-once** — every
+  post-NX state is covered deterministically; cross-checked against the empirical concurrent-curl test
+  (exactly one 200 + one 503, both original and retest). Ruled out double-reservation.
+- **PII/secrets in the deliberate log statements** — every `console.*` call inspected; only
+  `eventId`/`type`/`plan`/`priceId`/generic error tags are logged, email/name only ever reach the KV
+  record. (The INDIRECT leak via raw SDK error `.message` was NOT ruled out — filed as MAJOR #3, fixed.)
+- **Env-var hygiene / client-bundle leakage** — all 7 new vars documented in `.env.example`, none
+  `NEXT_PUBLIC_`-prefixed, `plans.ts` server-only. Ruled out secret/price-id leakage into client JS.
+- **TypeScript correctness vs. installed `stripe@22.5.0` / `@upstash/redis@1.38.2` types** — no `any`,
+  the one type assertion is SDK-idiomatic and necessary (Stripe's types don't discriminate-narrow
+  `Event.Data.Object` from `event.type`), `redis.eval`'s `Promise<unknown>` compared with `=== 1` is
+  legal and correct. Ruled out unsafe casts hiding a real mismatch.
+- **Dependency supply chain** — `stripe`/`@upstash/redis` both resolve to the official registry with
+  matching integrity hashes, no aliasing/git/tarball sources. Ruled out a substituted dependency.
+- **Scope discipline** — no Trello/email/ops side effects pulled forward from Bundles 2-4; the
+  founder-alert stub is console-only as specified. Ruled out scope creep.
+- **Plan-model consistency** (`plans.ts` `"founding"` vs. `offer.ts`'s `Tier.id`/`FoundingRate` split) —
+  matches the HANDOFF's own "Standard/Pro/Founding" framing; a deliberate modeling choice, not drift.
+- **HANDOFF cross-references in code comments** — every `§` citation resolves to a real section saying
+  what the comment claims. Ruled out phantom/misattributed citations.
+- **Multi-line-item checkout sessions** — only `data[0]` was originally consulted; correct for Codirity's
+  current single-plan Payment Links but fragile against a future add-on line. Filed as MINOR, fixed
+  (now scans all line items for a mapped price).
+- **`stripe.checkout.sessions.listLineItems` `expand` path validity** — the TS types can't validate the
+  expand string, but the live test-mode delivery reaching `plan: null`/200 empirically proves it resolves
+  correctly (a rejection would land in the 500 catch instead).
+- **Test-fixture/snapshot staleness** — no test infrastructure exists in this repo at all (`find` for
+  `*.test.*`/`*.spec.*` returns nothing); verification for this bundle is behavioral, recorded in the
+  "Local acceptance testing" sections above. Not applicable, not a gap.
+- **Bundle status surface (HANDOFF §2) still reading "not started"** — correctly out of scope; owned by
+  `/autonomous-bundle-loop`'s post-merge plumbing, not this PR's diff.
+- **Changelog/README update convention** — no such convention exists in this repo (recent merges don't
+  touch `docs/changelog.md` either). Ruled out as a missing-convention violation.
+- **`markDone`/`updateRecord` non-atomic vs. a concurrent lease takeover** — explicitly flagged by one
+  reviewer as "inspected and NOT ruled out as safe," deliberately surfaced rather than silently passed —
+  this became MAJOR #2 above, fixed via `updateRecordIfLeaseHeld`.
+
+## Items deferred from this PR
+
+None — all review findings resolved (7 MAJOR + 12 MINOR applied, 1 refuted with no action needed;
+`forcedApply`/`bMinorHard`/`deferralsArchitecture`/`deferralsBlocked`/`scopeCreep`/`escalations`/
+`unverifiedDeferred` were all empty in the battery's returned result).
 
 ## Open items NOT addressed in this PR
 
-(filled in Phase 7)
+None. Everything in scope for Bundle 1 (§3.1 of the HANDOFF) shipped; Trello/email/founder-ops side
+effects are explicitly Bundles 2-4's scope, not deferred from this one.
 
 ## Durable handles
 
@@ -221,3 +382,5 @@ localhost:3101/api/webhooks/stripe`, real Stripe test-mode account (`acct_1TyenB
 - dev_server_pid: 95065 (npm run dev -p 3101; child node PID 95087 listening on :3101; restarted after
   fixing a stale-key bug below)
 - stripe_listen_pid: 94080 (stripe listen --forward-to localhost:3101/api/webhooks/stripe)
+- battery_run_id: wf_cda83614-f73 (FAILED — see Decisions below; superseded)
+- battery_run_id: wf_36ea54ce-5d7 (corrected retry — customAgents: false)
