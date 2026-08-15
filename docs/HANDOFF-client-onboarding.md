@@ -204,12 +204,10 @@ These are external accounts / config the build cannot create; the loop verifies 
   auto-merge 2/3/5 on green; hard-stop 1 + 4 for a human look, since they're the money/idempotency path.*
 - **O1 — Idempotency store.** *Recommend Vercel KV (Upstash Redis)* — native to the Vercel deploy, tiny.
   Enable it in the Vercel dashboard and add its env creds. (Alt: Upstash direct, or a Postgres table.)
-- **O2 — Email provider.** *Recommend Resend* (per PRD; React Email templating). Create the account, verify
-  the `codirity.com` domain, and confirm `hello@codirity.com` as a sender + Bruno's reply-to. (Alt: reuse
-  the existing nodemailer/SMTP — cheaper, uglier templating.) **DECIDE the sender:** the plan says
-  `hello@codirity.com` but the site's canonical contact (`src/config/offer.ts` `CONTACT_EMAIL`) is
-  `support@codirity.com` — either verify hello@ deliberately as a distinct onboarding sender, or switch
-  the plan (Bundle 3 + Appendix A footer) to support@. Don't leave it implicit.
+- **O2 — Email provider. DECIDED 2026-08-14/15 (operator).** Resend, domain already verified. Sender is
+  `support@codirity.com` — matching the site's canonical contact (`src/config/offer.ts` `CONTACT_EMAIL`),
+  NOT the `hello@codirity.com` this section originally proposed. Bundle 3 sends from support@ with
+  Bruno's address as reply-to.
 - **O3 — Trello.** API key + token (which account owns the client boards?), a workspace for client boards
   — capture its id as `TRELLO_WORKSPACE_ID` (client boards are created with `idOrganization` set to it,
   and the §1.1d reconcile filters on it) — and the ops board ID (`TRELLO_OPS_BOARD_ID`). The
@@ -234,9 +232,15 @@ These are external accounts / config the build cannot create; the loop verifies 
 - **O8 — Sequencing.** Launch this loop only after the rebuild loop has merged all its bundles.
   **SATISFIED 2026-08-10** — the rebuild merged completely (PRs #1–#7); the general one-loop-at-a-time
   rule still applies to any other loop (e.g. redesign).
-- **O9 — Stripe Customer portal (NEW, spec-review).** Enable the Customer portal (test + live) and capture
-  its permanent login-page link as `STRIPE_BILLING_PORTAL_URL` — the welcome-email footer uses this;
-  per-session portal URLs are single-use and must never go in an email.
+- **O9 — Stripe Customer portal. TEST mode DONE 2026-08-15.** Created a `billing_portal.configuration`
+  (`bpc_1U4pvOLphcTHVMXGAilKaXif`) with `login_page.enabled=true`, giving a permanent login link
+  (`STRIPE_BILLING_PORTAL_URL`) — the welcome-email footer uses this; per-session portal URLs are
+  single-use and must never go in an email. The configuration's FEATURES (cancellation flow/proration,
+  whether to model Codirity's "pause, days banked" policy vs. Stripe's built-in subscription-pause,
+  which fields customers can self-edit) were set to a reasonable default, not a reviewed business
+  decision — revisit in the Stripe Dashboard at your convenience; the login link itself won't change if
+  you edit them later. **LIVE mode is a separate, later step** (same two-stage pattern as O6): repeat
+  with `--live` before real launch.
 
 ## 5. Out of scope (v1)
 Native access-form page (Tally in v1, native in v2), a client dashboard/portal, automated secret exchange
