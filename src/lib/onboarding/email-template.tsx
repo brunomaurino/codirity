@@ -8,6 +8,9 @@ export interface WelcomeEmailProps {
   billingPortalUrl: string;
 }
 
+/** Shared with email.ts so the subject and this component's preheader can never drift. */
+export const WELCOME_EMAIL_SUBJECT = "Welcome to Codirity — your board is ready";
+
 /**
  * Appendix A of docs/HANDOFF-client-onboarding.md, seeded VERBATIM — do not paraphrase
  * client-facing copy (§1.8). The only non-verbatim addition is the footer's billing-
@@ -15,11 +18,14 @@ export interface WelcomeEmailProps {
  * wording for.
  */
 export function WelcomeEmail({ clientName, boardUrl, accessFormUrl, planName, billingPortalUrl }: WelcomeEmailProps) {
-  const greetingName = clientName ?? "there";
+  // `?.trim() || "there"` (not `??`) so an empty/whitespace-only name — which Stripe's
+  // customer_details.name can in principle carry — falls back the same as a missing one,
+  // instead of rendering "Hi ,".
+  const greetingName = clientName?.trim() || "there";
   return (
     <Html>
       <Head />
-      <Preview>Welcome to Codirity — your board is ready</Preview>
+      <Preview>{WELCOME_EMAIL_SUBJECT}</Preview>
       <Body style={main}>
         <Container style={container}>
           <Text style={paragraph}>Hi {greetingName},</Text>

@@ -140,11 +140,99 @@ so verification is template-rendering-only, via `@react-email/render`'s `render(
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Battery `wf_d59f8ca0-f58` (customAgents:false): 6 reviewers (4 adversarial incl. 1 mixed sonnet + 2 QA),
+9 agents, no errors. 17 raw → 10 unique after dedup → **10 confirmed real, 0 refuted** — every surfaced
+finding held up. 67 areas examined, including a deep, empirically-verified investigation of whether
+calling the template as a plain function (`WelcomeEmail({...})` vs `<WelcomeEmail/>`) could crash under
+React Compiler (it doesn't — Next 16 never runs the compiler on server compilations, confirmed by
+inspecting the actual build output).
+
+**1 MAJOR — fixed:**
+- HANDOFF §3.3's Bundle-3 launch brief still said `hello@codirity.com` (twice) after this same commit
+  had already rewritten §4 O2 to `support@codirity.com` — a self-contradiction on the money-path sender
+  that would mislead a re-run or a human reader. Fixed both mentions.
+
+**9 MINOR — all applied:**
+- `PLAN_DISPLAY_NAMES` now derives Standard/Pro from `offer.ts` `tiers[].name` (mirroring trello.ts's
+  `activeTasksNoteFor` precedent) instead of a hardcoded duplicate; Founding stays hardcoded with a
+  comment explaining why (no Tier entry in offer.ts for it).
+- `clientName` fallback changed from `??` to `?.trim() || "there"` — an empty/whitespace-only name (which
+  Stripe's `customer_details.name` could in principle carry) now falls back correctly instead of
+  rendering "Hi ,". **Re-verified empirically**: rendered with `""` and `"   "` in addition to the
+  original null/normal cases — all four correctly greet "Hi there," or the real name.
+- Resend send now includes an explicit `text` part (via `@react-email/render`'s `render(el, {
+  plainText: true })`, added as a real dependency) alongside `react`, instead of shipping HTML-only.
+- `sendWelcomeEmail` now returns `{ id }` (Resend's message id) instead of discarding it, matching
+  `copyBoard`'s boardId-return precedent — Bundle 4 can persist it if useful.
+- Extracted the duplicated `requiredEnv` helper (previously copy-pasted byte-for-byte in trello.ts) into
+  a new shared `src/lib/onboarding/env.ts`, and updated trello.ts to import it instead of its own copy —
+  **re-verified live**: called `trelloRequest()` post-refactor against the real Trello workspace to
+  confirm no regression.
+- Subject line is now a single exported constant (`WELCOME_EMAIL_SUBJECT`) used by both the `<Preview>`
+  and `email.ts`'s `subject:` field, instead of two independently-typed copies of the same string.
+- `.env.example`'s `ACCESS_FORM_URL` comment now names both consumers (Bundle 2's trello.ts AND Bundle
+  3's email.ts), not just the original one.
+- Softened the JSDoc's unqualified "can't duplicate the email" claim to explain the actual guarantee
+  (Resend's idempotency-key retention window vs. Stripe's longer retry horizon; Bundle 1's per-step
+  record is the durable cross-retry guard).
+- HANDOFF §3.4's Bundle 4 brief called the function `email.sendWelcome`; fixed to the real export
+  `email.sendWelcomeEmail({eventId, email, clientName, boardUrl, plan})`, including the previously
+  unmentioned `email`/`plan` params and the new `{id}` return value.
+
+## Local re-testing (post-fix)
+
+- Re-rendered the template for 4 `clientName` cases (normal, null, empty string, whitespace-only) — all
+  four produce the correct greeting with zero residual placeholders (empty/whitespace cases now fixed).
+- Confirmed `WELCOME_EMAIL_SUBJECT` exports and matches Appendix A's subject line exactly.
+- Re-ran a live `trelloRequest()` call against the real Trello workspace to confirm the `requiredEnv`
+  extraction didn't regress Bundle 2's already-merged module.
+- `npm run lint`, `npx tsc --noEmit`, `npm run build`: all green after the fixes.
+- The RESEND_API_KEY gap remains (see "Decisions made" above) — still not exercised against the live
+  Resend API; everything else was independently re-verified by the battery reading the ACTUAL installed
+  SDK's `.d.mts`/`.mjs` rather than assumed knowledge.
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+67 entries returned (full list in the battery's journal.jsonl, `wf_d59f8ca0-f58`). Distinct themes:
+
+- **Resend SDK call shape vs. the ACTUALLY installed `resend@6.20.0`** (checked repeatedly, from first
+  principles against `node_modules/resend/dist/index.d.mts`/`.mjs`, not general Resend knowledge) —
+  `idempotencyKey` really is a second-argument option that becomes the `Idempotency-Key` header;
+  `replyTo`/`react`/`from`/`to`/`subject` are all the correct field names for this version. This was the
+  single most-examined area across reviewers, precisely because the send call was never runtime-exercised.
+- **React Compiler vs. calling the template as a plain function** — the single deepest investigation in
+  this run. Confirmed babel-plugin-react-compiler DOES transform the component and WOULD crash if
+  invoked outside a render, but Next 16 never runs the compiler on server compilations (verified against
+  the actual build output), so this module — server-only, never client-imported — is safe. Flagged as a
+  fragility to watch if this module is ever pulled into a client/SSR graph, not a live defect.
+- **Appendix A verbatim fidelity** — rendered and diffed line-by-line, character-level (quote/dash
+  encoding included) against the HANDOFF multiple times by different reviewers; word-for-word match.
+- **eventId confinement + PII/secrets in logs** — traced every occurrence of `eventId`/`email`/API key
+  through the full file; confined to the idempotency key and the `to:` field respectively, zero
+  `console.*` calls in either new file.
+- **billingPortalUrl provenance** — confirmed no Stripe SDK import exists in email.ts/email-template.tsx,
+  so a per-session portal URL cannot reach the email; the value only ever comes from the env var.
+- **Scope boundary** — confirmed zero references to the new module from `src/app`, matching "Bundle 4
+  wires it."
+- **Type/build gate integrity** — independently re-ran `tsc`/`lint`/`build` rather than trusting notes.md;
+  confirmed no `any`/`as`/non-null assertions in either new file.
+- **Resend idempotency-key retention window vs. Stripe's retry horizon** — deliberately NOT surfaced as a
+  finding (no way to confirm Resend's exact TTL without a live API call), but explicitly flagged as a
+  residual uncertainty for Bundle 4 to weigh — folded into the softened JSDoc fix above.
+- **Duplicated `requiredEnv` helper** — considered, initially judged "not worth a finding" by one
+  reviewer's areasExamined note, but a DIFFERENT reviewer's QA pass surfaced it as an applyInline MINOR
+  (both perspectives are preserved here; the majority verify treated it as real and it was fixed).
+- **HANDOFF §2 bundle-status row / §3.3 sender contradiction split** — correctly distinguished:  the §2
+  status table is bundle-loop's post-merge plumbing (not this PR's job), but the §3.3 sender text WAS
+  this PR's own self-contradiction (introduced by only partially updating the doc) and was fixed as the
+  MAJOR finding above.
+
+## Items deferred from this PR
+
+None — all 10 confirmed review findings applied and re-verified (empirically where practical, by
+inspection/type-checking where a live Resend send wasn't possible). The RESEND_API_KEY gap is
+documented, not a deferral in the tracked-commitment sense — it's an operator credential need, not a
+code item with a follow-up bundle owner.
 
 ## Items deferred from this PR
 
@@ -152,10 +240,15 @@ so verification is template-rendering-only, via `@react-email/render`'s `render(
 
 ## Open items NOT addressed in this PR
 
-(filled in Phase 7)
+None in code. **Operator follow-up needed:** a real `RESEND_API_KEY` should be added to `.env.local` +
+Vercel so the actual Resend API call gets exercised at least once before Bundle 4 wires this in —
+everything else about the send is verified by inspection/type-checking against the installed SDK, but
+an actual API round-trip has never happened. Webhook wiring is explicitly Bundle 4's scope, not deferred
+from this one.
 
 ## Durable handles
 
 - marker: /Users/brunomaurino/.claude/autonomous-active/autonomous-task-codirity-ob3-email
 - worktree: /Users/brunomaurino/projects/codirity-ob3-email
 - worktree_entry: path
+- battery_run_id: wf_d59f8ca0-f58

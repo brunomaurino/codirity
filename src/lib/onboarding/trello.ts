@@ -1,5 +1,6 @@
 import type { PlanId } from "./plans";
 import { tiers } from "@/config/offer";
+import { requiredEnv } from "./env";
 
 const TRELLO_BASE = "https://api.trello.com/1";
 const EVENT_MARKER_PREFIX = "codirity-event:";
@@ -83,14 +84,6 @@ interface TrelloBoardSummary {
   desc: string;
   url: string;
   idOrganization: string | null;
-}
-
-function requiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} not configured`);
-  }
-  return value;
 }
 
 /** Like requiredEnv, but also asserts the value is shaped like a Trello object id (24
