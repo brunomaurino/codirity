@@ -1,7 +1,9 @@
 import type { PlanId } from "./plans";
+import { tiers } from "@/config/offer";
 
 const TRELLO_BASE = "https://api.trello.com/1";
 const EVENT_MARKER_PREFIX = "codirity-event:";
+const TRELLO_ID_PATTERN = /^[0-9a-f]{24}$/i;
 
 function trelloAuthParams(): string {
   const key = process.env.TRELLO_KEY;
@@ -42,8 +44,37 @@ export interface CopyBoardResult {
   boardUrl: string;
 }
 
+function lowerFirst(s: string): string {
+  return s.length === 0 ? s : s.charAt(0).toLowerCase() + s.slice(1);
+}
+
+/**
+ * Derived from src/config/offer.ts — the HANDOFF's designated canonical source for tier
+ * copy — rather than a hardcoded duplicate, so a future change to offer.ts's task-limit
+ * wording can't silently desync from new client boards. Founding has no separate tier in
+ * offer.ts (it's a price-only variant layered on the Pro task limit, per foundingRate's
+ * shape), so it explicitly maps to the "pro" tier's copy. The exhaustive switch + `never`
+ * check means a future PlanId addition fails to COMPILE here instead of silently
+ * defaulting to the wrong copy.
+ */
 function activeTasksNoteFor(plan: PlanId): string {
-  return plan === "standard" ? "one active task at a time" : "two active tasks at a time";
+  switch (plan) {
+    case "standard": {
+      const tier = tiers.find((t) => t.id === "standard");
+      if (!tier) throw new Error("activeTasksNoteFor: 'standard' tier missing from offer.ts");
+      return lowerFirst(tier.tasks);
+    }
+    case "pro":
+    case "founding": {
+      const tier = tiers.find((t) => t.id === "pro");
+      if (!tier) throw new Error("activeTasksNoteFor: 'pro' tier missing from offer.ts");
+      return lowerFirst(tier.tasks);
+    }
+    default: {
+      const exhaustiveCheck: never = plan;
+      throw new Error(`activeTasksNoteFor: unhandled plan "${String(exhaustiveCheck)}"`);
+    }
+  }
 }
 
 interface TrelloBoardSummary {
@@ -62,16 +93,32 @@ function requiredEnv(name: string): string {
   return value;
 }
 
+/** Like requiredEnv, but also asserts the value is shaped like a Trello object id (24
+ * hex chars) — Trello's `idOrganization`/create-board params accept either a workspace's
+ * id OR its short name, but this module's OWN reconcile comparison (`idOrganization ===
+ * workspaceId`) only ever matches against the id the API returns, so a name here would
+ * make the reconcile silently match nothing, forever, with no error — this check turns
+ * that into a loud failure at read time instead. */
+function requiredTrelloId(name: string): string {
+  const value = requiredEnv(name);
+  if (!TRELLO_ID_PATTERN.test(value)) {
+    throw new Error(`${name} must be a Trello object id (24 hex characters) — got a value that doesn't look like one (e.g. a workspace/board NAME instead of its id)`);
+  }
+  return value;
+}
+
 /**
  * §1.1(d) reconcile — search the workspace for a board this eventId already produced,
  * before ever copying. Trello has no server-side description search, so this enumerates
- * every board the token can see and filters client-side (mirrors the HANDOFF's own
- * reasoning for the same limitation).
+ * every OPEN board the token can see and filters client-side (mirrors the HANDOFF's own
+ * reasoning for the same limitation). Scoped to `filter=open` deliberately: a board the
+ * operator has since archived (e.g. on client cancellation, per Appendix E) must NOT be
+ * silently reused/reactivated by a late/replayed webhook delivery.
  */
 async function findExistingBoard(eventId: string): Promise<{ id: string; url: string } | null> {
-  const workspaceId = requiredEnv("TRELLO_WORKSPACE_ID");
+  const workspaceId = requiredTrelloId("TRELLO_WORKSPACE_ID");
   const boards = (await trelloRequest(
-    "/members/me/boards?fields=name,desc,url,idOrganization"
+    "/members/me/boards?fields=name,desc,url,idOrganization&filter=open"
   )) as TrelloBoardSummary[];
   const marker = `${EVENT_MARKER_PREFIX}${eventId}`;
   const match = boards.find((b) => b.idOrganization === workspaceId && b.desc.includes(marker));
@@ -85,8 +132,8 @@ async function findExistingBoard(eventId: string): Promise<{ id: string; url: st
  * `findExistingBoard` exists to close; putting them in one atomic call closes it for good.
  */
 async function copyTemplateBoard(clientName: string, eventId: string): Promise<{ id: string; url: string }> {
-  const templateId = requiredEnv("TRELLO_TEMPLATE_BOARD_ID");
-  const workspaceId = requiredEnv("TRELLO_WORKSPACE_ID");
+  const templateId = requiredTrelloId("TRELLO_TEMPLATE_BOARD_ID");
+  const workspaceId = requiredTrelloId("TRELLO_WORKSPACE_ID");
   const params = new URLSearchParams({
     idBoardSource: templateId,
     keepFromSource: "cards",
@@ -100,6 +147,11 @@ async function copyTemplateBoard(clientName: string, eventId: string): Promise<{
   };
   return { id: board.id, url: board.url };
 }
+
+// Matches any {word}-shaped template token, not just the two known ones — the
+// post-substitution assertion below stays correct even if the template's placeholder
+// vocabulary drifts from this list without both files being updated in lockstep.
+const PLACEHOLDER_PATTERN = /\{[a-zA-Z]+\}/g;
 
 /**
  * Idempotent by construction: replacing a placeholder that's already gone (a REUSED board
@@ -115,25 +167,49 @@ async function substitutePlaceholders(boardId: string, plan: PlanId): Promise<vo
     desc: string;
   }>;
   for (const card of boardCards) {
-    if (!card.desc.includes("{accessFormUrl}") && !card.desc.includes("{activeTasksNote}")) {
+    if (!card.desc.match(PLACEHOLDER_PATTERN)) {
       continue;
     }
     const newDesc = card.desc
       .replaceAll("{accessFormUrl}", accessFormUrl)
       .replaceAll("{activeTasksNote}", activeTasksNote);
+    // Post-condition: this function must remove every placeholder it claims to handle.
+    // Any residue (an unrecognized/renamed token) means the template and this function's
+    // vocabulary have drifted — fail loudly instead of silently shipping literal braces
+    // to a paying client while still reporting success.
+    const residual = newDesc.match(PLACEHOLDER_PATTERN);
+    if (residual) {
+      throw new Error(`substitutePlaceholders: unresolved placeholder(s) ${residual.join(", ")} on card ${card.id}`);
+    }
     await trelloRequest(`/cards/${card.id}?${new URLSearchParams({ desc: newDesc }).toString()}`, {
       method: "PUT",
     });
   }
 }
 
-/** Trello's invite-by-email is PUT, not POST. Idempotent — re-inviting an existing member no-ops. */
+/**
+ * Trello's invite-by-email is PUT, not POST. Called unconditionally on every copyBoard()
+ * invocation, including a reconcile-reuse — verified (see notes.md) that a repeat call
+ * for an already-member email returns success with no error and the membership persists
+ * correctly. NOT independently verified: whether Trello sends a second invite
+ * NOTIFICATION EMAIL on a repeat call (Trello's members API doesn't expose an existing
+ * member's email for a pre-check, so this module can't cheaply guard against it itself).
+ * Bundle 4 has the better vantage point to avoid this — the persisted event record
+ * already carries `inviteSent`, so its orchestration layer can skip calling this a second
+ * time for an event it already fully processed, rather than solving it here.
+ */
 async function inviteMember(boardId: string, email: string): Promise<void> {
   const params = new URLSearchParams({ email, type: "normal" });
   await trelloRequest(`/boards/${boardId}/members?${params.toString()}`, { method: "PUT" });
 }
 
 export async function copyBoard({ clientName, eventId, email, plan }: CopyBoardParams): Promise<CopyBoardResult> {
+  // Validate all required config up front, before any side effect (board creation) —
+  // a missing ACCESS_FORM_URL must never leave a half-provisioned board behind.
+  requiredTrelloId("TRELLO_WORKSPACE_ID");
+  requiredTrelloId("TRELLO_TEMPLATE_BOARD_ID");
+  requiredEnv("ACCESS_FORM_URL");
+
   const existing = await findExistingBoard(eventId);
   const board = existing ?? (await copyTemplateBoard(clientName, eventId));
   await substitutePlaceholders(board.id, plan);

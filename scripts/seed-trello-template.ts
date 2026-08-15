@@ -76,6 +76,20 @@ async function main() {
     throw new Error("TRELLO_WORKSPACE_ID not configured");
   }
 
+  // Refuse to run twice against the same workspace — this is a manually-triggered
+  // one-off, and creating a second identically-named template silently would leave the
+  // operator unsure which board id is the real TRELLO_TEMPLATE_BOARD_ID.
+  const existingBoards = (await trelloRequest(
+    `/members/me/boards?fields=name,idOrganization&filter=open`
+  )) as Array<{ id: string; name: string; idOrganization: string | null }>;
+  const existingTemplate = existingBoards.find((b) => b.idOrganization === workspaceId && b.name === BOARD_NAME);
+  if (existingTemplate) {
+    throw new Error(
+      `A board named "${BOARD_NAME}" already exists in this workspace (id ${existingTemplate.id}). ` +
+        `Archive or rename it first if you intend to reseed a fresh template.`
+    );
+  }
+
   const boardParams = new URLSearchParams({
     name: BOARD_NAME,
     idOrganization: workspaceId,

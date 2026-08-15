@@ -105,7 +105,22 @@ creating a second board.
 
 ## Decisions made unilaterally
 
-(none yet)
+- **`inviteMember()` always re-PUTs the invite, including on reconcile-reuse** — NOT fully idempotency-
+  verified. Trello's board-members API doesn't expose an already-invited email for a pre-check, so this
+  module can't cheaply guard against a repeat call. Verified (live test): a repeat call succeeds with no
+  error and the membership persists correctly; NOT verified: whether Trello sends a second invite
+  NOTIFICATION EMAIL. Left as-is rather than solved here — Bundle 1's `OnboardingEventRecord` already
+  carries `inviteSent`, so Bundle 4's orchestration layer has the state to skip a redundant call if this
+  turns out to matter; that's the better place to solve it, not a stateless module. Flagged explicitly
+  because the review battery correctly caught that my Phase-2 plan draft said the opposite ("skip
+  invite if already member") and I drifted from it without logging the change — recorded here now.
+- **Card 1's substituted copy is self-contradictory for Pro/Founding clients** — "We move one task at a
+  time to 🔨 In Progress (two active tasks at a time)." This is a defect in the HANDOFF's own Appendix B
+  verbatim copy (`docs/HANDOFF-client-onboarding.md:296`), not an implementation bug — §1.8 explicitly
+  forbids paraphrasing client-facing copy without authorization, so I did NOT rewrite it unilaterally.
+  **Flagging for Bruno:** the fix is a one-line edit to Appendix B's Card 1 text (e.g. "we move tasks
+  to 🔨 In Progress ({activeTasksNote})") plus the live template board's card — small, but it ships to
+  every Pro/Founding client's board as-is until addressed.
 
 ## Stop attempts
 
@@ -144,11 +159,117 @@ All run against the real Trello test workspace (`TRELLO_WORKSPACE_ID=6a7f78e4fb6
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Battery `wf_7bcc0f70-d33` (customAgents:false, reused Bundle 1's Step-0 probe results): 6 reviewers (4
+adversarial incl. 1 mixed sonnet + 2 QA), all 11 agents completed with no errors this time. 20 raw
+findings → 10 unique after semantic dedup → 9 confirmed real / 1 refuted, 64 areas examined.
+
+**1 REFUTED (correctly, no action):** `findExistingBoard()`'s unanchored substring marker match could
+theoretically let a shorter eventId match as a prefix of a longer one — refuted 0/2 because real Stripe
+event ids are fixed-length, so one can never be a proper prefix of another. Agreed; not fixed.
+
+**1 MAJOR — fixed and re-verified live:**
+- `findExistingBoard()` didn't filter to open boards, so a board the operator archived (e.g. on client
+  cancellation, per Appendix E) could be silently reused/reactivated by a late or replayed webhook
+  delivery. Fixed: added `filter=open` to the reconcile query. **Re-verified empirically**, not just
+  reasoned about: archived a live test board, then called `copyBoard()` again with the same `eventId` —
+  it correctly created a NEW board rather than reusing the archived one.
+
+**8 MINOR — all applied:**
+- `TRELLO_WORKSPACE_ID`/`TRELLO_TEMPLATE_BOARD_ID` accepted a workspace NAME silently (Trello's create-
+  board API allows either), while the reconcile's own comparison only ever matches an id — a name would
+  make reconcile silently match nothing forever. Fixed: `requiredTrelloId()` validates the 24-hex-char
+  Trello id shape and throws loudly otherwise. **Re-verified empirically**: set `TRELLO_WORKSPACE_ID` to
+  a workspace name in a throwaway test and confirmed it throws immediately with a clear message.
+- `activeTasksNoteFor()` hardcoded copy with no tie to `offer.ts` (the HANDOFF's designated canonical
+  source) and a non-exhaustive plan mapping. Fixed: now derives the Standard/Pro copy directly from
+  `offer.ts`'s `tiers[].tasks` (lowercased), Founding explicitly mapped to the Pro tier's copy with a
+  comment explaining why (offer.ts's `foundingRate` has no separate task-limit field), and an exhaustive
+  `switch` with a compile-time `never` check so a future `PlanId` addition fails to BUILD here instead of
+  silently defaulting. **Re-verified**: a live `copyBoard()` call with `plan: "pro"` produced "two active
+  tasks at a time" via the new offer.ts-derived path.
+- `substitutePlaceholders()` silently no-op'd on any unrecognized `{placeholder}` token, with the
+  placeholder vocabulary duplicated (undeclared) across two files. Fixed: added a post-substitution
+  assertion — any `{word}`-shaped residue after substitution throws loudly, catching drift regardless of
+  which file changes first.
+- `scripts/seed-trello-template.ts` had no guard against an accidental double-run, risking a duplicate
+  or half-built template silently existing alongside the real one. Fixed: pre-checks for a board named
+  `[TEMPLATE] Codirity Client Board` in the workspace and refuses to proceed if found. **Re-verified**:
+  ran the script a second time against the live workspace — it refused with a clear message naming the
+  existing board's id, rather than creating a duplicate.
+- `ACCESS_FORM_URL` was validated only inside `substitutePlaceholders()`, i.e. AFTER `copyTemplateBoard()`
+  had already created the board — a missing var would create a board and then abort before inviting the
+  client. Fixed: all required env (workspace id, template id, access form url) is now validated at the
+  very top of `copyBoard()`, before any side effect.
+- `.env.example`'s `TRELLO_KEY`/`TRELLO_TOKEN` lacked the "server-only" comment convention every other
+  secret in the file carries. Fixed: added it.
+- Undocumented `inviteMember()` idempotency-claim drift + the Appendix B copy defect — see "Decisions
+  made unilaterally" above (the copy defect is deliberately NOT code-fixed — client-facing copy, §1.8).
+
+## Local acceptance re-testing (post-fix)
+
+All against the live Trello test workspace, after applying the fixes above:
+- `copyBoard()` invoked twice with the same eventId (pro plan) → identical `boardId` both times, 0
+  residual placeholders, `activeTasksNote` correctly reads "two active tasks at a time" via the new
+  offer.ts-derived path. PASS.
+- Archived-board exclusion (the MAJOR fix) → archived the board from the test above, called `copyBoard()`
+  again with the SAME eventId → created a genuinely NEW board rather than reusing the archived one. PASS.
+- Seed-script re-run guard (MINOR fix) → ran the script a second time → refused with a clear error naming
+  the existing template board's id, no duplicate created. PASS.
+- Workspace-id format validation (MINOR fix) → set `TRELLO_WORKSPACE_ID` to a workspace NAME instead of
+  its id → threw immediately with a clear message instead of silently matching nothing. PASS.
+- `npm run lint`, `npx tsc --noEmit`, `npm run build`: all green after the fixes.
+- Test boards created during re-testing were archived afterward to avoid workspace debris.
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+64 `areasExamined` entries returned (heavy overlap across 6 reviewers; full list in the battery's
+journal.jsonl, `wf_7bcc0f70-d33`). Distinct themes, condensed:
+
+- **Appendix B verbatim fidelity** (checked repeatedly, independently, by multiple reviewers) — every
+  list name, card name, and card body programmatically diffed byte-for-byte against the HANDOFF,
+  including emoji codepoints, em-dashes, and the U+FE0F variation selector on "⏭️ Up Next". Card 7
+  correctly placed in "📥 Backlog". Placeholders left literal in the template. No drift found.
+- **Atomicity of marker+workspace+copy in one POST** — confirmed both by code inspection (no follow-up
+  rename/describe call anywhere) and empirically, via the live twice-with-same-eventId test succeeding
+  (only possible if Trello honored `desc` on the copy call itself).
+- **Secrets/PII in logs and thrown errors** — traced every string that can reach a caller's logger;
+  `path.split("?")[0]` strips both the auth query AND any caller-supplied query (e.g. the invite email)
+  before an error message is built. No `console.*` in trello.ts itself.
+- **Partial-substitution recoverability** — a throw mid-loop aborts before `inviteMember`, and a retry
+  reconciles onto the same board and only touches cards still carrying a placeholder (verified idempotent
+  by construction, and empirically via the original Phase-3 test).
+- **`as` cast safety against Trello's loosely-typed responses** — every cast is immediately followed by
+  an operation that throws loudly on a shape mismatch; only silent-degradation path found (`board.url`
+  possibly undefined) requires Trello to omit a field it always returns, not surfaced as a finding.
+- **Marker substring false-positive** — examined and correctly NOT surfaced as an in-scope defect for
+  real Stripe event ids (see the refuted finding above); would only matter for a degenerate empty eventId,
+  which Stripe never sends.
+- **Scope boundary** — grepped for any reference to `trello`/`copyBoard` outside this bundle's own files;
+  confirmed zero, matching the explicit "Bundle 4 wires it" scope line.
+- **Consumer-contract shape vs. Bundle 1** — `CopyBoardResult {boardId, boardUrl}` lines up with
+  `OnboardingEventRecord`'s optional `boardId`/`boardUrl` fields with no schema change needed. Noted (not
+  a finding): `copyBoard()` takes no "already-have-a-boardId" hint, so Bundle 4's "reuse a stored boardId
+  if present" will need either a full enumeration or a signature addition then — correctly out of this
+  bundle's scope, since the brief specifies exactly this signature.
+- **Founding pricing vs. task-limit copy** — flagged for the operator only, not a code defect: `offer.ts`
+  prices Founding BELOW Standard ($2,995 vs $3,995) while this bundle gives it Pro's two-task limit,
+  which may not match what the pricing page implies. A business/copy question, not an implementation bug.
+- **Toolchain/build-gate coverage** — `tsx` added correctly, `tsconfig.json`'s `**/*.ts` include means
+  `scripts/` IS type-checked (re-ran `tsc --noEmit`/`eslint` directly against the reviewed commit to
+  confirm, not just trusted the notes.md claim), `process.loadEnvFile` is typed by the installed
+  `@types/node`.
+- **Bundle-bookkeeping drift** (HANDOFF §2 table / commitments.md) — correctly identified as post-merge
+  plumbing owned by a separate commit, not this PR's omission.
+- **Test coverage vs. risk tier** — no test framework exists anywhere in this repo (Bundle 1 shipped
+  without one too); this bundle's acceptance is explicitly live-API verification per the HANDOFF, recorded
+  above. Introducing a framework here would be scope creep, not a gap.
+
+## Items deferred from this PR
+
+None — all review findings resolved (1 MAJOR + 8 MINOR applied and re-verified live; the 1 refuted
+finding needed no action). The Appendix B copy defect (self-contradictory Card 1 sentence for Pro/
+Founding) is explicitly NOT a code deferral — it's a spec-content issue flagged for the operator, since
+§1.8 forbids paraphrasing client-facing copy without authorization.
 
 ## Items deferred from this PR
 
@@ -156,10 +277,13 @@ All run against the real Trello test workspace (`TRELLO_WORKSPACE_ID=6a7f78e4fb6
 
 ## Open items NOT addressed in this PR
 
-(filled in Phase 7)
+None in code. One spec-content flag for the operator (not a code item): Appendix B Card 1's substituted
+copy reads self-contradictorily for Pro/Founding clients — see "Decisions made unilaterally" above.
+Trello/email/founder-ops wiring is explicitly Bundle 4's scope, not deferred from this one.
 
 ## Durable handles
 
 - marker: /Users/brunomaurino/.claude/autonomous-active/autonomous-task-codirity-ob2-trello
 - worktree: /Users/brunomaurino/projects/codirity-ob2-trello
 - worktree_entry: path
+- battery_run_id: wf_7bcc0f70-d33
