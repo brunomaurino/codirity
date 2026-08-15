@@ -113,7 +113,7 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
 |---|---|---|---|---|---|
 | **1** | Stripe webhook endpoint + idempotency store + `price_id → plan` map | O1, O6 | [x] complete | [#15](https://github.com/brunomaurino/codirity/pull/15) | `e75d700` |
-| **2** | Trello provisioning module + `seed-trello-template` script | 1, O3 | [ ] not started | — | — |
+| **2** | Trello provisioning module + `seed-trello-template` script | 1, O3 | [x] complete | [#16](https://github.com/brunomaurino/codirity/pull/16) | `7e44a20` |
 | **3** | Welcome email (Resend + React Email, Appendix A) | 1, O2, O9 | [ ] not started | — | — |
 | **4** | Founder ops (alert + day-5 card) + wire 2/3/4 into the webhook end-to-end | 2, 3, O4 | [ ] not started | — | — |
 | **5** | Lifecycle events (pause/cancel → revoke card, Appendix E) — v1.1 | 4 | [ ] not started | — | — |
