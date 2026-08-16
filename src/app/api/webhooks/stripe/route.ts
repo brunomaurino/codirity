@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { reserveEvent, updateRecordIfLeaseHeld } from "@/lib/onboarding/idempotency";
 import { planForPriceId, type PlanId } from "@/lib/onboarding/plans";
-import { alertFounder, createCheckin } from "@/lib/onboarding/ops";
+import { alertFounder, createCheckin, createRevokeAccessCard } from "@/lib/onboarding/ops";
 import { copyBoard } from "@/lib/onboarding/trello";
 import { sendWelcomeEmail } from "@/lib/onboarding/email";
 
@@ -49,6 +49,140 @@ async function persistStep(
   }
 }
 
+/**
+ * §3.5 (Bundle 5): a billing-portal pause — the pause path the welcome email itself
+ * advertises — does NOT emit `customer.subscription.paused` (that fires only on the
+ * trial-end status=paused transition). It emits `customer.subscription.updated` with
+ * `pause_collection` transitioning from null to non-null. This is the ONLY `.updated`
+ * shape this route acts on; every other `.updated` delivery (price change, quantity
+ * change, an already-paused subscription's unrelated field changing, etc.) must return
+ * 200 and touch nothing — there is no side effect to make idempotent for those.
+ */
+function isPortalPauseTransition(event: Stripe.Event): boolean {
+  if (event.type !== "customer.subscription.updated") {
+    return false;
+  }
+  // Same non-discriminating-union caveat as the checkout.session.completed cast below —
+  // event.type doesn't narrow event.data's shape on these SDK types, so recover it
+  // explicitly rather than relying on inference.
+  const subscription = event.data.object as Stripe.Subscription;
+  const previousAttributes = event.data.previous_attributes as Partial<Stripe.Subscription> | undefined;
+  return subscription.pause_collection != null && previousAttributes?.pause_collection === null;
+}
+
+/**
+ * Handles the three lifecycle-event shapes (§3.5, Appendix E): cancellation
+ * (`customer.subscription.deleted`), a billing-portal pause
+ * (`customer.subscription.updated` with the pause_collection transition above), and a
+ * trial-end pause (`customer.subscription.paused`, for completeness). Same idempotency +
+ * per-step guard rules as the signup flow — a separate function only because the shape
+ * (no plan resolution, no board/email steps, a different client-lookup strategy) doesn't
+ * share meaningful code with handleCheckoutCompleted below.
+ */
+async function handleLifecycleEvent(
+  stripe: Stripe,
+  event: Stripe.Event,
+  action: "cancelled" | "paused"
+): Promise<NextResponse> {
+  const subscription = event.data.object as Stripe.Subscription;
+  const eventId = event.id;
+  const customerId =
+    typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+
+  // PRIMARY per the brief: look up the customer directly rather than trusting the
+  // Bundle-1 store, which is keyed by the SIGNUP event's id (not queryable by customer)
+  // and is therefore only ever a best-effort association, never authoritative here.
+  let email = "";
+  let name: string | null = null;
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!("deleted" in customer && customer.deleted)) {
+      email = customer.email ?? "";
+      name = customer.name ?? null;
+    }
+  } catch (err) {
+    console.error("onboarding webhook: customer lookup failed for a lifecycle event", detailedErrorTag(err));
+  }
+  // Unlike the signup flow's harder terminal case (missing email/customerId entirely),
+  // customerId is ALWAYS present here (it comes off the event itself, not a lookup), so
+  // this fallback chain can never bottom out empty — worst case the founder sees a raw
+  // Stripe customer id instead of a name, still enough to trace the client via the
+  // dashboard.
+  const clientName = name?.trim() || email || customerId;
+
+  const reserveResult = await reserveEvent(
+    eventId,
+    { customerId, email, name, plan: null, subscriptionId: subscription.id },
+    LEASE_SECONDS
+  );
+
+  if (reserveResult.outcome === "done") {
+    return NextResponse.json({ received: true }, { status: 200 });
+  }
+  if (reserveResult.outcome === "lease-valid") {
+    return NextResponse.json({ error: "event reservation in progress" }, { status: 503 });
+  }
+
+  const leaseUntil = reserveResult.record.lease_until;
+  let record = reserveResult.record;
+
+  try {
+    let stepFailed = false;
+
+    // Reuses the generic `cardId`/`alertSent` record fields — this record is keyed by
+    // ITS OWN eventId (a lifecycle event's id, never a signup event's), so there's no
+    // collision with a signup record's day-5 card.
+    if (!record.cardId) {
+      try {
+        const card = await createRevokeAccessCard({ clientName, eventId });
+        await persistStep(eventId, leaseUntil, { cardId: card.cardId });
+        record = { ...record, cardId: card.cardId };
+      } catch (err) {
+        if (err instanceof LeaseLostError) throw err;
+        console.error("onboarding webhook: revoke-access card failed", detailedErrorTag(err));
+        stepFailed = true;
+      }
+    }
+
+    if (!record.alertSent) {
+      try {
+        await alertFounder(`Client ${action}: ${clientName} — revoke-access card created on the ops board.`);
+        await persistStep(eventId, leaseUntil, { alertSent: true });
+        record = { ...record, alertSent: true };
+      } catch (err) {
+        if (err instanceof LeaseLostError) throw err;
+        console.error("onboarding webhook: founder alert failed for a lifecycle event", sanitizedErrorTag(err));
+        stepFailed = true;
+      }
+    }
+
+    if (stepFailed || !record.cardId || !record.alertSent) {
+      const missing = [!record.cardId && "revoke-access card", !record.alertSent && "founder alert"].filter(
+        (step): step is string => Boolean(step)
+      );
+      try {
+        await alertFounder(
+          `Lifecycle event incomplete for ${clientName} (event ${eventId}, ${action}) — still missing: ${missing.join(", ")}. Stripe will retry.`
+        );
+      } catch (err) {
+        console.error("onboarding webhook: lifecycle partial-failure alert itself failed", sanitizedErrorTag(err));
+      }
+      return NextResponse.json({ error: "processing incomplete" }, { status: 500 });
+    }
+
+    await persistStep(eventId, leaseUntil, { status: "done" });
+    console.log("onboarding webhook: lifecycle event fully processed", { eventId, type: event.type, action });
+    return NextResponse.json({ received: true }, { status: 200 });
+  } catch (err) {
+    if (err instanceof LeaseLostError) {
+      console.error("onboarding webhook: lost lease fence mid-lifecycle-orchestration", { eventId });
+    } else {
+      console.error("onboarding webhook: lifecycle processing error", sanitizedErrorTag(err));
+    }
+    return NextResponse.json({ error: "processing error" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   // Read the RAW body first — req.json() would parse-and-mutate it, breaking
   // Stripe's signature verification (§1.2).
@@ -84,6 +218,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid signature" }, { status: 400 });
   }
 
+  // §3.5 (Bundle 5) — checked BEFORE the checkout.session.completed guard below: these
+  // are the only three shapes this route acts on besides a completed checkout.
+  if (event.type === "customer.subscription.deleted") {
+    return handleLifecycleEvent(stripe, event, "cancelled");
+  }
+  if (event.type === "customer.subscription.paused" || isPortalPauseTransition(event)) {
+    return handleLifecycleEvent(stripe, event, "paused");
+  }
+
   if (event.type !== "checkout.session.completed") {
     return NextResponse.json({ received: true }, { status: 200 });
   }
@@ -91,8 +234,8 @@ export async function POST(req: NextRequest) {
   // Necessary, not redundant: Stripe's public types don't discriminate-narrow
   // `Event.Data.Object` from `event.type` (verified against the installed v22 types),
   // so this cast is the SDK-idiomatic way to recover the concrete shape after the
-  // `event.type` guard above. Bundle 5 adding subscription-event branches should cast
-  // similarly for each new type, not assume this one covers them.
+  // `event.type` guard above. handleLifecycleEvent/isPortalPauseTransition above cast
+  // similarly for the subscription-event shapes.
   const session = event.data.object as Stripe.Checkout.Session;
   const eventId = event.id;
   const customerId = typeof session.customer === "string" ? session.customer : (session.customer?.id ?? "");
@@ -251,7 +394,7 @@ export async function POST(req: NextRequest) {
 
     if (!record.cardId) {
       try {
-        const checkin = await createCheckin({ clientName });
+        const checkin = await createCheckin({ clientName, eventId });
         await persistStep(eventId, leaseUntil, { cardId: checkin.cardId });
         record = { ...record, cardId: checkin.cardId };
       } catch (err) {

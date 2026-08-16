@@ -3,7 +3,9 @@ import { tiers } from "@/config/offer";
 import { requiredEnv } from "./env";
 
 const TRELLO_BASE = "https://api.trello.com/1";
-const EVENT_MARKER_PREFIX = "codirity-event:";
+// Exported so ops.ts's card reconcile (Bundle 5) uses the SAME marker vocabulary as this
+// module's board reconcile — one canonical prefix, no drift between the two.
+export const EVENT_MARKER_PREFIX = "codirity-event:";
 const TRELLO_ID_PATTERN = /^[0-9a-f]{24}$/i;
 
 function trelloAuthParams(): string {
