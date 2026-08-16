@@ -320,7 +320,7 @@ P.S. You're on the {planName} plan — pause or cancel anytime from the billing 
 Welcome! This board is your direct line to Codirity. The short version:
 1. Add requests to 📥 Backlog — as many as you want.
 2. Drag your priorities to ⏭️ Up Next. We always pull from the top.
-3. We move one task at a time to 🔨 In Progress ({activeTasksNote}).
+3. We move tasks to 🔨 In Progress ({activeTasksNote}).
 4. Delivered work lands in 👀 In Review — comment with changes (unlimited revisions) or drag to ✅ Done.
 All communication happens in card comments. No meetings, no status calls — unless you book one.
 

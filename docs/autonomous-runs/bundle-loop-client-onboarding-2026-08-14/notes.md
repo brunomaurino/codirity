@@ -137,8 +137,30 @@ left is entirely OPERATOR action, not code:
    re-authenticate.
 4. **Set a real `RESEND_API_KEY`** — the welcome-email step (Bundle 3/4) has never sent a real email;
    only verified against the installed SDK's types + template rendering.
-5. Fix the self-contradictory Appendix B Card 1 copy for Pro/Founding clients (flagged in Bundle 2,
-   still open — a business-copy decision, not something I'm authorized to unilaterally rewrite).
+~~5. Fix the self-contradictory Appendix B Card 1 copy for Pro/Founding clients~~ — **DONE
+   2026-08-16**, operator-confirmed. Minimal fix: "We move one task at a time to 🔨 In Progress
+   ({activeTasksNote})" → "We move tasks to 🔨 In Progress ({activeTasksNote})", removing the
+   hardcoded "one" so the substituted note (e.g. "two active tasks at a time" for Pro/Founding)
+   reads naturally instead of self-contradicting. Updated both `docs/HANDOFF-client-onboarding.md`
+   Appendix B AND the live template board's Card 1 (`6a80df3b5952630276a4ea30`), so any future
+   `seed-trello-template.ts` re-run stays consistent with the doc.
+
+**All 5 operator action items above are now resolved except #3 (Gmail SMTP) and #4 (RESEND_API_KEY)
+— both require Bruno's own credentials/account access, which I cannot do myself.** #1 (Stripe
+webhook endpoint) is also DONE — see the O6 update in HANDOFF §4 and the section below.
+
+## O6 Stage 1 — Stripe test-mode webhook registered (2026-08-16)
+
+Operator-confirmed target URL: `www.codirity.com` (the bare `codirity.com` apex 307-redirects
+there — confirmed via `curl`, and the webhook was registered against the canonical `www.` URL
+directly rather than the redirecting one, since Stripe's webhook delivery may not reliably follow a
+307 on a POST). Registered `we_1U54KNLphcTHVMXGPo6vti6S` via the Stripe API (test-mode secret key)
+with all four required event types. Confirmed the target route is live and reachable first (`curl -I
+https://www.codirity.com/api/webhooks/stripe` → 405, the expected response for a GET against a
+POST-only route handler — not a 404, confirming the deployment is current). The generated
+`STRIPE_WEBHOOK_SECRET` was given to the operator directly in chat (never committed to the repo,
+per Stripe's own one-time-display convention) — **still needs to be set in Vercel** for whichever
+environment serves `www.codirity.com` before this endpoint can pass signature verification.
 
 Also re-verified live, through the FULL route (not just `copyBoard()` in isolation): the mandatory
 crash-after-board-copy-before-persist scenario — simulated a crash by calling `copyBoard()` directly
