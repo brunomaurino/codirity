@@ -22,6 +22,17 @@ function sanitizedErrorTag(err: unknown): string {
   return err instanceof Error ? err.constructor.name : typeof err;
 }
 
+// copyBoard/sendWelcomeEmail/createCheckin all throw plain Errors whose own message text
+// is ALREADY constructed to be safe — trelloRequest strips the key/token query string
+// before throwing (Bundle 2), and Resend's SDK errors are generic ("Invalid `to` field",
+// not the actual value — confirmed in Bundle 3). Logging that message in full turns
+// "Error" into an actually diagnosable cause (revoked token vs renamed list vs bad board
+// id) without regressing the no-PII policy above. Deliberately NOT used for the alert
+// step — a raw SMTP rejection can echo the recipient address back in its message.
+function detailedErrorTag(err: unknown): string {
+  return err instanceof Error ? err.message : typeof err;
+}
+
 /** Thrown when a fenced record write loses the lease — another worker has since taken
  * over this event. Continuing to write after this would race the new owner, so it always
  * aborts the whole request immediately rather than being caught per-step. */
@@ -87,7 +98,12 @@ export async function POST(req: NextRequest) {
   const customerId = typeof session.customer === "string" ? session.customer : (session.customer?.id ?? "");
   const email = session.customer_details?.email ?? "";
   const name = session.customer_details?.name ?? null;
-  const clientName = name ?? "there";
+  // Matches email-template.tsx's own `clientName?.trim() || "there"` fallback (Bundle 3) —
+  // a whitespace-only name from Stripe must fall through too, not just a null/empty one.
+  // This value also seeds the Trello board title and the day-5 card title, so a silent
+  // "there" here would erase the client's identity from those surfaces as well, not just
+  // the email.
+  const clientName = name?.trim() || "there";
 
   const reserveResult = await reserveEvent(eventId, { customerId, email, name, plan: null }, LEASE_SECONDS);
 
@@ -196,13 +212,15 @@ export async function POST(req: NextRequest) {
         record = { ...record, boardId, boardUrl, inviteSent: true };
       } catch (err) {
         if (err instanceof LeaseLostError) throw err;
-        console.error("onboarding webhook: board provisioning failed", sanitizedErrorTag(err));
+        console.error("onboarding webhook: board provisioning failed", detailedErrorTag(err));
         stepFailed = true;
       }
     }
 
-    // Skipped (not counted as a failure) rather than attempted without a board — it would
-    // have no board link to send. A later retry, once the board step succeeds, sends it.
+    // Deliberately skipped rather than attempted without a board — it would have no board
+    // link to send. This still counts toward `stepFailed` (below) exactly like a genuine
+    // failure would: it must trigger the same non-2xx/retry path, since emailSent staying
+    // unset is what makes a later retry (once the board step succeeds) send it.
     if (!record.emailSent) {
       if (boardUrl) {
         try {
@@ -211,7 +229,7 @@ export async function POST(req: NextRequest) {
           record = { ...record, emailSent: true };
         } catch (err) {
           if (err instanceof LeaseLostError) throw err;
-          console.error("onboarding webhook: welcome email failed", sanitizedErrorTag(err));
+          console.error("onboarding webhook: welcome email failed", detailedErrorTag(err));
           stepFailed = true;
         }
       } else {
@@ -238,19 +256,35 @@ export async function POST(req: NextRequest) {
         record = { ...record, cardId: checkin.cardId };
       } catch (err) {
         if (err instanceof LeaseLostError) throw err;
-        console.error("onboarding webhook: day-5 check-in card failed", sanitizedErrorTag(err));
+        console.error("onboarding webhook: day-5 check-in card failed", detailedErrorTag(err));
         stepFailed = true;
       }
     }
 
     if (stepFailed || !record.boardId || !record.emailSent || !record.alertSent || !record.cardId) {
+      // §1.1(c)/§1.4: a partial failure must be surfaced via the founder alert, not just
+      // logs — best-effort, deliberately not allowed to change the response below (Stripe
+      // must still see non-2xx and retry regardless of whether this alert itself lands).
+      const missing = [
+        !record.boardId && "board",
+        !record.emailSent && "welcome email",
+        !record.alertSent && "founder alert",
+        !record.cardId && "day-5 check-in card",
+      ].filter((step): step is string => Boolean(step));
+      try {
+        await alertFounder(
+          `Onboarding incomplete for ${clientName} (event ${eventId}) — still missing: ${missing.join(", ")}. Stripe will retry.`
+        );
+      } catch (err) {
+        console.error("onboarding webhook: partial-failure alert itself failed", sanitizedErrorTag(err));
+      }
       // Non-2xx so Stripe retries; the resume path (lease-expired takeover, above) picks
       // up next time and only re-attempts what's still missing.
       return NextResponse.json({ error: "processing incomplete" }, { status: 500 });
     }
 
     await persistStep(eventId, leaseUntil, { status: "done" });
-    console.log("onboarding webhook: reserved event", { eventId, type: event.type, plan });
+    console.log("onboarding webhook: client fully provisioned", { eventId, type: event.type, plan });
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
     if (err instanceof LeaseLostError) {

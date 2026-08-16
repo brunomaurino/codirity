@@ -214,15 +214,91 @@ live; relying on that symmetry rather than burning further time on fixture worka
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Battery `wf_ef246830-3b7` (adversarial + QA, `verifyVoters: 3`, `customAgents: false`). 6 MAJOR + 3
+MINOR confirmed and applied; 1 finding refuted (correctly, see below); 1 escalation resolved
+main-thread (see "Escalation resolved" below).
+
+1. **MAJOR — `.env.example` missing `FOUNDER_ALERT_EMAIL`/`TRELLO_OPS_BOARD_ID`.** Both are hard-required
+   via `requiredEnv()` in `ops.ts` but were never documented. Fixed: added both with comments explaining
+   what reads them.
+2. **MAJOR — `clientName = name ?? "there"` didn't match the established fallback convention and
+   propagated a bare "there" into Trello board/card titles + the founder alert, not just the email.**
+   `email-template.tsx` (Bundle 3) already established `clientName?.trim() || "there"` to also catch a
+   whitespace-only name from Stripe. Fixed: `route.ts`'s `clientName` now uses the same
+   `name?.trim() || "there"`, so a whitespace name falls through consistently on every surface it feeds
+   (board title, card title, alert text), not just the email.
+3. **MAJOR — nodemailer transporter had no timeout config, could hang well past the 60s `maxDuration`
+   budget.** A hung SMTP connection would block every step queued after the alert on every retry. Fixed:
+   added explicit `connectionTimeout`/`greetingTimeout`/`socketTimeout` (10s each) to the transporter in
+   `ops.ts`.
+4. **MAJOR — §1.1(c)/§1.4 requires surfacing a partial failure via the founder alert, not just logs; the
+   only alert sent was the unconditional "New client" one, which doesn't reflect actual step outcomes.**
+   Fixed: `route.ts` now sends a second, best-effort alert right before the `500` response whenever the
+   request ends incomplete, listing exactly which steps are still missing (board/email/alert/card). This
+   alert's own failure is caught and logged but never changes the response — Stripe must still see
+   non-2xx regardless of whether this specific alert lands.
+5. **MAJOR — the mandatory crash-after-board-copy-before-persist scenario (§1.1, explicitly required by
+   the brief) had only been exercised at the `copyBoard()` unit level (Bundle 2's own test), never through
+   the FULL route.** Re-tested live through the actual route: called `copyBoard()` directly for a fresh
+   synthetic event id (simulating "worker A completed the Trello copy, then crashed before persisting
+   `boardId`" — no Redis record written), then fired a real signed webhook for that SAME event id at the
+   running dev server. Confirmed via direct Redis + Trello inspection: the retry's `boardId` matched the
+   board from the first call EXACTLY, and exactly one board in the workspace carried that event's
+   reconcile marker — no duplicate. Test artifacts (2 Trello boards, 1 card, 1 Redis key) archived/deleted
+   afterward.
+6. **MAJOR — HANDOFF doc drift: §1.6 still listed `FOUNDER_ALERT_WEBHOOK_URL` (the Slack-alternative name,
+   never used) instead of `FOUNDER_ALERT_EMAIL`; §4 O4 had no DECIDED stamp and still recommended Slack.**
+   Fixed both in `docs/HANDOFF-client-onboarding.md`.
+7. **MINOR — the email-skip-without-`boardUrl` branch's comment ("not counted as a failure") contradicted
+   the code (`stepFailed = true`).** Fixed the comment to state the actual behavior: it's skipped rather
+   than attempted, but DOES count toward `stepFailed` exactly like a real failure would, since that's what
+   makes a later retry send it once the board step succeeds.
+8. **MINOR — stale success log message** ("reserved event") **left over from Bundle 1, no longer
+   accurate once this bundle reaches full completion.** Changed to "client fully provisioned".
+9. **MINOR — every step-level catch logged only the error's constructor name, losing real diagnosability**
+   (a renamed ops list, a revoked Trello token, and a bad board id were all indistinguishable "Error"
+   log lines). Resolved with a NEW `detailedErrorTag()` helper used for the board/email/card steps only —
+   `trelloRequest` (Bundle 2) already strips the key/token query string before throwing, and Resend's SDK
+   errors are generic (confirmed in Bundle 3), so those messages are safe to log in full. The alert step
+   (raw SMTP/nodemailer) deliberately keeps the original constructor-name-only `sanitizedErrorTag()`,
+   since an SMTP rejection can echo the recipient address back in its message — the one case where the
+   original Bundle-1 no-PII policy still fully applies.
+
+**Refuted (correctly, no action taken):** a finding claimed `inviteSent` needed to be read back to guard
+a retry-specific re-invite. Rejected on inspection: `copyBoard()`'s internal ordering guarantees the
+invite always completes BEFORE the function returns, and `boardId` is only ever persisted AFTER
+`copyBoard()` returns successfully — so there's no reachable state where `boardId` is recorded but the
+invite didn't happen. `inviteSent` is decorative in the current design, not a gap.
+
+**Escalation resolved (main-thread, operator unavailable):** one escalation asked whether
+`alertFounder`/`createCheckin` need their own crash-window idempotency/reconcile protection (mirroring
+the board's marker-based reconcile), for the narrow case of a Redis write failing for reasons OTHER than
+lease loss right after the external call succeeds. The defense agent wanted a force-apply; the
+cooperative reviewer disagreed. I sided with the cooperative reviewer and did NOT apply a fix here:
+- The spec's explicit crash-window protection requirement (§1.1) names the board (marker-based reconcile)
+  and the email (idempotency key) specifically — it is not extended to the alert/card steps.
+- A naive "reconcile by scanning the ops board's To Do list" fix would be WRONG on Bruno's manually-curated
+  ops board — he moves/archives cards himself, so a completed-and-archived check-in card would silently
+  get duplicated by a list-name scan. Building this now risks shipping something that LOOKS like a fix but
+  isn't robust.
+- Nodemailer's Message-ID is not a real dedup guarantee for an SMTP-idempotency scheme.
+- The actual race window (Upstash itself failing transiently in the split second between the external
+  call succeeding and `persistStep`'s own Upstash write) is narrow and founder-facing only, not
+  customer-facing — MINOR real-world impact.
+- Bundle 5 already touches the ops board + alerts (lifecycle events), making it the natural place to
+  design this reconcile/dedup vocabulary once, for both bundles, rather than bolting on a possibly-wrong
+  version here under time pressure with the operator unavailable to weigh in on the ops-board semantics.
+Tracked as a commitment for Bundle 5 (see `commitments.md`), not silently dropped.
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+See battery `wf_ef246830-3b7`'s `areasExamined` (68 entries) for the full list; nothing beyond the 6
+MAJOR + 3 MINOR above required a code change.
 
 ## Items deferred from this PR
 
-(filled in Phase 7)
+1. **Alert/check-in-card crash-window idempotency** (the resolved escalation above) — deferred to Bundle 5.
+   See `commitments.md`.
 
 ## Open items NOT addressed in this PR
 
@@ -233,3 +309,4 @@ live; relying on that symmetry rather than burning further time on fixture worka
 - marker: /Users/brunomaurino/.claude/autonomous-active/autonomous-task-codirity-ob4-ops
 - worktree: /Users/brunomaurino/projects/codirity-ob4-ops
 - worktree_entry: path
+- battery_run_id: wf_ef246830-3b7

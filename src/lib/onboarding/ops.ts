@@ -18,11 +18,18 @@ export async function alertFounder(message: string): Promise<void> {
   const pass = requiredEnv("SMTP_PASSWORD");
   const to = requiredEnv("FOUNDER_ALERT_EMAIL");
 
+  // Explicit, well-under-maxDuration timeouts: an unbounded nodemailer connection can hang
+  // up to its OS-level socket default (well past this route's 60s budget), which would
+  // block every step queued after the alert on each retry instead of failing fast and
+  // letting them proceed independently.
   const transporter = nodemailer.createTransport({
     host,
     port,
     secure: false,
     auth: { user, pass },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 10_000,
   });
 
   await transporter.sendMail({
