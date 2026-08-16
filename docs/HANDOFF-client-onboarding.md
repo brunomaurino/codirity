@@ -234,13 +234,19 @@ These are external accounts / config the build cannot create; the loop verifies 
   ever narrowed to only `checkout.session.completed` (e.g. a Dashboard default that doesn't auto-pick up
   new code), Bundle 5's entire lifecycle-event flow is a SILENT no-op in that environment — no delivery
   reaches the route at all, so nothing in the code can detect or alert on it.
-  **As of this bundle, verified via the Stripe API (test-mode secret key) that ZERO persistent webhook
-  endpoint objects exist on this account** — all local testing across Bundles 1-5 used `stripe listen
-  --forward-to`, an ephemeral CLI tunnel that never creates a Dashboard/API Endpoint object. This means
-  Stage 1 (a real, persistent TEST-mode endpoint pointed at an actual deployed URL) has not actually
-  happened yet in the way this section describes — it's still outstanding, not just under-scoped. Bruno:
-  register the test-mode endpoint against your actual Preview/Test deployment URL with all four event
-  types above before relying on this route working anywhere but a local `stripe listen` session.
+  **Stage 1 DONE 2026-08-16.** Verified via the Stripe API that zero persistent webhook endpoint
+  objects existed on this account before this — all prior local testing (Bundles 1-5) used `stripe
+  listen --forward-to`, an ephemeral CLI tunnel, never a real Dashboard/API Endpoint. Registered a
+  real TEST-mode endpoint (`we_1U54KNLphcTHVMXGPo6vti6S`) at `https://www.codirity.com/api/webhooks/stripe`
+  (operator confirmed this is the correct target — `www.` since the bare `codirity.com` apex
+  307-redirects there) with all four event types enabled. **Operator action still required:** set
+  `STRIPE_WEBHOOK_SECRET` for this endpoint in Vercel's env for whichever environment serves
+  `www.codirity.com` — the secret was generated at registration time and is NOT stored in this repo
+  (Stripe only shows it once); get it from the Stripe Dashboard → Webhooks → this endpoint, or from
+  wherever it was shared with you out-of-band. Until that env var is set, deliveries to this endpoint
+  will fail signature verification (400), not silently succeed — safe, but non-functional until set.
+  **Stage 2 (prod) still NOT done** — do this only after confirming Stage 1 works end-to-end with a
+  real test-mode event.
 - **O7 — Secure credential handoff (Bitwarden Send, decided 2026-08-14).** Free, no vault infrastructure
   to run: the client creates a one-time encrypted Bitwarden Send link (bitwarden.com/send) and drops it in
   the access form (Appendix C, Q10) — no account needed on their end, no per-client invite for Bruno to
