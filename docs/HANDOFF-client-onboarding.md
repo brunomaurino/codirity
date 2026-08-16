@@ -117,7 +117,7 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
 | **2** | Trello provisioning module + `seed-trello-template` script | 1, O3 | [x] complete | [#16](https://github.com/brunomaurino/codirity/pull/16) | `7e44a20` |
 | **3** | Welcome email (Resend + React Email, Appendix A) | 1, O2, O9 | [x] complete | [#17](https://github.com/brunomaurino/codirity/pull/17) | `9c2dcb4` |
 | **4** | Founder ops (alert + day-5 card) + wire 2/3/4 into the webhook end-to-end | 2, 3, O4 | [x] complete | [#18](https://github.com/brunomaurino/codirity/pull/18) | `88cd185` |
-| **5** | Lifecycle events (pause/cancel → revoke card, Appendix E) — v1.1 | 4 | [ ] not started | — | — |
+| **5** | Lifecycle events (pause/cancel → revoke card, Appendix E) — v1.1 | 4 | [x] complete | [#19](https://github.com/brunomaurino/codirity/pull/19) | `1f1632c` |
 
 ## §3 — Per-bundle launch commands
 

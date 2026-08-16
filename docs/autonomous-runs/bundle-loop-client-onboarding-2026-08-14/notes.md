@@ -29,7 +29,11 @@ a session kill will not self-recover automatically; resume manually if that happ
 | 2 | Trello provisioning module + seed-trello-template script | 1, O3 | `[x]` complete |
 | 3 | Welcome email (Resend + React Email) | 1, O2, O9 | `[x]` complete |
 | 4 | Founder ops + wire 2/3/4 into the webhook end-to-end | 2, 3, O4 | `[x]` complete |
-| 5 | Lifecycle events (pause/cancel), v1.1 | 4 | `[ ]` not started |
+| 5 | Lifecycle events (pause/cancel), v1.1 | 4 | `[x]` complete |
+
+**PLAN COMPLETE 2026-08-16.** All 5 bundles merged. See "PR ledger" and "Bundle 5" sections below for
+the full record. Resume-watchdog cron `badb362d` deleted; all `autonomous-active` markers for this
+plan cleared.
 
 ## O-prerequisites status at launch (all resolved by the operator 2026-08-14)
 
@@ -59,6 +63,7 @@ a session kill will not self-recover automatically; resume manually if that happ
 | 2 | [#16](https://github.com/brunomaurino/codirity/pull/16) | `7e44a20` | ✅ merged (auto, full authorization) |
 | 3 | [#17](https://github.com/brunomaurino/codirity/pull/17) | `9c2dcb4` | ✅ merged (auto, full authorization) |
 | 4 | [#18](https://github.com/brunomaurino/codirity/pull/18) | `88cd185` | ✅ merged (auto, full authorization) |
+| 5 | [#19](https://github.com/brunomaurino/codirity/pull/19) | `1f1632c` | ✅ merged (auto, full authorization) — FINAL bundle |
 
 ## gh account correction (Bundle 4)
 
@@ -80,6 +85,60 @@ would be actively wrong on Bruno's manually-curated ops board) rather than force
 **B4-D-opsidempotency1**, targeting Bundle 5 (which already touches the ops board + alerts for
 lifecycle events — the natural place to design this once). Full reasoning in
 `docs/autonomous-runs/codirity-ob4-ops/notes.md` and `commitments.md`.
+
+## Bundle 5 — review battery + B4-D-opsidempotency1 closure (final bundle)
+
+Battery `wf_c04ea09e-993` (verify-voters 3): 3 MAJOR + 10 MINOR confirmed and applied, 0 refuted, 0
+escalations, 0 deferrals. Highlights: fixed a real alert-accuracy bug (the lifecycle founder alert
+claimed a card existed even when creation had failed, and persisted `alertSent:true` so the retry
+would never send the accurate version); did an actual type-safety cleanup rather than a comment-only
+fix (empirically verified via a standalone `tsc --strict` check that Stripe's `Event` type genuinely
+IS a discriminated union in `stripe@22.5.0`, then removed the now-provably-unnecessary `as` casts and
+introduced a real narrowed union type + a proper TypeScript type predicate — net LESS unsafe-cast
+surface than before the fix, not just corrected prose); fixed a marker leaking into the client-facing
+day-5 card's copy-pasted description.
+
+**Closed B4-D-opsidempotency1**: the card half got a real fix (generalized `copyBoard`'s
+board-reconcile-by-marker pattern to Trello cards, covering both this bundle's revoke-access card and
+Bundle 4's day-5 card, live-verified through the full route with a simulated crash scenario); the
+alert half is documented as an accepted, bounded residual risk rather than solved with fragile ad-hoc
+infrastructure.
+
+**Acceptance-evidence gap closed**: every live test this bundle initially hit 500 because Bruno's
+real Gmail SMTP credential is still broken (known, pre-existing, unrelated to this bundle). Rather
+than ship with an unproven acceptance criterion, generated a disposable Ethereal test SMTP account
+and re-ran the full suite against it (`.env.local` restored to Bruno's real creds immediately after)
+— got a genuinely green run for the first time, including the previously-unreachable
+sequential-replay-of-a-done-event path.
+
+**Real, no-code-fix-possible gap surfaced**: verified via the Stripe API that **zero persistent
+webhook endpoint objects exist on this Stripe account** — every test across all 5 bundles used the
+ephemeral `stripe listen --forward-to` CLI tunnel. O6 Stage 1 (register a real test-mode endpoint)
+has not actually happened yet despite being marked satisfied in earlier bundle notes. Documented
+clearly in HANDOFF §4 O6 and flagged as the top operator action below — I don't have verified access
+to the actual deployed Preview/Test URL (the local Vercel CLI only sees `maurino72's projects`, not
+the `codirity` team scope the site's project lives under), so registering an endpoint myself would
+mean guessing a URL, which I judged worse than leaving it explicitly flagged.
+
+## Plan complete — final operator action items
+
+The client-onboarding v1 + v1.1 plan is fully shipped (Bundles 1-5, PRs #15-#19, all merged). What's
+left is entirely OPERATOR action, not code:
+
+1. **Register a persistent Stripe TEST-mode webhook endpoint** against the real deployed URL, with
+   all four event types enabled: `checkout.session.completed`, `customer.subscription.deleted`,
+   `.updated`, `.paused`. Nothing in this plan has ever been exercised outside local `stripe listen`
+   tunnels — until this exists, the deployed site cannot receive ANY of these events.
+2. Later, **O6 Stage 2** — the same four event types on a PROD endpoint, only once #1 is confirmed
+   working (per the HANDOFF's existing two-stage gating — registering prod early risks a real
+   customer's checkout getting silently 200-ACKed with no provisioning behind it).
+3. **Fix the Gmail SMTP credential** (`support@codirity.com`, `534 5.7.9 WebLoginRequired`) — breaks
+   both the founder-alert path (Bundles 4/5) and the site's existing contact form. Needs Bruno to
+   re-authenticate.
+4. **Set a real `RESEND_API_KEY`** — the welcome-email step (Bundle 3/4) has never sent a real email;
+   only verified against the installed SDK's types + template rendering.
+5. Fix the self-contradictory Appendix B Card 1 copy for Pro/Founding clients (flagged in Bundle 2,
+   still open — a business-copy decision, not something I'm authorized to unilaterally rewrite).
 
 Also re-verified live, through the FULL route (not just `copyBoard()` in isolation): the mandatory
 crash-after-board-copy-before-persist scenario — simulated a crash by calling `copyBoard()` directly
