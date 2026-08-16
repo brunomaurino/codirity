@@ -227,6 +227,20 @@ These are external accounts / config the build cannot create; the loop verifies 
   green):** register the PROD endpoint + set the prod secret. Registering prod earlier means a real
   checkout gets 200-ACKed by a handler with no provisioning behind it — Stripe stops retrying, the event is
   marked done, and that paying client silently never gets a board or email.
+  **⚠️ Enabled-events list, updated by Bundle 5 (spec-review MAJOR, 2026-08-16):** whichever endpoint object
+  you register (test now, prod later) MUST have ALL FOUR of these event types enabled, not just the
+  original one — `checkout.session.completed`, `customer.subscription.deleted`,
+  `customer.subscription.updated`, `customer.subscription.paused`. If the endpoint's enabled-events list is
+  ever narrowed to only `checkout.session.completed` (e.g. a Dashboard default that doesn't auto-pick up
+  new code), Bundle 5's entire lifecycle-event flow is a SILENT no-op in that environment — no delivery
+  reaches the route at all, so nothing in the code can detect or alert on it.
+  **As of this bundle, verified via the Stripe API (test-mode secret key) that ZERO persistent webhook
+  endpoint objects exist on this account** — all local testing across Bundles 1-5 used `stripe listen
+  --forward-to`, an ephemeral CLI tunnel that never creates a Dashboard/API Endpoint object. This means
+  Stage 1 (a real, persistent TEST-mode endpoint pointed at an actual deployed URL) has not actually
+  happened yet in the way this section describes — it's still outstanding, not just under-scoped. Bruno:
+  register the test-mode endpoint against your actual Preview/Test deployment URL with all four event
+  types above before relying on this route working anywhere but a local `stripe listen` session.
 - **O7 — Secure credential handoff (Bitwarden Send, decided 2026-08-14).** Free, no vault infrastructure
   to run: the client creates a one-time encrypted Bitwarden Send link (bitwarden.com/send) and drops it in
   the access form (Appendix C, Q10) — no account needed on their end, no per-client invite for Bruno to

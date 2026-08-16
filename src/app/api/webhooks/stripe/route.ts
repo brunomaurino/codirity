@@ -22,13 +22,17 @@ function sanitizedErrorTag(err: unknown): string {
   return err instanceof Error ? err.constructor.name : typeof err;
 }
 
-// copyBoard/sendWelcomeEmail/createCheckin all throw plain Errors whose own message text
-// is ALREADY constructed to be safe — trelloRequest strips the key/token query string
-// before throwing (Bundle 2), and Resend's SDK errors are generic ("Invalid `to` field",
-// not the actual value — confirmed in Bundle 3). Logging that message in full turns
-// "Error" into an actually diagnosable cause (revoked token vs renamed list vs bad board
-// id) without regressing the no-PII policy above. Deliberately NOT used for the alert
-// step — a raw SMTP rejection can echo the recipient address back in its message.
+// copyBoard/sendWelcomeEmail/createCheckin/createRevokeAccessCard all throw plain Errors
+// whose own message text is ALREADY constructed to be safe — trelloRequest strips the
+// key/token query string before throwing (Bundle 2), and Resend's SDK errors are generic
+// ("Invalid `to` field", not the actual value — confirmed in Bundle 3). Logging that
+// message in full turns "Error" into an actually diagnosable cause (revoked token vs
+// renamed list vs bad board id) without regressing the no-PII policy above. This is an
+// EXPLICIT allowlist, not a default: deliberately NOT used for the alert step (a raw SMTP
+// rejection can echo the recipient address back in its message) NOR for raw Stripe SDK
+// errors (stripe.customers.retrieve, below — a StripeAuthenticationError can embed a
+// partially-redacted API key fragment). A new call site must be individually vetted
+// before using this helper, not assumed safe by default.
 function detailedErrorTag(err: unknown): string {
   return err instanceof Error ? err.message : typeof err;
 }
@@ -58,33 +62,45 @@ async function persistStep(
  * change, an already-paused subscription's unrelated field changing, etc.) must return
  * 200 and touch nothing — there is no side effect to make idempotent for those.
  */
-function isPortalPauseTransition(event: Stripe.Event): boolean {
+function isPortalPauseTransition(event: Stripe.Event): event is Stripe.CustomerSubscriptionUpdatedEvent {
   if (event.type !== "customer.subscription.updated") {
     return false;
   }
-  // Same non-discriminating-union caveat as the checkout.session.completed cast below —
-  // event.type doesn't narrow event.data's shape on these SDK types, so recover it
-  // explicitly rather than relying on inference.
-  const subscription = event.data.object as Stripe.Subscription;
-  const previousAttributes = event.data.previous_attributes as Partial<Stripe.Subscription> | undefined;
-  return subscription.pause_collection != null && previousAttributes?.pause_collection === null;
+  // No cast needed here: stripe@22.5.0's Stripe.Event is a real discriminated union on
+  // `type` (confirmed by reading node_modules/stripe/cjs/resources/Events.d.ts and by a
+  // standalone tsc check), so the guard above already narrows `event` to
+  // CustomerSubscriptionUpdatedEvent — `event.data.object`/`.previous_attributes` are
+  // concretely typed as Stripe.Subscription / Partial<Stripe.Subscription> from here on.
+  return event.data.object.pause_collection != null && event.data.previous_attributes?.pause_collection === null;
 }
+
+/** The three lifecycle event shapes handleLifecycleEvent accepts — narrowed here, once,
+ * rather than inside the function, so its body reads `event.data.object` as a concrete
+ * `Stripe.Subscription` with no cast. A plain `Stripe.Event` parameter would defeat this: a
+ * type-predicate narrowing (`event.type === "..."`) does not cross a function-call boundary,
+ * so the function itself would fall back to the union's generic, unnarrowed `data.object`
+ * shape even though every individual call site is already narrowed at its own `if`. */
+type SubscriptionLifecycleEvent =
+  | Stripe.CustomerSubscriptionDeletedEvent
+  | Stripe.CustomerSubscriptionUpdatedEvent
+  | Stripe.CustomerSubscriptionPausedEvent;
 
 /**
  * Handles the three lifecycle-event shapes (§3.5, Appendix E): cancellation
  * (`customer.subscription.deleted`), a billing-portal pause
  * (`customer.subscription.updated` with the pause_collection transition above), and a
  * trial-end pause (`customer.subscription.paused`, for completeness). Same idempotency +
- * per-step guard rules as the signup flow — a separate function only because the shape
- * (no plan resolution, no board/email steps, a different client-lookup strategy) doesn't
- * share meaningful code with handleCheckoutCompleted below.
+ * per-step guard rules as the signup flow's checkout.session.completed handling
+ * (inlined in POST() below) — a separate function only because the shape (no plan
+ * resolution, no board/email steps, a different client-lookup strategy) doesn't share
+ * meaningful code with it.
  */
 async function handleLifecycleEvent(
   stripe: Stripe,
-  event: Stripe.Event,
+  event: SubscriptionLifecycleEvent,
   action: "cancelled" | "paused"
 ): Promise<NextResponse> {
-  const subscription = event.data.object as Stripe.Subscription;
+  const subscription = event.data.object;
   const eventId = event.id;
   const customerId =
     typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
@@ -101,7 +117,11 @@ async function handleLifecycleEvent(
       name = customer.name ?? null;
     }
   } catch (err) {
-    console.error("onboarding webhook: customer lookup failed for a lifecycle event", detailedErrorTag(err));
+    // sanitizedErrorTag, not detailedErrorTag: this is a raw Stripe SDK error, outside the
+    // doc-audited set below (trelloRequest/Resend/createTrackedCard's own hand-authored,
+    // pre-sanitized messages) — a StripeAuthenticationError from a rotated
+    // STRIPE_SECRET_KEY embeds a partially-redacted key fragment in `.message`.
+    console.error("onboarding webhook: customer lookup failed for a lifecycle event", sanitizedErrorTag(err));
   }
   // Unlike the signup flow's harder terminal case (missing email/customerId entirely),
   // customerId is ALWAYS present here (it comes off the event itself, not a lookup), so
@@ -144,9 +164,17 @@ async function handleLifecycleEvent(
       }
     }
 
+    // The alert step is independently guarded (§1.4) and can run even when the card step
+    // above FAILED this same request — so its wording must reflect record.cardId's actual
+    // state, not assume the card exists. Getting this wrong would ship a false "card
+    // created" claim that also persists as alertSent:true, permanently suppressing the
+    // one later retry that could have sent the accurate version.
     if (!record.alertSent) {
+      const cardNote = record.cardId
+        ? "revoke-access card created on the ops board."
+        : "revoke-access card creation FAILED — needs manual follow-up.";
       try {
-        await alertFounder(`Client ${action}: ${clientName} — revoke-access card created on the ops board.`);
+        await alertFounder(`Client ${action}: ${clientName} — ${cardNote}`);
         await persistStep(eventId, leaseUntil, { alertSent: true });
         record = { ...record, alertSent: true };
       } catch (err) {
@@ -231,12 +259,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
-  // Necessary, not redundant: Stripe's public types don't discriminate-narrow
-  // `Event.Data.Object` from `event.type` (verified against the installed v22 types),
-  // so this cast is the SDK-idiomatic way to recover the concrete shape after the
-  // `event.type` guard above. handleLifecycleEvent/isPortalPauseTransition above cast
-  // similarly for the subscription-event shapes.
-  const session = event.data.object as Stripe.Checkout.Session;
+  // No cast needed: stripe@22.5.0's Stripe.Event is a real discriminated union on `type`
+  // (confirmed by reading the installed SDK types and by a standalone tsc check — a prior
+  // version of this comment claimed the opposite and was wrong), so the guard above
+  // already narrows `event` to CheckoutSessionCompletedEvent and `event.data.object` is
+  // concretely `Stripe.Checkout.Session` from here on.
+  const session = event.data.object;
   const eventId = event.id;
   const customerId = typeof session.customer === "string" ? session.customer : (session.customer?.id ?? "");
   const email = session.customer_details?.email ?? "";
