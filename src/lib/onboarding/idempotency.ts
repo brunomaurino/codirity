@@ -16,6 +16,12 @@ export interface OnboardingEventRecord {
   emailSent?: boolean;
   alertSent?: boolean;
   cardId?: string;
+  // Bundle 5 (lifecycle events) — the subscription this record is about. Absent on a
+  // signup (checkout.session.completed) record. Reuses `cardId`/`alertSent` above for the
+  // revoke-access card + founder alert rather than adding parallel fields: each lifecycle
+  // event gets its OWN record keyed by ITS OWN eventId, so there's no collision with a
+  // signup record's day-5 `cardId` — a single record only ever produces one card of one kind.
+  subscriptionId?: string;
   status: "reserved" | "done";
   lease_until: number;
 }
