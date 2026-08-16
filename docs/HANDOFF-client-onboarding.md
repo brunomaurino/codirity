@@ -100,7 +100,8 @@ paying customer, so this plan does NOT inherit the rebuild's blanket auto-merge;
    non-null — a billing-portal pause emits `updated`+`pause_collection`, NOT `.paused` (see Bundle 5).
 6. **All env via Vercel** (Production + Preview scoped): `STRIPE_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`,
    `STRIPE_BILLING_PORTAL_URL` (§4 O9), `TRELLO_KEY`, `TRELLO_TOKEN`, `TRELLO_TEMPLATE_BOARD_ID`,
-   `TRELLO_OPS_BOARD_ID`, `TRELLO_WORKSPACE_ID` (§4 O3), `RESEND_API_KEY`, `FOUNDER_ALERT_WEBHOOK_URL`,
+   `TRELLO_OPS_BOARD_ID`, `TRELLO_WORKSPACE_ID` (§4 O3), `RESEND_API_KEY`, `FOUNDER_ALERT_EMAIL` (§4 O4 —
+   DECIDED: plain email via the existing SMTP transporter, not a Slack webhook — see O4 below),
    `ACCESS_FORM_URL` (§4 O5), plus the idempotency-store creds (§4 O1). Document all in `.env.example`.
    **AND into the worktrees:** before launching the loop, Bruno also writes the TEST-scoped values into
    `.env.local` (gitignored) at the repo root — bundle worktrees run the behavioral acceptance locally and
@@ -212,8 +213,10 @@ These are external accounts / config the build cannot create; the loop verifies 
   — capture its id as `TRELLO_WORKSPACE_ID` (client boards are created with `idOrganization` set to it,
   and the §1.1d reconcile filters on it) — and the ops board ID (`TRELLO_OPS_BOARD_ID`). The
   `seed-trello-template` script (Bundle 2) produces the template board ID.
-- **O4 — Founder alert channel.** Slack incoming webhook URL, or a plain email address. *Recommend Slack if
-  you have a workspace, else email.*
+- **O4 — Founder alert channel.** DECIDED (Bundle 4): plain email, via the existing nodemailer/SMTP
+  transporter already used by `api/contact/route.ts` (`SMTP_HOST/PORT/USER/PASSWORD`), to
+  `FOUNDER_ALERT_EMAIL`. Not Slack, not Resend — avoids a second alert channel and the still-missing
+  `RESEND_API_KEY` for an internal alert that doesn't need React Email templating.
 - **O5 — Access form (Tally).** Build the Tally form from Appendix C; the public URL becomes the
   `ACCESS_FORM_URL` env var (the source of the `{accessFormUrl}` placeholder). No build in v1.
 - **O6 — Stripe webhook + prices — TWO-STAGE (spec-review blocker, 2026-08-10).** **Stage 1 (at launch):**

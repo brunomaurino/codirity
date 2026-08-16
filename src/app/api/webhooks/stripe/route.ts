@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { reserveEvent, updateRecordIfLeaseHeld } from "@/lib/onboarding/idempotency";
-import { planForPriceId } from "@/lib/onboarding/plans";
-import { alertFounder } from "@/lib/onboarding/founder-alert";
+import { planForPriceId, type PlanId } from "@/lib/onboarding/plans";
+import { alertFounder, createCheckin } from "@/lib/onboarding/ops";
+import { copyBoard } from "@/lib/onboarding/trello";
+import { sendWelcomeEmail } from "@/lib/onboarding/email";
 
 // Must stay strictly BELOW LEASE_SECONDS — pins the platform's actual execution ceiling
 // instead of relying on a comment. Vercel's own defaults (and Fluid Compute's up to 300s)
@@ -18,6 +20,33 @@ const LEASE_SECONDS = 90;
 // JSON.stringify. Log only the error's constructor name, never its message, here.
 function sanitizedErrorTag(err: unknown): string {
   return err instanceof Error ? err.constructor.name : typeof err;
+}
+
+// copyBoard/sendWelcomeEmail/createCheckin all throw plain Errors whose own message text
+// is ALREADY constructed to be safe — trelloRequest strips the key/token query string
+// before throwing (Bundle 2), and Resend's SDK errors are generic ("Invalid `to` field",
+// not the actual value — confirmed in Bundle 3). Logging that message in full turns
+// "Error" into an actually diagnosable cause (revoked token vs renamed list vs bad board
+// id) without regressing the no-PII policy above. Deliberately NOT used for the alert
+// step — a raw SMTP rejection can echo the recipient address back in its message.
+function detailedErrorTag(err: unknown): string {
+  return err instanceof Error ? err.message : typeof err;
+}
+
+/** Thrown when a fenced record write loses the lease — another worker has since taken
+ * over this event. Continuing to write after this would race the new owner, so it always
+ * aborts the whole request immediately rather than being caught per-step. */
+class LeaseLostError extends Error {}
+
+async function persistStep(
+  eventId: string,
+  leaseUntil: number,
+  patch: Parameters<typeof updateRecordIfLeaseHeld>[2]
+): Promise<void> {
+  const ok = await updateRecordIfLeaseHeld(eventId, leaseUntil, patch);
+  if (!ok) {
+    throw new LeaseLostError(`lost lease fence for event ${eventId}`);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -69,6 +98,12 @@ export async function POST(req: NextRequest) {
   const customerId = typeof session.customer === "string" ? session.customer : (session.customer?.id ?? "");
   const email = session.customer_details?.email ?? "";
   const name = session.customer_details?.name ?? null;
+  // Matches email-template.tsx's own `clientName?.trim() || "there"` fallback (Bundle 3) —
+  // a whitespace-only name from Stripe must fall through too, not just a null/empty one.
+  // This value also seeds the Trello board title and the day-5 card title, so a silent
+  // "there" here would erase the client's identity from those surfaces as well, not just
+  // the email.
+  const clientName = name?.trim() || "there";
 
   const reserveResult = await reserveEvent(eventId, { customerId, email, name, plan: null }, LEASE_SECONDS);
 
@@ -85,67 +120,178 @@ export async function POST(req: NextRequest) {
   // the work. Only one concurrent delivery ever reaches this branch per event id. Every
   // subsequent write MUST be fenced on this exact lease_until (the fencing token) — an
   // unguarded write here could blindly overwrite a record a DIFFERENT worker has since
-  // taken over, stranding its in-progress work.
+  // taken over, stranding its in-progress work. On a takeover, `record` already carries
+  // whatever a prior crashed attempt completed and persisted — every step below resumes
+  // from that state instead of redoing already-finished work.
   const leaseUntil = reserveResult.record.lease_until;
+  let record = reserveResult.record;
 
   // Loud, consistent failure policy: Stripe's subscription-checkout contract guarantees
   // customer_details + a created customer on a completed session, so an empty value here
   // means that contract didn't hold. Treat it the same as an unmapped price (fail loudly,
-  // don't silently propagate an empty string into Bundle 3's welcome email / Bundle 5's
-  // customer association) rather than storing "" and moving on.
+  // don't silently propagate an empty string into the welcome email / customer
+  // association) rather than storing "" and moving on.
   if (!email || !customerId) {
-    await alertFounder(
-      `checkout.session.completed (event ${eventId}) is missing customer email or id — cannot provision, needs manual follow-up.`
-    );
     console.error("onboarding webhook: missing customer email/id", { eventId, type: event.type });
-    const fenced = await updateRecordIfLeaseHeld(eventId, leaseUntil, { status: "done", alertSent: true });
-    if (!fenced) {
-      console.error("onboarding webhook: lost lease fence handling a missing-identity event", { eventId });
+    // The alert is best-effort here, deliberately NOT allowed to block marking this
+    // TERMINAL, unfixable-by-retry state done: a missing identity can never resolve
+    // differently on a later delivery, so an alert-channel outage must not turn it into
+    // an infinite retry loop. A failed alert is logged, not silently lost.
+    let alertSent = false;
+    try {
+      await alertFounder(
+        `checkout.session.completed (event ${eventId}) is missing customer email or id — cannot provision, needs manual follow-up.`
+      );
+      alertSent = true;
+    } catch (err) {
+      console.error("onboarding webhook: founder alert failed for a missing-identity event", sanitizedErrorTag(err));
+    }
+    try {
+      await persistStep(eventId, leaseUntil, { status: "done", alertSent });
+    } catch (err) {
+      console.error("onboarding webhook: failed persisting a missing-identity event", sanitizedErrorTag(err));
       return NextResponse.json({ error: "processing error" }, { status: 500 });
     }
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
   try {
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-      expand: ["data.price"],
-    });
-    // Scan every line item for one whose price maps to a known plan — a checkout with a
-    // fee/add-on line ahead of the plan line must not resolve off the wrong entry.
-    const mappedItem = lineItems.data.find((li) => li.price?.id && planForPriceId(li.price.id));
-    const priceId = mappedItem?.price?.id ?? lineItems.data[0]?.price?.id;
-    const plan = priceId ? planForPriceId(priceId) : null;
+    let plan: PlanId | null = record.plan;
 
     if (!plan) {
-      await alertFounder(
-        `Unknown Stripe price id "${priceId ?? "none"}" on checkout.session.completed (event ${eventId}) — no plan mapping, needs manual follow-up.`
-      );
-      // §1.3: log event id + type + plan only — never customer PII, keys, or payloads.
-      // priceId is a Stripe resource id, not PII — safe to log for triage.
-      console.log("onboarding webhook: unknown price id", { eventId, type: event.type, plan: null, priceId: priceId ?? null });
-      // Retrying will never resolve an unmapped price — ack so Stripe stops, alert +
-      // the stored unmappedPriceId are what a human uses to triage and fix the map.
-      const fenced = await updateRecordIfLeaseHeld(eventId, leaseUntil, {
-        status: "done",
-        alertSent: true,
-        unmappedPriceId: priceId,
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+        expand: ["data.price"],
       });
-      if (!fenced) {
-        console.error("onboarding webhook: lost lease fence handling an unknown-price event", { eventId });
-        return NextResponse.json({ error: "processing error" }, { status: 500 });
+      // Scan every line item for one whose price maps to a known plan — a checkout with a
+      // fee/add-on line ahead of the plan line must not resolve off the wrong entry.
+      const mappedItem = lineItems.data.find((li) => li.price?.id && planForPriceId(li.price.id));
+      const priceId = mappedItem?.price?.id ?? lineItems.data[0]?.price?.id;
+      plan = priceId ? planForPriceId(priceId) : null;
+
+      if (!plan) {
+        // §1.3: log event id + type + plan only — never customer PII, keys, or payloads.
+        // priceId is a Stripe resource id, not PII — safe to log for triage.
+        console.log("onboarding webhook: unknown price id", { eventId, type: event.type, plan: null, priceId: priceId ?? null });
+        // The alert is best-effort, deliberately NOT allowed to block marking this
+        // TERMINAL, unfixable-by-retry state done — an unmapped price can never resolve
+        // differently on a later delivery, so an alert-channel outage must not turn it
+        // into an infinite retry loop (mirrors the missing-identity branch above).
+        let alertSent = false;
+        try {
+          await alertFounder(
+            `Unknown Stripe price id "${priceId ?? "none"}" on checkout.session.completed (event ${eventId}) — no plan mapping, needs manual follow-up.`
+          );
+          alertSent = true;
+        } catch (err) {
+          console.error("onboarding webhook: founder alert failed for an unknown-price event", sanitizedErrorTag(err));
+        }
+        // Retrying will never resolve an unmapped price — ack so Stripe stops; the
+        // stored unmappedPriceId is what a human uses to triage and fix the map.
+        await persistStep(eventId, leaseUntil, { status: "done", alertSent, unmappedPriceId: priceId });
+        return NextResponse.json({ received: true }, { status: 200 });
       }
-      return NextResponse.json({ received: true }, { status: 200 });
+
+      await persistStep(eventId, leaseUntil, { plan });
+      record = { ...record, plan };
     }
 
-    const fenced = await updateRecordIfLeaseHeld(eventId, leaseUntil, { plan, status: "done" });
-    if (!fenced) {
-      console.error("onboarding webhook: lost lease fence before marking done", { eventId });
-      return NextResponse.json({ error: "processing error" }, { status: 500 });
+    // Each side effect below is independently guarded (§1.4): a failure is logged and
+    // leaves that step's completion flag unset, but does NOT stop the remaining
+    // independent steps from being attempted this same request. Every SUCCESSFUL step is
+    // persisted immediately, so a retry resumes only what's still missing.
+    let stepFailed = false;
+
+    let boardId = record.boardId;
+    let boardUrl = record.boardUrl;
+    if (!boardId) {
+      try {
+        const board = await copyBoard({ clientName, eventId, email, plan });
+        boardId = board.boardId;
+        boardUrl = board.boardUrl;
+        await persistStep(eventId, leaseUntil, { boardId, boardUrl, inviteSent: true });
+        record = { ...record, boardId, boardUrl, inviteSent: true };
+      } catch (err) {
+        if (err instanceof LeaseLostError) throw err;
+        console.error("onboarding webhook: board provisioning failed", detailedErrorTag(err));
+        stepFailed = true;
+      }
     }
-    console.log("onboarding webhook: reserved event", { eventId, type: event.type, plan });
+
+    // Deliberately skipped rather than attempted without a board — it would have no board
+    // link to send. This still counts toward `stepFailed` (below) exactly like a genuine
+    // failure would: it must trigger the same non-2xx/retry path, since emailSent staying
+    // unset is what makes a later retry (once the board step succeeds) send it.
+    if (!record.emailSent) {
+      if (boardUrl) {
+        try {
+          await sendWelcomeEmail({ eventId, email, clientName: name, boardUrl, plan });
+          await persistStep(eventId, leaseUntil, { emailSent: true });
+          record = { ...record, emailSent: true };
+        } catch (err) {
+          if (err instanceof LeaseLostError) throw err;
+          console.error("onboarding webhook: welcome email failed", detailedErrorTag(err));
+          stepFailed = true;
+        }
+      } else {
+        stepFailed = true;
+      }
+    }
+
+    if (!record.alertSent) {
+      try {
+        await alertFounder(`New client: ${clientName} — ${plan}`);
+        await persistStep(eventId, leaseUntil, { alertSent: true });
+        record = { ...record, alertSent: true };
+      } catch (err) {
+        if (err instanceof LeaseLostError) throw err;
+        console.error("onboarding webhook: founder alert failed", sanitizedErrorTag(err));
+        stepFailed = true;
+      }
+    }
+
+    if (!record.cardId) {
+      try {
+        const checkin = await createCheckin({ clientName });
+        await persistStep(eventId, leaseUntil, { cardId: checkin.cardId });
+        record = { ...record, cardId: checkin.cardId };
+      } catch (err) {
+        if (err instanceof LeaseLostError) throw err;
+        console.error("onboarding webhook: day-5 check-in card failed", detailedErrorTag(err));
+        stepFailed = true;
+      }
+    }
+
+    if (stepFailed || !record.boardId || !record.emailSent || !record.alertSent || !record.cardId) {
+      // §1.1(c)/§1.4: a partial failure must be surfaced via the founder alert, not just
+      // logs — best-effort, deliberately not allowed to change the response below (Stripe
+      // must still see non-2xx and retry regardless of whether this alert itself lands).
+      const missing = [
+        !record.boardId && "board",
+        !record.emailSent && "welcome email",
+        !record.alertSent && "founder alert",
+        !record.cardId && "day-5 check-in card",
+      ].filter((step): step is string => Boolean(step));
+      try {
+        await alertFounder(
+          `Onboarding incomplete for ${clientName} (event ${eventId}) — still missing: ${missing.join(", ")}. Stripe will retry.`
+        );
+      } catch (err) {
+        console.error("onboarding webhook: partial-failure alert itself failed", sanitizedErrorTag(err));
+      }
+      // Non-2xx so Stripe retries; the resume path (lease-expired takeover, above) picks
+      // up next time and only re-attempts what's still missing.
+      return NextResponse.json({ error: "processing incomplete" }, { status: 500 });
+    }
+
+    await persistStep(eventId, leaseUntil, { status: "done" });
+    console.log("onboarding webhook: client fully provisioned", { eventId, type: event.type, plan });
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
-    console.error("onboarding webhook: processing error", sanitizedErrorTag(err));
+    if (err instanceof LeaseLostError) {
+      console.error("onboarding webhook: lost lease fence mid-orchestration", { eventId });
+    } else {
+      console.error("onboarding webhook: processing error", sanitizedErrorTag(err));
+    }
     // Non-2xx so Stripe retries and the resume path (lease-expired takeover) re-enters.
     return NextResponse.json({ error: "processing error" }, { status: 500 });
   }
