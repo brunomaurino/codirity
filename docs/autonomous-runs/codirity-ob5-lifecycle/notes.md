@@ -310,7 +310,15 @@ required a code change.
 
 ## Open items NOT addressed in this PR
 
-(filled in Phase 7)
+None — all 13 review findings resolved inline, 0 deferrals (see `commitments.md`). This is also the
+final bundle of the client-onboarding v1 plan, and B4-D-opsidempotency1 (the one open cross-bundle
+commitment) is CLOSED here — see `commitments.md`'s "Amendments to prior commitments".
+
+**Operator-owned follow-ups** (not deferred code work — see `commitments.md` for the full list):
+registering a persistent Stripe test-mode webhook endpoint with all four required event types (none
+currently exists on this account at all); the same for the prod endpoint later (O6 Stage 2); the
+still-broken Gmail SMTP credential (carried from Bundle 4, independent of this bundle); the still-
+missing `RESEND_API_KEY` (carried from Bundle 3).
 
 ## Durable handles
 
