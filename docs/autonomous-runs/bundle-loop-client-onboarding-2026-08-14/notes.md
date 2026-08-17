@@ -125,16 +125,18 @@ mean guessing a URL, which I judged worse than leaving it explicitly flagged.
 The client-onboarding v1 + v1.1 plan is fully shipped (Bundles 1-5, PRs #15-#19, all merged). What's
 left is entirely OPERATOR action, not code:
 
-1. **Register a persistent Stripe TEST-mode webhook endpoint** against the real deployed URL, with
-   all four event types enabled: `checkout.session.completed`, `customer.subscription.deleted`,
-   `.updated`, `.paused`. Nothing in this plan has ever been exercised outside local `stripe listen`
-   tunnels — until this exists, the deployed site cannot receive ANY of these events.
-2. Later, **O6 Stage 2** — the same four event types on a PROD endpoint, only once #1 is confirmed
-   working (per the HANDOFF's existing two-stage gating — registering prod early risks a real
-   customer's checkout getting silently 200-ACKed with no provisioning behind it).
+~~1. Register a persistent Stripe TEST-mode webhook endpoint~~ — **DONE 2026-08-17**. Registered +
+   fully verified end-to-end in production (real checkout for the signup path, synthetic signed
+   events for the lifecycle path) — see "Production end-to-end verification" above.
+2. **O6 Stage 2 — the same four event types on a PROD/live-mode endpoint** — still NOT done, only
+   once real launch is imminent (per the HANDOFF's two-stage gating — registering prod early risks a
+   real customer's checkout getting silently 200-ACKed with no provisioning behind it). Also needs
+   LIVE-mode Payment Links (see #6) and live `price_id`s, distinct from the test-mode ones created
+   2026-08-17.
 3. **Fix the Gmail SMTP credential** (`support@codirity.com`, `534 5.7.9 WebLoginRequired`) — breaks
    both the founder-alert path (Bundles 4/5) and the site's existing contact form. Needs Bruno to
-   re-authenticate.
+   re-authenticate. **Only remaining code-adjacent gap**, confirmed via the live production test:
+   everything else in the signup + lifecycle flows now works end-to-end.
 4. **Set a real `RESEND_API_KEY`** — the welcome-email step (Bundle 3/4) has never sent a real email;
    only verified against the installed SDK's types + template rendering.
 ~~5. Fix the self-contradictory Appendix B Card 1 copy for Pro/Founding clients~~ — **DONE
@@ -144,10 +146,14 @@ left is entirely OPERATOR action, not code:
    reads naturally instead of self-contradicting. Updated both `docs/HANDOFF-client-onboarding.md`
    Appendix B AND the live template board's Card 1 (`6a80df3b5952630276a4ea30`), so any future
    `seed-trello-template.ts` re-run stays consistent with the doc.
+~~6. Wire the pricing-card CTAs to real Stripe Payment Links~~ — **DONE 2026-08-17**, operator
+   request (outside the original plan scope). No code change needed — `Pricing.tsx` was already
+   fully wired; only the `NEXT_PUBLIC_STRIPE_LINK_*` env vars were missing. Test-mode only; live-mode
+   links are part of #2 above.
 
-**All 5 operator action items above are now resolved except #3 (Gmail SMTP) and #4 (RESEND_API_KEY)
-— both require Bruno's own credentials/account access, which I cannot do myself.** #1 (Stripe
-webhook endpoint) is also DONE — see the O6 update in HANDOFF §4 and the section below.
+**Only #3 (Gmail SMTP) and #4 (RESEND_API_KEY) remain — both require Bruno's own credentials/account
+access, which I cannot do myself.** Everything else (webhook registration, Payment Links, the Card 1
+copy fix) is done and verified live in production as of 2026-08-17.
 
 ## O6 Stage 1 — Stripe test-mode webhook registered (2026-08-16)
 
@@ -167,6 +173,51 @@ crash-after-board-copy-before-persist scenario — simulated a crash by calling 
 for a fresh synthetic event id with no Redis record, then fired a real signed webhook for the same
 event id at the running dev server. Retry reconciled onto the identical board id; zero duplicates.
 Test boards/card/Redis key cleaned up afterward.
+
+## Production end-to-end verification (2026-08-17)
+
+Worked through the full O6 Stage 1 rollout live with the operator, debugging each missing Vercel env
+var one at a time via the operator reading back the exact `console.error` line from Vercel's Logs tab
+(much faster than guessing): `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` missing → set, wrong secret
+value → corrected → `TRELLO_TEMPLATE_BOARD_ID` missing → set → `ACCESS_FORM_URL` missing → set →
+`STRIPE_PRICE_ID_STANDARD/PRO/FOUNDING` missing → set. Each fix verified with a real signed synthetic
+webhook POST directly against `https://www.codirity.com/api/webhooks/stripe` (same technique as all
+local testing this session, just against the live URL) — cheaper and faster than a real checkout per
+iteration.
+
+**Lifecycle path (`customer.subscription.deleted`) verified fully green in production**, including
+the Trello 401 red herring investigated and resolved (token itself was valid — `dateExpires: null`,
+worked perfectly when used directly — the actual problem was the value not reaching Vercel correctly;
+re-pasting fixed it).
+
+**Signup path (`checkout.session.completed`) verified with a REAL test-mode checkout**, driven via
+Claude in Chrome (the operator's own browser) against the Standard Payment Link
+(`https://buy.stripe.com/test_00w14ocjibimaq96d3cwg01`) — filled a 4242 test card through Stripe's
+Elements iframes (not scriptable via DOM/`form_input`; required real click+type), completed the
+subscription, then verified in production: plan resolved correctly, Trello board created with the
+client invited as a member, day-5 card created with all placeholders resolved, zero unresolved
+`{curlyBraces}`. Cleaned up afterward: cancelled the real test-mode subscription (so it stops
+generating renewal/invoice test events), manually marked the event record `status: "done"` directly
+in Redis (email/alert are intentionally left incomplete — known gaps — and leaving the record
+`"reserved"` would have caused Stripe's automatic retries to keep re-attempting the board step against
+an archived board, creating duplicates on every retry until the ~3-day retry window expired).
+
+**Also found and cleaned up 9 stray test boards/cards** left on Bruno's real Trello workspace from
+earlier bundles' local testing that were never cleaned up before compaction (Acme Test Co, Beta Test
+Co ×2, Concurrent OB4 Test, Crash Test Client ×2, Debug Test, E2E Test Bundle4, plus 3 stray day-5
+cards from the same era) — archived/deleted all of them.
+
+**Payment Links created** (D2's env-placeholder gap, closed): Standard already had an active link
+from earlier Stripe CLI work (`plink_1U4roDLphcTHVMXGGVXVkUvL`); created Pro
+(`plink_1U5QoDLphcTHVMXGXTkWXHmM`) and Founding (`plink_1U5QoaLphcTHVMXGRCnootwt` — required
+`managed_payments: {enabled: false}` to bypass a product-tax-code requirement Founding's product
+didn't meet, which Pro's product apparently did) via the Stripe API. Verified all three prices'
+actual amounts via API before linking (Standard $3,995, Pro $6,995, Founding $2,995 — all correct,
+no repeat of Bundle 4's price-misconfiguration issue). Set `NEXT_PUBLIC_STRIPE_LINK_STANDARD/PRO/
+FOUNDING` in `.env.local` and had the operator set them in Vercel + redeploy. **No code changes were
+needed** — `Pricing.tsx` was already fully wired to `tier.stripeUrl`/`foundingRate.stripeUrl` with
+analytics tracking; verified live on `www.codirity.com` via Claude in Chrome that all three CTAs
+(`Get started` ×2, the founding banner) resolve to the correct Payment Link URLs.
 
 ## ⚠️ Second operator flag, from Bundle 3
 

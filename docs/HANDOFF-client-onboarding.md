@@ -159,11 +159,12 @@ Build Bundle 5 (lifecycle events, v1.1) of Codirity client onboarding. Fresh wor
 ## 1. Phase 0 — Discovery findings (VERIFIED against the repo, 2026-07-24)
 
 > **Staleness note (2026-08-10):** these findings are as-of 2026-07-24, and the rebuild has since merged.
-> `src/config/offer.ts` now carries `stripeLink()` / `NEXT_PUBLIC_STRIPE_LINK_*` env-placeholder Payment
-> Links plus the canonical plan copy — treat **offer.ts as the source of truth** for plan names, task
-> limits, and links. The "no Stripe code anywhere" bullet is stale in that narrow sense (there is still no
-> webhook / server-side Stripe code, which is what matters here). Re-verify against current `main` at build
-> time; the dependency baseline (no stripe/resend/KV deps) was re-confirmed 2026-08-10.
+> `src/config/offer.ts` now carries `stripeLink()` / `NEXT_PUBLIC_STRIPE_LINK_*` Payment Links (real
+> test-mode links since 2026-08-17 — see O6 below; `stripeLink()`'s `"#"` fallback only bites if a var is
+> ever unset again) plus the canonical plan copy — treat **offer.ts as the source of truth** for plan
+> names, task limits, and links. The "no Stripe code anywhere" bullet is stale in that narrow sense (there
+> is still no webhook / server-side Stripe code, which is what matters here). Re-verify against current
+> `main` at build time; the dependency baseline (no stripe/resend/KV deps) was re-confirmed 2026-08-10.
 
 - **Stack is all-new.** `package.json` has only `nodemailer` among the relevant deps — **no `stripe`,
   `resend`, `@react-email/*`, Trello client, or any KV/DB**. Every integration in the PRD is net-new.
@@ -222,11 +223,19 @@ These are external accounts / config the build cannot create; the loop verifies 
 - **O6 — Stripe webhook + prices — TWO-STAGE (spec-review blocker, 2026-08-10).** **Stage 1 (at launch):**
   register the endpoint (`/api/webhooks/stripe`) in **TEST mode only**, capture the test
   `STRIPE_WEBHOOK_SECRET`, and give the exact `price_id`s for Standard / Pro / Founding — test AND live
-  (must match the rebuild's Payment Links, D2 — note D2 shipped env-placeholder links, so the real Payment
-  Links + prices may still need to be CREATED first). **Stage 2 (ONLY after Bundle 4 merges + test e2e
+  (must match the rebuild's Payment Links, D2). **Stage 2 (ONLY after Bundle 4 merges + test e2e
   green):** register the PROD endpoint + set the prod secret. Registering prod earlier means a real
   checkout gets 200-ACKed by a handler with no provisioning behind it — Stripe stops retrying, the event is
   marked done, and that paying client silently never gets a board or email.
+  **Test-mode Payment Links + webhook DONE 2026-08-17.** D2's env-placeholder gap is closed: created
+  test-mode Payment Links for all three tiers (Standard `test_00w14o…`, Pro `test_8x2fZi…`, Founding
+  `test_aFa3cw…`) and set `NEXT_PUBLIC_STRIPE_LINK_STANDARD/PRO/FOUNDING` in Vercel — verified live on
+  `www.codirity.com` that all three pricing-card CTAs now point at the correct Payment Link. A full
+  end-to-end run was completed live: real test-mode checkout → webhook (signature verified,
+  `STRIPE_PRICE_ID_STANDARD` resolved to the correct plan) → Trello board created + client invited +
+  day-5 card created. Only the two already-known gaps (RESEND_API_KEY, Gmail SMTP) remain — see below.
+  **LIVE mode Payment Links + prod endpoint are a separate, later step** (same two-stage pattern), not
+  done yet.
   **⚠️ Enabled-events list, updated by Bundle 5 (spec-review MAJOR, 2026-08-16):** whichever endpoint object
   you register (test now, prod later) MUST have ALL FOUR of these event types enabled, not just the
   original one — `checkout.session.completed`, `customer.subscription.deleted`,
