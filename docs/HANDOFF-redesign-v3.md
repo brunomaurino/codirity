@@ -107,11 +107,45 @@ command) whenever Bruno supplies real team photos — it is deferred, not delete
 ```
 /autonomous-task Redesign v3 Bundle V0 — Monthly Club foundation flip. Read docs/HANDOFF-redesign-v3.md §1 (the full visual system) and v1's docs/HANDOFF-redesign.md §4 (voice + banned-word gate, still binding — content register doesn't change). Implement the token flip across the whole site with NO structural/section changes: globals.css palette swap to paper/ink/green/gold (+ dark equivalents, both prefers-color-scheme and data-theme paths, contrast-checked WCAG AA); Figtree via next/font/google wired into every heading AND body text (replacing Outfit); Instrument Serif Italic loaded and available as a `.accent` utility for the one-word-per-headline emphasis technique; retire Fraunces and Space Mono as system voices entirely; blob-gradient CSS utility classes (radial/conic layered gradients, no images, at least 4 distinct color combinations so later bundles don't reuse one gradient everywhere); pill-shaped button utility; card radius bump to 16-22px; a glassmorphic-card utility (backdrop-filter blur + translucent dark bg) for V5's future pricing card. Check the theme-init script/OG image colors don't hardcode the old palette. Gates: lint + tsc + build + SSR check + banned-word grep + perf delta. Post desktop+mobile, light+dark screenshots in the PR description for the record (operator has pre-approved this exact visual system via the pitch artifact — auto-merge stays armed per the 2026-08-18 policy amendment in §0, do NOT open with --no-merge). --bundle-id 201 --plan-slug redesign-v3
 ```
-*(V1–V8 briefs get written after V0's build completes — its merged system is their spec anchor.
-Per the 2026-08-18 full-authorization amendment in §0, later bundles launch immediately once V0
-merges, no operator pause between them. Each later brief should point its builder at the matching
-section of the approved pitch artifact for the literal layout to mirror, plus the real `offer.ts`
+*(Per the 2026-08-18 full-authorization amendment in §0, every bundle below launches immediately
+once the prior one merges — no operator pause between them. Each brief points its builder at the
+approved "Monthly Club" pitch artifact for the literal layout to mirror, plus the real `offer.ts`
 copy — never lorem, never invented content.)*
+
+### §3.V1
+```
+/autonomous-task Redesign v3 Bundle V1 — hero. Read docs/HANDOFF-redesign-v3.md §1 (visual system, now merged from V0) and the approved "Monthly Club" pitch artifact's hero mockup for the literal layout to mirror: nav with a small green brand dot + "Book a call"/"See pricing" pill buttons, an asymmetric hero grid (copy left, blob-gradient card right), the blob card carries a "Start today" badge with a small pulse dot, a short headline, and a CTA pill. Replace Hero.tsx's current floating stat cards ("Cost Reduction / Save" etc.) entirely with this. Real offer.ts hero copy only (headline, subhead, both CTAs — text unchanged, both remain instrumented analytics events), apply the `.accent` italic-word treatment to exactly one word in the H1 ("on subscription"), trust line ("Built by engineers from Globant & Ualá") stays. Gates: lint + tsc + build + SSR check + banned-word grep + perf delta. --bundle-id 202 --plan-slug redesign-v3
+```
+
+### §3.V2
+```
+/autonomous-task Redesign v3 Bundle V2 — process + benefits. Read docs/HANDOFF-redesign-v3.md §1 and the pitch artifact's process-card and benefit-tile sections. Rework Process.tsx's Subscribe/Request/Ship (existing offer.ts howItWorks copy, text unchanged) into three blob-gradient cards, each with ITS OWN distinct color combination — reusing one gradient across all three is a defect, not a shortcut. Rework Benefits.tsx into a 5–6 tile grid, each tile its own blob-gradient background with a simple line icon, using the REAL existing offer.ts benefits content (do not invent new benefit copy or icons unrelated to what's already there). The benefits section headline uses the `.accent` italic-word treatment on exactly one word. Gates: standard (lint+tsc+build+SSR+banned-word grep) + perf delta. --bundle-id 203 --plan-slug redesign-v3
+```
+
+### §3.V3
+```
+/autonomous-task Redesign v3 Bundle V3 — services. Read docs/HANDOFF-redesign-v3.md §1. Services.tsx (the "what we build" included/not-included lists) doesn't have a literal mockup in the pitch artifact — extrapolate consistently with Designjoy's own "Apps, websites, logos & more" pill-cloud block (referenced in HANDOFF §1): render offer.ts's scope/category data as wrapped pill-shaped tags, headline using the `.accent` treatment on one word. Keep the not-included list's content intact and presented plainly (still honest, still visible — do not delete or bury it). Gates: standard + perf delta. --bundle-id 204 --plan-slug redesign-v3
+```
+
+### §3.V4
+```
+/autonomous-task Redesign v3 Bundle V4 — clients. Read docs/HANDOFF-redesign-v3.md §5 (the RESOLVED D6 content) and docs/redesign-storytelling.md §1b in full for the exact facts and "Draft story copy" per entity (eDairyCorp — client; Meshio and Vivi — ours, Vivi explicitly pre-launch). Rework RecentWork.tsx into Designjoy-style badge cards — one blob-gradient tile per client/product, an honest `client`/`ours` tag on each, a one-liner story adapted from the storytelling doc's draft copy into the warmer Monthly Club voice (HANDOFF-redesign-v3.md §4) rather than copied verbatim (that draft copy was written for the old ledger/mono register). The honesty discipline is non-negotiable: never present Meshio or Vivi as arm's-length clients, Vivi must say "pre-launch." Gates: standard + perf delta. --bundle-id 205 --plan-slug redesign-v3
+```
+
+### §3.V5
+```
+/autonomous-task Redesign v3 Bundle V5 — pricing. Read docs/HANDOFF-redesign-v3.md §1 and §6 (D3 RESOLVED: 50% refund if cancelled within the first 7 days of a NEW subscription — use this EXACT figure, it is a real financial commitment, do not alter it or invent a different one; D5 RESOLVED: no capacity badge ships, do not add one). Rework Pricing.tsx into the glassmorphic dark card over its own blob-gradient companion visual (mirroring the pitch artifact's pricing section), a two-column feature list per tier using real offer.ts tier data (Standard $3,995/mo, Pro $6,995/mo — prices unchanged), dashed-border trust boxes for "Pause anytime" and "Fast delivery" (reuse existing site claims for delivery time — do not invent a new figure), and a guarantee cluster stating the 50%-first-week-refund plainly in real prose. Keep both existing Stripe Payment Link CTAs and the founding-rate banner fully functional and instrumented (checkout_click_standard/pro/founding events unchanged) — verify the real hrefs still resolve; this must not regress checkout. Gates: standard + perf delta + manual click-through check that all three CTAs still link to the live Payment Links. --bundle-id 206 --plan-slug redesign-v3
+```
+
+### §3.V6
+```
+/autonomous-task Redesign v3 Bundle V6 — FAQ + final CTA close. Read docs/HANDOFF-redesign-v3.md §1 and §4, and v1's docs/HANDOFF-redesign.md §6.R6 for its still-valid extended FAQ question list (a REGISTER-agnostic reference for WHICH questions to add, not how to answer them — write every answer in the warmer Monthly Club voice per HANDOFF-redesign-v3.md §4, never v1's dry founder-engineer register). Deepen Faq.tsx from its current question count toward the ~12 questions that list names (Why not just hire? Who actually writes the code? What does "one request" mean? Why limited spots? What happens when I pause? Who owns the code? etc.), update FAQPage JSON-LD to match. Rework Contact.tsx's final CTA into the black-band close (near-black background, per HANDOFF §1 rule 4 — the ONE deliberate palette contrast beat in the whole site) keeping the existing contact form + Cal booking button, real copy only. Gates: standard + perf delta + SSR check on the new FAQ copy. --bundle-id 207 --plan-slug redesign-v3
+```
+
+### §3.V8
+```
+/autonomous-task Redesign v3 Bundle V8 — case studies. Read docs/HANDOFF-redesign-v3.md §7 IN FULL before writing anything — it contains the complete, Bruno-approved content briefs for both case studies (eDairyMarket, Meshio), verbatim facts and explicit "Do NOT include" exclusions per study (no WordPress cost-savings figure for eDairyMarket, no fabricated activation-rate percentage for Meshio). Do not invent any fact, metric, or detail beyond what §7 states. Build a new case-studies section (new component under src/components/sections/, wired into the page) presenting both studies using V0's established tokens: a blob-gradient accent behind each headline stat, the `.accent` italic-word treatment on each headline, Figtree body copy, stack tags per study, and one simple hand-drawn-feel SVG architecture sketch per study (an honest, simplified diagram of what was actually built, per v1's HANDOFF-redesign.md §6.R8 reasoning — never isometric stock art, never a literal screenshot). Place the section after Clients (V4) and before Pricing (V5) in page order — document if a different position is chosen and why. Gates: standard + perf delta + banned-word grep. --bundle-id 208 --plan-slug redesign-v3
+```
 
 ## §4 — Voice: unchanged from v1
 
