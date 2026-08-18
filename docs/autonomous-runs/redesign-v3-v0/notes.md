@@ -192,3 +192,4 @@ convenience. Flagging explicitly per the audit-trail requirement.
 - marker: /Users/brunomaurino/.claude/autonomous-active/autonomous-task-redesign-v3-v0
 - worktree: /Users/brunomaurino/projects/codirity-rv3-v0
 - worktree_entry: path
+- battery_run_id: wf_f41683a1-d87
