@@ -87,7 +87,7 @@ link if it's not in this session's history.
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
 |---|---|---|---|---|---|
 | **V0** | Foundation flip: palette tokens (paper/ink/green/gold, light+dark), Figtree + Instrument Serif Italic wired in, blob-gradient utility classes, pill/rounded shape system, across ALL existing components — no structural change · ~~visual checkpoint: NO auto-merge~~ auto-merged per the 2026-08-18 full-authorization override (§0) | — | [x] complete | #20 | f9a8985 |
-| **V1** | Hero: nav restyle, blob-card hero visual (replaces the "Cost Reduction / Save"-style floating stat cards), "Start today" badge, trust line | V0 approved | [ ] pending | | |
+| **V1** | Hero: nav restyle, blob-card hero visual (replaces the "Cost Reduction / Save"-style floating stat cards), "Start today" badge, trust line | V0 approved | [x] complete | #21 | 017e7f9 |
 | **V2** | Process + Benefits: Subscribe/Request/Ship as three blob-gradient cards; membership-benefits grid as 5–6 blob-tile icons (replaces `Benefits.tsx`'s current treatment) | V0 | [ ] pending | | |
 | **V3** | Services ("what we build") as a scope pill-cloud + headline, mirroring Designjoy's "Apps, websites, logos & more" block | V0 | [ ] pending | | |
 | **V4** | Clients (`RecentWork.tsx`) — eDairyCorp / Meshio / Vivi, reusing the APPROVED honesty framing from `redesign-storytelling.md` §1 (client vs. ours, Vivi marked pre-launch), presented as Designjoy-style badge cards instead of ledger rows | V0, content in §5 below (already resolved) | [ ] pending | | |
