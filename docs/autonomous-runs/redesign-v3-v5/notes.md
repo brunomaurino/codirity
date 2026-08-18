@@ -134,3 +134,4 @@ already real). One build-tooling observation surfaced during verification — se
 - worktree: /Users/brunomaurino/projects/codirity-rv3-v5
 - worktree_entry: path
 - dev_server_pid: 79788
+- battery_run_id: wf_6c08a024-6ad
