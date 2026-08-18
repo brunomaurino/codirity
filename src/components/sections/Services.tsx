@@ -1,63 +1,72 @@
-import { Check, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Section, Container } from "@/components/layout";
-import { SectionHeader, Card } from "@/components/ui";
+import { SectionHeader, AccentWord } from "@/components/ui";
 import { included, notIncluded, scopeLabels, sections } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
+// No literal mockup for this section in the pitch artifact — extrapolated
+// from Designjoy's own "Apps, websites, logos & more" pill-cloud block
+// (HANDOFF-redesign-v3 §1), rendering the real `included` scope items as
+// wrapped pill tags instead of a vertical checklist. `notIncluded` stays a
+// plain list, deliberately NOT pill-styled: the honesty discipline here is
+// that what's OUT of scope should read as a plain, sober fact, not
+// decorated like a feature highlight.
 export function Services() {
   return (
     <Section id="services" variant="gray" className="reveal">
       <Container>
         <SectionHeader
           label={sections.whatWeBuild.label}
-          title={sections.whatWeBuild.title}
+          title={<AccentWord text={sections.whatWeBuild.title} word="automation" />}
           description={sections.whatWeBuild.description}
           className="mb-16"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {/* Included */}
-          <Card padding="lg" className="reveal">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+        <div className="max-w-4xl mx-auto space-y-12">
+          {/* Included — pill cloud */}
+          <div className="reveal">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-brand mb-6 text-center">
               {scopeLabels.included}
             </h3>
-            <ul className="space-y-4">
+            <div className="flex flex-wrap justify-center gap-3">
               {included.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-pale text-brand">
-                    <Check className="h-4 w-4" strokeWidth={2.5} />
-                  </span>
-                  <span className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {item}
-                  </span>
-                </li>
+                <span
+                  key={item}
+                  className={cn(
+                    "btn-pill inline-flex items-center",
+                    "px-5 py-2.5 text-sm font-medium",
+                    "bg-brand-pale text-brand-dark dark:text-brand",
+                    "border border-brand/20"
+                  )}
+                >
+                  {item}
+                </span>
               ))}
-            </ul>
-          </Card>
+            </div>
+          </div>
 
-          {/* Not included */}
-          <Card padding="lg" className="reveal">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+          {/* Not included — plain list, deliberately not pill-styled */}
+          <div className="reveal">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400 mb-6 text-center">
               {scopeLabels.notIncluded}
             </h3>
-            <ul className="space-y-4">
+            <ul className="max-w-xl mx-auto space-y-3">
               {notIncluded.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <span
-                    className={cn(
-                      "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
-                      "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500"
-                    )}
-                  >
-                    <X className="h-4 w-4" strokeWidth={2.5} />
-                  </span>
+                <li
+                  key={item}
+                  className="flex items-start gap-3 justify-center text-center"
+                >
+                  <X
+                    className="h-4 w-4 mt-1 shrink-0 text-gray-400 dark:text-gray-500"
+                    strokeWidth={2.5}
+                  />
                   <span className="text-gray-500 dark:text-gray-400 leading-relaxed">
                     {item}
                   </span>
                 </li>
               ))}
             </ul>
-          </Card>
+          </div>
         </div>
       </Container>
     </Section>
