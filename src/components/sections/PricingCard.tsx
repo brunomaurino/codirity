@@ -20,6 +20,11 @@ export interface PricingCardProps {
   analyticsEvent?: AnalyticsEvent;
   calLink?: string;
   featured?: boolean;
+  /** Applied to the outermost element this card renders. NOTE: that is the card
+   *  itself when `featured` is false, but the positioning wrapper around it when
+   *  `featured` is true (the wrapper owns the blob halo). Layout/spacing classes
+   *  work in both cases; card-surface classes (background, border, radius) only
+   *  land on the card in the non-featured branch. */
   className?: string;
 }
 
@@ -53,31 +58,43 @@ export function PricingCard({
           "hover:bg-brand-fill-dark hover:-translate-y-0.5 hover:shadow-brand",
         ]
   );
-  return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-2xl p-8 md:p-10",
-        "transition-all duration-400",
-        featured
-          ? [
-              "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
-              "text-white border-0",
-              "shadow-brand",
-            ]
-          : [
-              "bg-white dark:bg-gray-800 border border-[var(--border)]",
-              "hover:-translate-y-2 hover:shadow-xl hover:border-brand/30",
-            ],
-        className
-      )}
-    >
+
+  const cta =
+    calLink ? (
+      <CalPopupButton calLink={calLink} className={buttonStyles}>
+        {ctaText}
+        <ArrowRight className="w-5 h-5" />
+      </CalPopupButton>
+    ) : analyticsEvent ? (
+      <TrackedLink
+        href={ctaHref}
+        event={analyticsEvent}
+        external={ctaExternal}
+        className={buttonStyles}
+      >
+        {ctaText}
+        <ArrowRight className="w-5 h-5" />
+      </TrackedLink>
+    ) : (
+      <a
+        href={ctaHref}
+        {...(ctaExternal
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
+        className={buttonStyles}
+      >
+        {ctaText}
+        <ArrowRight className="w-5 h-5" />
+      </a>
+    );
+
+  const body = (
+    <>
       {/* Plan Name */}
       <div
         className={cn(
           "inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6",
-          featured
-            ? "bg-white/15 text-white"
-            : "bg-brand-pale text-brand-dark"
+          featured ? "bg-white/15 text-white" : "bg-brand-pale text-brand-dark"
         )}
       >
         {name}
@@ -127,27 +144,29 @@ export function PricingCard({
         {description}
       </p>
 
-      {/* Features */}
+      {/* Features — two columns from sm: up (HANDOFF-redesign-v3 §1, Bundle
+          V5). Gated at sm: (found in Phase 4/5 review): ungated, this
+          forced 2 columns even at 320-375px phone widths, wrapping the
+          smaller 0.85rem feature text to 2-4 ragged lines each on the
+          site's primary conversion section — the trust boxes added in the
+          same bundle already gate their own 2-up grid this way. */}
       {features.length > 0 && (
-        <ul className="flex flex-col gap-4 mb-10">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mb-10">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
+            <li key={index} className="flex items-start gap-2">
               <div
                 className={cn(
-                  "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5",
+                  "flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5",
                   featured ? "bg-white/20" : "bg-brand-pale"
                 )}
               >
                 <Check
-                  className={cn(
-                    "w-4 h-4",
-                    featured ? "text-white" : "text-brand"
-                  )}
+                  className={cn("w-3 h-3", featured ? "text-white" : "text-brand")}
                 />
               </div>
               <span
                 className={cn(
-                  "text-[0.95rem]",
+                  "text-[0.85rem] leading-snug",
                   featured ? "text-white/90" : "text-gray-700 dark:text-gray-300"
                 )}
               >
@@ -158,34 +177,61 @@ export function PricingCard({
         </ul>
       )}
 
-      {/* CTA Button */}
-      {calLink ? (
-        <CalPopupButton calLink={calLink} className={buttonStyles}>
-          {ctaText}
-          <ArrowRight className="w-5 h-5" />
-        </CalPopupButton>
-      ) : analyticsEvent ? (
-        <TrackedLink
-          href={ctaHref}
-          event={analyticsEvent}
-          external={ctaExternal}
-          className={buttonStyles}
-        >
-          {ctaText}
-          <ArrowRight className="w-5 h-5" />
-        </TrackedLink>
-      ) : (
-        <a
-          href={ctaHref}
-          {...(ctaExternal
-            ? { target: "_blank", rel: "noopener noreferrer" }
-            : {})}
-          className={buttonStyles}
-        >
-          {ctaText}
-          <ArrowRight className="w-5 h-5" />
-        </a>
-      )}
+      {cta}
+    </>
+  );
+
+  if (!featured) {
+    return (
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-2xl p-8 md:p-10",
+          "transition-all duration-400",
+          "bg-white dark:bg-gray-800 border border-[var(--border)]",
+          "hover:-translate-y-2 hover:shadow-xl hover:border-brand/30",
+          className
+        )}
+      >
+        {body}
+      </div>
+    );
+  }
+
+  // Featured tier: a glassmorphic dark card over its own blob-gradient
+  // companion visual (HANDOFF-redesign-v3 §1 — mirrors the pitch
+  // artifact's pricing section). The blob sits behind the card, blurred
+  // and bleeding past its edges, visible through .glass-dark's
+  // translucency; `.glass-dark` itself already supplies the dark base
+  // + backdrop-blur (V0). Wrapper carries `className` (the `reveal`
+  // scroll-animation class from Pricing.tsx) so it doesn't fight with the
+  // card's own `transition-all` on the same element — same discipline
+  // established in Benefits.tsx/RecentWork.tsx after V2's review battery
+  // caught that exact same-element cascade conflict.
+  return (
+    <div className={cn("relative", className)}>
+      {/* Clipped to a 12px halo (found in Phase 4/5 review): the original
+          -inset-6 (24px) exactly matched the grid's own gap-6, and
+          blur-2xl's spread reaches well beyond that regardless of inset
+          size, so the blob painted over the adjacent card's edge (and the
+          mobile-stacked card below it). Nesting the blur inside its own
+          overflow-hidden, inset-3 (12px) container clips the effect to a
+          tight glow that can never reach the 24px gap, while still giving
+          the card a distinct color halo at its own edges. */}
+      <div
+        className="absolute -inset-3 overflow-hidden rounded-[32px] -z-10"
+        aria-hidden="true"
+      >
+        <div className="blob-4 absolute inset-0 blur-2xl opacity-60" />
+      </div>
+      <div
+        className={cn(
+          "glass-dark card-soft relative overflow-hidden p-8 md:p-10",
+          "transition-all duration-400",
+          "shadow-brand"
+        )}
+      >
+        {body}
+      </div>
     </div>
   );
 }

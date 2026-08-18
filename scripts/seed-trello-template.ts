@@ -52,7 +52,7 @@ All communication happens in card comments. No meetings, no status calls — unl
   {
     list: "👋 Start Here",
     name: "Pausing & billing",
-    desc: `Billing cycles are 31 days. Pause anytime: unused days are banked and available whenever you return. Cancel anytime, no questions. First week not working for you? 75% back, no questions asked.`,
+    desc: `Billing cycles are 31 days. Pause anytime: unused days are banked and available whenever you return. Cancel anytime, no questions. First week not working for you? 50% back, no questions asked.`,
   },
   {
     list: "👋 Start Here",
