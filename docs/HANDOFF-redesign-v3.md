@@ -17,12 +17,20 @@ all copy/prices/links, server components by default, gates `npm run lint` + `npx
 voice gate (§4 below, carried from v1 — content register is unchanged, only the visual system is
 new).
 
-**NEW MERGE POLICY — same visual checkpoint both prior attempts taught us to need, now for the
-THIRD time.** V0 opens its PR with **auto-merge NOT armed** and posts screenshots (desktop +
-mobile, light + dark) for Bruno's explicit approval; only after his OK does V0 merge and do the
-remaining bundles inherit the standing auto-merge authorization. Two direction misses (v1's
-terminal aesthetic "read as AI-made"; v2 never finished) is the reason this gate exists — it is
-not optional this time either.
+**MERGE POLICY — AMENDED 2026-08-18 (operator, full authorization).** The visual-checkpoint gate
+below was the original plan; Bruno has since explicitly authorized full unattended auto-merge for
+the ENTIRE plan, including V0, because he already approved the exact visual system live (the
+"Monthly Club" pitch artifact — same tokens, same fonts, same colors V0 implements) before this
+HANDOFF was written, unlike v1/v2 where the visual approval happened only after a bundle shipped.
+**No bundle in this plan pauses for operator confirmation; every PR opens with auto-merge armed
+and watches straight through to merge.** The original policy is kept below for the historical
+record of why the gate existed:
+
+~~V0 opens its PR with auto-merge NOT armed and posts screenshots (desktop + mobile, light + dark)
+for Bruno's explicit approval; only after his OK does V0 merge and do the remaining bundles
+inherit the standing auto-merge authorization.~~ Two direction misses (v1's terminal aesthetic
+"read as AI-made"; v2 never finished) is why this gate existed in v1/v2 — it's superseded here
+specifically because the direction is pre-approved, not because the lesson stopped mattering.
 
 ## §1 — The concept: Monthly Club
 
@@ -85,19 +93,20 @@ link if it's not in this session's history.
 | **V4** | Clients (`RecentWork.tsx`) — eDairyCorp / Meshio / Vivi, reusing the APPROVED honesty framing from `redesign-storytelling.md` §1 (client vs. ours, Vivi marked pre-launch), presented as Designjoy-style badge cards instead of ledger rows | V0, content in §5 below (already resolved) | [ ] pending | | |
 | **V5** | Pricing: glassmorphic dark card over its own blob, two-column feature list, dashed-border trust boxes ("Pause anytime," "Fast delivery"), guarantee cluster (gated on D3) | V0, decision D3 | [ ] pending | | |
 | **V6** | FAQ + final CTA — FAQ deepened per v1 §6.R6's question list (still valid, register-only, not visual-system-specific), final CTA becomes the black band close | V0 | [ ] pending | | |
-| **V7** | The people — real photos (gated on D2) | decision D2 | [ ] blocked on content | | |
-| **V8** | Case studies (gated on D1) | decision D1 | [ ] blocked on content | | |
+| **V7** | The people — real photos (gated on D2) | decision D2 | **OUT OF SCOPE this run** — no photos supplied 2026-08-18 | | |
+| **V8** | Case studies — eDairyMarket + Meshio, full briefs in §7 | V0 | [ ] pending | | |
 
 ## §3 — Per-bundle launch commands
 
 ### §3.V0
 ```
-/autonomous-task Redesign v3 Bundle V0 — Monthly Club foundation flip. Read docs/HANDOFF-redesign-v3.md §1 (the full visual system) and v1's docs/HANDOFF-redesign.md §4 (voice + banned-word gate, still binding — content register doesn't change). Implement the token flip across the whole site with NO structural/section changes: globals.css palette swap to paper/ink/green/gold (+ dark equivalents, both prefers-color-scheme and data-theme paths, contrast-checked WCAG AA); Figtree via next/font/google wired into every heading AND body text (replacing Outfit); Instrument Serif Italic loaded and available as a `.accent` utility for the one-word-per-headline emphasis technique; retire Fraunces and Space Mono as system voices entirely; blob-gradient CSS utility classes (radial/conic layered gradients, no images, at least 4 distinct color combinations so later bundles don't reuse one gradient everywhere); pill-shaped button utility; card radius bump to 16-22px; a glassmorphic-card utility (backdrop-filter blur + translucent dark bg) for V5's future pricing card. Check the theme-init script/OG image colors don't hardcode the old palette. Gates: lint + tsc + build + SSR check + banned-word grep + perf delta. OPEN THE PR WITH --no-merge AND post desktop+mobile, light+dark screenshots for Bruno's visual approval before any merge. --bundle-id 201 --plan-slug redesign-v3 --no-merge
+/autonomous-task Redesign v3 Bundle V0 — Monthly Club foundation flip. Read docs/HANDOFF-redesign-v3.md §1 (the full visual system) and v1's docs/HANDOFF-redesign.md §4 (voice + banned-word gate, still binding — content register doesn't change). Implement the token flip across the whole site with NO structural/section changes: globals.css palette swap to paper/ink/green/gold (+ dark equivalents, both prefers-color-scheme and data-theme paths, contrast-checked WCAG AA); Figtree via next/font/google wired into every heading AND body text (replacing Outfit); Instrument Serif Italic loaded and available as a `.accent` utility for the one-word-per-headline emphasis technique; retire Fraunces and Space Mono as system voices entirely; blob-gradient CSS utility classes (radial/conic layered gradients, no images, at least 4 distinct color combinations so later bundles don't reuse one gradient everywhere); pill-shaped button utility; card radius bump to 16-22px; a glassmorphic-card utility (backdrop-filter blur + translucent dark bg) for V5's future pricing card. Check the theme-init script/OG image colors don't hardcode the old palette. Gates: lint + tsc + build + SSR check + banned-word grep + perf delta. Post desktop+mobile, light+dark screenshots in the PR description for the record (operator has pre-approved this exact visual system via the pitch artifact — auto-merge stays armed per the 2026-08-18 policy amendment in §0, do NOT open with --no-merge). --bundle-id 201 --plan-slug redesign-v3
 ```
-*(V1–V8 briefs get written after V0 is APPROVED, mirroring v2's own discipline — the approved V0
-system is their spec anchor. Do not launch anything beyond V0 without Bruno's visual OK. Each
-later brief should point its builder at the matching section of the approved pitch artifact for
-the literal layout to mirror, plus the real `offer.ts` copy — never lorem, never invented content.)*
+*(V1–V8 briefs get written after V0's build completes — its merged system is their spec anchor.
+Per the 2026-08-18 full-authorization amendment in §0, later bundles launch immediately once V0
+merges, no operator pause between them. Each later brief should point its builder at the matching
+section of the approved pitch artifact for the literal layout to mirror, plus the real `offer.ts`
+copy — never lorem, never invented content.)*
 
 ## §4 — Voice: unchanged from v1
 
@@ -125,13 +134,70 @@ tone (already close to this) over inventing new lines.
   those specific narrative devices — reference `offer.ts`'s existing content as the copy baseline
   instead.
 
-## §6 — Decisions Bruno owns (carried forward, unchanged from v1/v2)
+## §6 — Decisions Bruno owns
 
 | ID | Decision | Blocks | Status |
 |---|---|---|---|
-| D1 | 2–3 real case studies | V8 | open |
-| D2 | Which engineers appear, with photos | V7 | open |
-| D3 | The guarantee | V5 | open |
-| D4 | Publishable aggregate stats | proof content, any section | open |
-| D5 | Real capacity number in `offer.ts` | badge content, if used | open |
+| D1 | 2–3 real case studies | V8 | **RESOLVED** 2026-08-18 — eDairyMarket + Meshio, full briefs in §7 |
+| D2 | Which engineers appear, with photos | V7 | open — no photos supplied; **V7 stays unbuilt**, not blocking the rest of the plan |
+| D3 | The guarantee | V5 | **RESOLVED** 2026-08-18 — 50% refund if cancelled within the first 7 days |
+| D4 | Publishable aggregate stats | proof content, any section | open — no real numbers supplied; no bundle in this plan is gated on it, so no section publishes a stat unless `offer.ts` carries one |
+| D5 | Real capacity number in `offer.ts` | badge content, if used | **RESOLVED** 2026-08-18 — no capacity badge ships |
 | D6 | Client logos/identities with permission | V4 | **RESOLVED** 2026-07-28 — see §5 |
+
+**V7 is explicitly OUT OF SCOPE for this run** — the plan builds V0–V6 and V8, and stops there. Do
+not invent placeholder people/photos to force V7 through; re-open it as its own bundle whenever
+Bruno supplies real photos.
+
+## §7 — V8 case study content (resolved 2026-08-18 — use verbatim, do not invent metrics beyond these)
+
+Two case studies, chosen by Bruno: **eDairyMarket** (the client relationship) and **Meshio** (the
+owned product). Facts below are pulled from `docs/redesign-storytelling.md` §1b (traceable to
+`~/br-brain` day-logs) — the SAME facts already approved for the D6 clients section, now given the
+fuller case-study treatment (outcome-first headline, story, stack, since there is no real
+before/after conversion number for either, per the "no invented stats" rule the headline is the
+concrete technical fact itself, not a fabricated percentage).
+
+### Case study 1 — eDairyMarket
+
+- **Relationship:** client (eDairyCorp group — eDairyMarket is their B2B dairy marketplace).
+- **Headline (the concrete fact, not an invented metric):** 27 of 273 product pages — 10% of the
+  entire catalog — were returning 404 and still listed in the sitemap Google was crawling. Found
+  and fixed.
+- **Context:** a 20+ year old B2B dairy marketplace (~17k visits/month) running on a legacy
+  Angular + Node stack, rebuilt in place — new NestJS APIs, a Next.js SSR storefront, a React
+  admin panel — without dropping the SEO traffic the old stack was still serving.
+- **What shipped:** Stripe seller subscriptions (three tiers); buyer favorites with guest→account
+  merge on login; a product-page revamp (seller cards, related products) with seller identity
+  resolved server-side so crawlers see it; a server-side table-filter system across two APIs and
+  the admin panel; migration off a shared box that had run prod+dev+admin together for years, onto
+  isolated AWS infra with merge-to-trunk auto-deploy.
+- **Stack tags:** NestJS · Next.js (SSR) · React · Stripe · AWS.
+- **Do NOT include:** the WordPress-fleet cost figure (`~$770–800/mo` pre-optimization) — the
+  after-cost was never recorded, so no savings number can be printed (per `redesign-storytelling.md`'s
+  own note). If this angle is used at all, state the before-cost only, never a "saved $X" claim.
+
+### Case study 2 — Meshio
+
+- **Relationship:** ours (owned by the same LLC as Codirity — say so plainly, the same honesty
+  discipline as the D6 clients section; do not present it as an arm's-length client).
+- **Headline:** onboarding rebuilt around ONE activation metric — first post published — instead
+  of a generic signup flow.
+- **Context:** Meshio (meshio.co) is an AI content-ideation SaaS that drafts post ideas in the
+  user's own voice for X, LinkedIn, and Threads.
+- **What shipped:** a New → Niche Set → Voice Set → Activated state machine; OAuth sign-in
+  deliberately deferred until the point the user actually needs it (pushed friction past the
+  moment the user has already seen the product, not before); Stripe subscription tiers specced.
+- **Stack tags:** Next.js · Stripe · (the scoring/ideation pipeline runs on an LLM — do not name a
+  specific model/vendor unless Bruno confirms one; the existing site copy doesn't commit to one
+  either).
+- **Do NOT include:** any specific before/after activation-rate percentage — none was recorded:
+  the fact that it was rebuilt around a single measurable activation event IS the story, not a
+  claimed lift.
+
+Both studies want the hand-drawn-feel architecture sketch v1 §6.R8 specified (a real, simplified
+diagram of what was actually built — not isometric stock art) — reuse that spec's reasoning
+(fabricated-looking quotes are the category's tell; a real architecture sketch can't be faked
+casually) even though the surrounding visual system changed. Present each study as its own
+generously-padded block using V0's tokens (a blob-gradient accent behind the headline stat, the
+`.accent` italic word on the headline, Figtree body) rather than the v1 ledger-row treatment.
