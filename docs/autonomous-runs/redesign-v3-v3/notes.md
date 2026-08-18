@@ -86,11 +86,65 @@ any JSX.
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Phase 4/5 review battery (`wf_c6f31ddb-bf2`): 2 adversarial rounds + 1 mixed-model
+round + 2 QA rounds + 3-voter verify. 16 raw findings → 6 unique after semantic
+dedup → 6/6 confirmed real (0 refuted). All 6 `applyInline`, 0 deferrals.
+
+**MAJOR (2):**
+1. The not-included list's heading/text dropped from `text-gray-500` to
+   effectively-under-AA — `-500` on this section's `bg-gray-50` measures
+   4.09:1 in light mode, under the project's own documented "gray-600
+   minimum" rule, undermining the brief's explicit "still honest, still
+   visible" requirement for this exact list. Fixed: `text-gray-600`
+   (6.17:1) on both the heading and item text.
+2. The included pills lost list semantics — a bare `<div>`/`<span>`
+   structure instead of `<ul>`/`<li>`, a WCAG 1.3.1 regression (assistive
+   tech no longer announces "list, 7 items") and inconsistent with every
+   other list in the codebase. Fixed: `<ul className="... list-none">`
+   with `<li>` wrapping each `<Badge>`.
+
+**MINOR (4):** the hand-rolled pill duplicated `<Badge>`'s classes but
+added an undocumented `dark:text-brand` override Badge itself lacked —
+meaning Badge's OWN existing consumers (`Pricing.tsx`'s founding banner,
+`PricingCard.tsx`'s plan-name badge) were shipping at 4.27:1 in dark mode,
+under AA, before this bundle even touched them. Fixed at the source:
+added `dark:text-brand` to `badgeVariants`'s `brand` variant (Badge.tsx),
+then rewrote Services.tsx's pills to consume `<Badge size="lg">` directly
+instead of duplicating its styles — so this fix (and any future Badge
+restyle) now automatically propagates to every Badge consumer site-wide,
+not just this bundle's own copy. Also fixed: `offer.ts`'s `scopeLabels`
+docstring (stale "column headings" language for a layout that's no longer
+columns); `docs/design-system.md` — added a Pill Cloud pattern entry and
+corrected its stale "Last updated" footer (still referenced V0 even though
+V2 had already edited the file); the section's own eyebrow-heading classes
+aligned to `SectionHeader`'s exact `text-[13px]` size (was an ad-hoc
+`text-sm`, a near-but-not-quite duplicate sitting near the real eyebrow).
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+- **offer.ts content fidelity** — both lists render via `.map()` straight
+  off the exported `included`/`notIncluded` arrays with zero string
+  literals in the component; confirmed 7 included / 5 not-included, no
+  invented/dropped/reworded items.
+- **AccentWord correctness on this bundle's real headline** — "automation"
+  in "AI, automation, and custom systems" is preceded by a space and
+  followed by a comma, so the whole-word boundary check (V2's fix) passes
+  on the first candidate; exactly one word accented, via the shared
+  component, not a local re-implementation.
+- **Dead code from the removed Check-icon checklist / Card layout** —
+  confirmed `Check`/`Card` imports were both removed with the old markup;
+  `tsc`/`lint` both independently re-run clean by the reviewers.
+- **Security/injection surface** — Services.tsx is a server component with
+  no `dangerouslySetInnerHTML`, no user input, every string a build-time
+  literal from `offer.ts`.
+- **Whether the not-included list is structurally buried** — confirmed all
+  5 items render at inherited body size (actually larger than the pills),
+  immediately below the included block, same nesting depth, under an `h3`
+  of identical size/weight to the included heading — nothing collapsed,
+  truncated, or hidden.
+- **Gates** — `lint`/`tsc`/`build` all independently re-run clean; SSR
+  check confirmed both lists' real content renders; banned-word grep
+  clean.
 
 ## Open items NOT addressed in this PR
 

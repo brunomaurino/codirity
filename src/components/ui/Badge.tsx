@@ -11,9 +11,17 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
+        // dark:text-brand (found in Phase 4/5 review, redesign-v3 Bundle
+        // V3): text-brand-dark alone resolves to the dark-mode --green-dark
+        // (#1caf6b), which measures only 4.27:1 on the composited
+        // brand-pale surface in dark mode — under WCAG AA. --green-main
+        // (#4fd98c, dark:text-brand) clears 6.70:1 on the same surface and
+        // is the value Badge's own light-mode text-brand-dark pairing
+        // already establishes as this component's "readable accent on
+        // pale" register.
         brand: [
           "bg-brand-pale",
-          "text-brand-dark",
+          "text-brand-dark dark:text-brand",
           "border border-brand/20",
         ],
         neutral: [

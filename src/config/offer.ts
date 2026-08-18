@@ -174,7 +174,9 @@ export const hero: HeroContent = {
   trustLine: "Built by engineers from Globant & Ualá",
 };
 
-/** Column headings for the "What we build" included / not-included lists. */
+/** Section headings for the "What we build" included / not-included lists
+ *  (a pill cloud + a plain list, stacked — not columns, since
+ *  redesign-v3 Bundle V3). */
 export const scopeLabels = {
   included: "What's included",
   notIncluded: "Not included",
