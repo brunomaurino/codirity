@@ -302,11 +302,14 @@ export const foundingRate: FoundingRate = {
 };
 
 export const guarantee: Guarantee = {
-  // Titled to match the actual terms (75% back, not a full refund) — the FAQ and the
-  // description below state 75%, so the heading must not overstate it.
-  title: "7-day 75%-back guarantee",
+  // D3 RESOLVED 2026-08-18 (redesign v3): 50% refund if cancelled within
+  // the first 7 days of a NEW subscription — a real financial commitment,
+  // use this exact figure (see docs/HANDOFF-redesign-v3.md §6). Titled to
+  // match the actual terms (50% back, not a full refund) — the heading
+  // must not overstate it.
+  title: "7-day 50%-back guarantee",
   description:
-    "Try it for a week. Not convinced? Get 75% back, no questions asked.",
+    "Cancel within your first 7 days on a new subscription and get 50% back, no questions asked.",
 };
 
 export const included: string[] = [
@@ -406,7 +409,7 @@ export const faq: FaqItem[] = [
   {
     question: "What if I don't like the result?",
     answer:
-      "Unlimited revisions are included, so we iterate until it's right. Every plan is also backed by our guarantee: try it for a week, and if you're not convinced, get 75% back.",
+      "Unlimited revisions are included, so we iterate until it's right. Every new subscription is also backed by our guarantee: cancel in the first 7 days and get 50% back, no questions asked.",
   },
   {
     question: "Can I pause or cancel?",

@@ -1,10 +1,23 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, PauseCircle, Zap } from "lucide-react";
 import { Section, Container } from "@/components/layout";
 import { SectionHeader, TrackedLink } from "@/components/ui";
 import { PricingCard } from "./PricingCard";
 import { PricingViewedTracker } from "./PricingViewedTracker";
 import { tiers, foundingRate, guarantee, sections } from "@/config/offer";
 import { cn } from "@/lib/utils";
+
+// Reused verbatim from existing offer.ts claims (HANDOFF-redesign-v3 §1,
+// Bundle V5 — "reuse existing site claims for delivery time, do not invent
+// a new figure"): "Pause or cancel anytime" (tiers[].features,
+// benefits[].title) and "Most tasks land in days" (benefits[] "Fast, async
+// delivery" entry's own description). Not imported from `benefits` — that
+// array's shape (icon name + title + description) doesn't fit a compact
+// trust-box label, so the exact same wording is restated here rather than
+// reshaping shared data for one consumer.
+const TRUST_BOXES = [
+  { icon: PauseCircle, label: "Pause anytime", detail: "Pause or cancel anytime — no lock-in." },
+  { icon: Zap, label: "Fast delivery", detail: "Most tasks land in days." },
+];
 
 export function Pricing() {
   return (
@@ -74,8 +87,32 @@ export function Pricing() {
           ))}
         </div>
 
-        {/* Guarantee block */}
-        <div className="max-w-2xl mx-auto mt-14 text-center reveal">
+        {/* Trust boxes — dashed border, existing site claims only (no new
+            figures) (HANDOFF-redesign-v3 §1, Bundle V5). */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-10 reveal">
+          {TRUST_BOXES.map(({ icon: Icon, label, detail }) => (
+            <div
+              key={label}
+              className={cn(
+                "flex items-center gap-3 rounded-2xl p-5",
+                "border border-dashed border-gray-300 dark:border-gray-700"
+              )}
+            >
+              <Icon className="h-5 w-5 text-brand shrink-0" strokeWidth={2} />
+              <div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {label}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {detail}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Guarantee cluster */}
+        <div className="max-w-2xl mx-auto mt-10 text-center reveal">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
             {guarantee.title}
           </h3>
