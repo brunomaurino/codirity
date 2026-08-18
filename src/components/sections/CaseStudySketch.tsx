@@ -57,16 +57,16 @@ function Box({ x, y, w, h, label, sub }: { x: number; y: number; w: number; h: n
       <path d={d} {...STROKE} />
       <text
         x={x + w / 2}
-        y={sub ? y + h / 2 - 3 : y + h / 2 + 4}
+        y={sub ? y + h / 2 - 2 : y + h / 2 + 5}
         textAnchor="middle"
-        fontSize="12.5"
+        fontSize="15"
         fontWeight="600"
         fill="currentColor"
       >
         {label}
       </text>
       {sub && (
-        <text x={x + w / 2} y={y + h / 2 + 13} textAnchor="middle" fontSize="10.5" fill="currentColor" opacity="0.72">
+        <text x={x + w / 2} y={y + h / 2 + 15} textAnchor="middle" fontSize="12" fill="currentColor" opacity="0.72">
           {sub}
         </text>
       )}
@@ -94,57 +94,80 @@ function Arrow({ x1, y1, x2, y2, bow = 4 }: { x1: number; y1: number; x2: number
 
 function EdairymarketSketch() {
   return (
-    <svg viewBox="0 0 620 250" role="img" aria-labelledby="sketch-edairymarket" className="w-full h-auto">
+    <svg
+      viewBox="0 0 620 250"
+      role="img"
+      aria-labelledby="sketch-edairymarket"
+      className="h-auto w-full min-w-[520px]"
+    >
       <title id="sketch-edairymarket">
-        Architecture sketch: buyers reach a Next.js server-rendered storefront and sellers reach a React
-        admin panel; both call NestJS APIs, which handle Stripe seller subscriptions. Everything runs on
-        isolated AWS infrastructure that deploys automatically on merge to trunk.
+        Architecture sketch: buyers reach a Next.js server-rendered storefront, which calls NestJS APIs;
+        a React admin panel calls the same APIs. The APIs handle Stripe seller subscriptions. The
+        storefront, admin panel and APIs run on isolated AWS infrastructure that deploys automatically on
+        merge to trunk.
       </title>
 
       {/* The AWS boundary — §7: "migration ... onto isolated AWS infra with
-          merge-to-trunk auto-deploy". Drawn as an enclosure because that is what
-          the migration actually changed: prod/dev/admin stopped sharing a box. */}
+          merge-to-trunk auto-deploy".
+
+          ⚠️ WHAT IT ENCLOSES IS ITSELF A CLAIM. An earlier version drew this
+          around EVERYTHING, including the Buyers actor and Stripe — asserting
+          that end users and a third-party payment provider run inside the
+          client's AWS account. §7 supports only prod/dev/admin moving onto
+          isolated infra, so the boundary now contains exactly the three
+          services it moved and nothing else. Caught in Phase 4/5 review, which
+          also noted the accessible description repeated the wrong claim to
+          screen readers. */}
       <path
-        d="M 14 46 L 604 42 Q 610 44 609 52 L 610 232 Q 608 240 600 239 L 20 241 Q 13 239 14 231 Z"
+        d="M 136 46 L 470 42 Q 476 44 475 52 L 476 232 Q 474 240 466 239 L 142 241 Q 135 239 136 231 Z"
         {...STROKE}
         strokeDasharray="7 6"
         opacity="0.5"
       />
-      <text x="26" y="36" fontSize="11" fontWeight="700" fill="currentColor" opacity="0.72" letterSpacing="0.06em">
-        ISOLATED AWS INFRA · AUTO-DEPLOY ON MERGE TO TRUNK
+      <text x="146" y="34" fontSize="11.5" fontWeight="700" fill="currentColor" opacity="0.72" letterSpacing="0.05em">
+        ISOLATED AWS · AUTO-DEPLOY ON MERGE TO TRUNK
       </text>
 
-      <Box x={36} y={72} w={126} h={50} label="Buyers" />
-      <Box x={36} y={162} w={126} h={50} label="Sellers" />
+      {/* Buyers sit OUTSIDE the boundary — they are actors, not deployed services. */}
+      <Box x={12} y={104} w={104} h={52} label="Buyers" />
 
-      <Box x={220} y={66} w={150} h={58} label="Next.js storefront" sub="server-rendered" />
-      <Box x={220} y={158} w={150} h={58} label="React admin panel" />
+      <Box x={152} y={62} w={150} h={60} label="Next.js storefront" sub="server-rendered" />
+      {/* §7 lists the admin panel as a rebuilt surface and as one endpoint of the
+          server-side filter system. It does NOT say who uses it, and an earlier
+          version drew a Sellers → admin panel arrow asserting seller-facing use —
+          unsourced, and admin panels are conventionally internal. The actor box
+          and that arrow are both gone; the panel is labelled for what §7 supports. */}
+      <Box x={152} y={158} w={150} h={60} label="React admin panel" />
 
-      <Box x={430} y={110} w={144} h={58} label="NestJS APIs" sub="server-side filtering" />
+      <Box x={330} y={106} w={126} h={64} label="NestJS APIs" sub="server-side filtering" />
 
-      <Arrow x1={164} y1={96} x2={216} y2={94} />
-      <Arrow x1={164} y1={186} x2={216} y2={186} bow={-4} />
-      <Arrow x1={372} y1={100} x2={428} y2={130} />
-      <Arrow x1={372} y1={184} x2={428} y2={152} bow={-4} />
+      <Arrow x1={118} y1={128} x2={148} y2={100} />
+      <Arrow x1={304} y1={96} x2={326} y2={126} />
+      <Arrow x1={304} y1={186} x2={326} y2={152} bow={-4} />
 
-      {/* Stripe hangs off the API layer — §7: "Stripe seller subscriptions
-          (three tiers)". */}
-      <Box x={430} y={196} w={144} h={40} label="Stripe" sub="seller subscriptions" />
-      <Arrow x1={502} y1={170} x2={502} y2={194} bow={2} />
+      {/* Stripe is third-party, so it sits outside the AWS boundary — §7:
+          "Stripe seller subscriptions (three tiers)". */}
+      <Box x={496} y={110} w={112} h={56} label="Stripe" sub="seller subs" />
+      <Arrow x1={458} y1={138} x2={492} y2={138} bow={2} />
     </svg>
   );
 }
 
 function MeshioSketch() {
   return (
-    <svg viewBox="0 0 620 210" role="img" aria-labelledby="sketch-meshio" className="w-full h-auto">
+    <svg
+      viewBox="0 0 620 210"
+      role="img"
+      aria-labelledby="sketch-meshio"
+      className="h-auto w-full min-w-[520px]"
+    >
       <title id="sketch-meshio">
         Architecture sketch: an onboarding state machine running New, then Niche set, then Voice set,
         then Activated — where activated means the first post is published. OAuth sign-in is required
         only at the last step, after the user has already seen the product.
       </title>
 
-      <text x="16" y="28" fontSize="11" fontWeight="700" fill="currentColor" opacity="0.72" letterSpacing="0.06em">
+      <text x="16" y="28" fontSize="11.5" fontWeight="700" fill="currentColor" opacity="0.72" letterSpacing="0.05em">
         ONBOARDING STATE MACHINE
       </text>
 
@@ -163,7 +186,7 @@ function MeshioSketch() {
       <path d="M 463 132 L 463 106" {...STROKE} strokeDasharray="5 5" />
       <Box x={396} y={132} w={150} h={44} label="OAuth sign-in" sub="deferred to here" />
 
-      <text x={16} y={190} fontSize="11.5" fill="currentColor" opacity="0.72">
+      <text x={16} y={192} fontSize="12.5" fill="currentColor" opacity="0.72">
         Friction lands after the user has seen the product, not before.
       </text>
     </svg>

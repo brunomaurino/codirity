@@ -273,7 +273,10 @@ export const sections: SectionsContent = {
   },
   caseStudies: {
     label: "Case studies",
-    title: "Two of them, in detail",
+    // No count in the prose: "Two of them, in detail" hardcoded a number with no
+    // link to `caseStudies.length`, so adding or removing a study would silently
+    // contradict the heading (Phase 4/5 review).
+    title: "In detail",
     description:
       "What was actually built, what it replaced, and the diagram of how it fits together.",
   },
@@ -543,13 +546,23 @@ export const caseStudies: CaseStudy[] = [
     relationship: "Client",
     context: "A B2B dairy marketplace, part of the eDairyCorp group.",
     // The concrete technical fact, per §7's headline rule — not a metric.
-    headline: "27 of 273 product pages were returning 404 — 10% of the catalog, still listed in the sitemap Google was crawling.",
+    // §7's headline ends "Found and fixed." — restored in Phase 4/5 review. Without
+    // it the section's largest claim reads as a live unresolved defect on a named
+    // client's production catalog rather than as delivered work, inverting §7's
+    // outcome-first intent.
+    headline: "27 of 273 product pages were returning 404 — 10% of the catalog, still listed in the sitemap Google was crawling. Found and fixed.",
     headlineAccent: "404",
     background:
       "A 20+ year old marketplace doing around 17k visits a month on a legacy Angular and Node stack, rebuilt in place — new NestJS APIs, a Next.js SSR storefront, a React admin panel — without dropping the SEO traffic the old stack was still serving.",
     whatShipped: [
       "Stripe seller subscriptions across three tiers",
-      "Buyer favorites, with guest carts merged into the account on login",
+      // "guest FAVORITES", not "guest carts". §7 and redesign-storytelling.md both
+      // say buyer favorites merge guest→account on login; an earlier draft of this
+      // line said "carts", which invented a shipped e-commerce feature for a real
+      // client. Caught as a BLOCKER in Phase 4/5 review — and it slipped the
+      // builder's own fact-provenance gate because that gate asserted §7's strings
+      // were PRESENT and never checked for substituted nouns.
+      "Buyer favorites, with guest favorites merged into the account on login",
       "A product-page revamp — seller cards, related products — with seller identity resolved server-side so crawlers see it",
       "Server-side table filtering across two APIs and the admin panel",
       "A move off a shared box that had run prod, dev and admin together for years, onto isolated AWS infra with merge-to-trunk auto-deploy",
@@ -565,8 +578,17 @@ export const caseStudies: CaseStudy[] = [
     headline:
       "Onboarding rebuilt around one activation metric — first post published — instead of a generic signup flow.",
     headlineAccent: "published",
+    // Rewritten in Phase 4/5 review. The previous opener — "Signup asked for
+    // everything up front and measured nothing that mattered." — was a
+    // characterization of the prior product state that §7 never makes. It read as
+    // fact and was invented; a plausible inference about a real client's product is
+    // still a fabrication. Every clause below now restates §7's own words:
+    // "rebuilt around ONE activation metric — first post published — instead of a
+    // generic signup flow" and "OAuth sign-in deliberately deferred until the point
+    // the user actually needs it (pushed friction past the moment the user has
+    // already seen the product, not before)".
     background:
-      "Signup asked for everything up front and measured nothing that mattered. The flow became a state machine with one destination, and the sign-in step moved to the point where a user actually needs an account.",
+      "Onboarding became a state machine with a single destination — the first published post — rather than a generic signup flow. Sign-in is deferred to the point a user actually needs an account, which puts the friction after they have already seen the product rather than before.",
     whatShipped: [
       "A New → Niche Set → Voice Set → Activated state machine",
       "OAuth sign-in deliberately deferred until the point the user actually needs it — friction pushed past the moment they have already seen the product, not before",

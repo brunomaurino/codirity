@@ -159,7 +159,66 @@ blob-panel text in BOTH themes · one-`ink`-section assertion · perf delta vs `
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Battery `wf_1daa7d60-fc4` (16 agents, 2 adversarial + 2 QA rounds, mixed opus/sonnet finders, 3 verify
+voters): **27 raw → 10 after semantic dedup (6 clusters merged) → 9 confirmed, 1 refuted, 76 areas
+examined.** 0 deferrals, 0 forced-apply, 0 escalations. **All 9 applied inline.**
+
+**Two BLOCKERs, and both were fabrications this bundle wrote — in the one bundle whose entire premise
+was "invent no fact beyond §7", behind a gate built specifically to catch that.** Recording that
+plainly because the lesson is the finding.
+
+| # | Sev | Where | Resolution |
+|---|---|---|---|
+| 1 | **BLOCKER** 3/3 | `offer.ts` eDairyMarket whatShipped | **Fixed.** The bullet read "Buyer favorites, with **guest carts** merged into the account on login". §7 (and `redesign-storytelling.md`) say buyer **favorites** merge guest→account on login. Never carts. A one-noun substitution inside an otherwise-correct sentence invented a shipped e-commerce feature for a **named real client**, and it rendered in the SSR HTML. Reverted to §7's noun. |
+| 2 | **BLOCKER** 3/3 | `offer.ts` Meshio background | **Fixed.** The paragraph opened "Signup asked for everything up front and measured nothing that mattered." §7 says no such thing — it states only that onboarding was rebuilt around one activation metric instead of a generic signup flow, with OAuth deferred. A plausible inference about a real client's prior product, written as fact, is still a fabrication. Rewritten so every clause restates §7's own words. |
+| 3 | MAJOR 3/3 | `CaseStudySketch.tsx` eDairyMarket | **Fixed.** The diagram drew a `Sellers → React admin panel` arrow and baked "sellers reach a React admin panel" into the accessible title. §7 lists the admin panel as a rebuilt surface and as one endpoint of the filter system — it never says who uses it, and admin panels are conventionally internal. The Sellers actor box and that arrow are both removed. The diagram was asserting an architecture fact about a client's system to sighted readers AND screen-reader users. |
+| 4 | MAJOR 3/3 | `CaseStudySketch.tsx` AWS boundary | **Fixed.** The dashed "ISOLATED AWS INFRA" enclosure wrapped everything — including the Buyers actor and the third-party Stripe box — asserting that end users and a SaaS payment provider run inside the client's AWS account. §7 supports only prod/dev/admin moving onto isolated infra. The boundary now contains exactly the three services that moved; Buyers and Stripe sit outside it. The accessible description was repeating the same wrong claim and is rewritten. **What an enclosure contains is itself a claim** — that is now written into the component. |
+| 5 | MAJOR 3/3 | both sketches | **Fixed.** Fixed 620-unit viewBox scaled by `w-full h-auto` with no floor: at a 375px viewport the ~295px column rendered 12.5px node labels at **~5.9 CSS px** (~4.8px at 320px) — illegible across the whole phone band, on the section's marquee proof deliverable. Labels bumped to 15/12, `min-w-[520px]` on each SVG, and an `overflow-x-auto` container so the reader pans instead of squinting. My Phase-6 audit had measured the labels' CONTRAST and never their rendered SIZE. |
+| 6 | MAJOR 3/3 | this file | **Fixed — my perf model was wrong.** I reported +76 B JS / +75 B CSS and wrote that a server component's markup "never enters the client bundle". It does: React serializes it into the **RSC flight payload** alongside the HTML. Re-measured myself rather than taking the reviewer's number: the prerendered document goes **24,903 → 31,614 B gzipped, +6,711 B** (raw 152,858 → 192,217, +39,359) versus `main` @ `e2e316d`. Static chunks move only +72 B JS / +131 B CSS, which is what I had measured — a real number answering the wrong question. Corrected in full below. |
+| 7 | MAJOR 3/3 | `offer.ts` eDairyMarket headline | **Fixed.** The headline transcribed §7's 404/sitemap fact but dropped its closing "**Found and fixed.**", and no whatShipped bullet covered the remediation either — so the section's largest, most prominent claim read as an unresolved live defect on a named client's production catalog. Inverted §7's outcome-first intent. Restored verbatim. |
+| 8 | MINOR | `offer.ts` section title | **Fixed.** "Two of them, in detail" hardcoded the count with no link to `caseStudies.length`; adding a third study would silently contradict the heading. Now "In detail". |
+| 9 | MINOR | `CaseStudies.tsx` stack list | **Fixed.** The stack-tag `<ul>` had no heading or accessible name, unlike the other two lists in the article, so a screen reader announced an unlabelled 5-item list. Now `aria-label="<study> — stack"`. |
+
+**Refuted (1/10)** — correctly.
+
+### Why the gate passed a diff containing two BLOCKERs, and what changed
+
+My `scripts/ssr-check-v8.mjs` asserted that §7's strings were **present**. That catches omission and
+nothing else. Both blockers were an ADDITION and a SUBSTITUTION *inside otherwise-correct sentences* —
+"guest carts" where §7 says favorites, and an invented opening sentence. A presence check is blind to
+those by construction, and I had described that gate as a "fact-provenance gate", which oversold what
+it could actually refute.
+
+The gate now carries a NEGATIVE half: an explicit forbidden-phrase list drawn from what the review
+caught (`guest cart`, `measured nothing that mattered`, `asked for everything up front`,
+`sellers reach`), an assertion that the sketch's accessible description scopes the AWS boundary
+correctly, plus the legibility floor and the a11y/structure checks. It re-runs green.
+
+The honest conclusion is not "the gate is fixed" — a gate can only refute claims it is told to look
+for, so it will always trail the review. The adversarial battery is what caught these, four of the
+five finders independently flagging #2. That is the layer that earned its cost on this bundle.
+
+### Post-fix re-verification
+
+`tsc` ✅ `eslint` ✅ clean `npm run build` ✅. Hardened gate: **PASS** — §7 facts render, all 9 findings
+verified applied (including both BLOCKER phrases asserted absent), exclusions absent, sketches
+claim-scoped with a legibility floor, structure correct, 0 banned words.
+
+**Corrected perf delta vs `main` @ `e2e316d`** (clean production builds both sides):
+
+| | main | V8 | delta |
+|---|---|---|---|
+| Prerendered document (gzip) | 24,903 B | 31,614 B | **+6,711 B** |
+| Prerendered document (raw) | 152,858 B | 192,217 B | +39,359 B |
+| Static chunks JS (gzip) | 206,991 B | 207,063 B | +72 B |
+| Static chunks CSS (gzip) | 11,959 B | 12,090 B | +131 B |
+
+The document number is the one that matters and the one I originally got wrong. Roughly half of the
+raw growth is the RSC flight payload duplicating the section's markup — inherent to server components,
+not a defect — and the two inline SVGs are verbose by nature. No new dependencies. Flagged for
+Bruno rather than silently accepted: **+6.7 KB gzipped on the homepage document is a real cost** for
+two case studies, and if it matters more than the proof does, the sketches are the first thing to
+trim.
 
 ## Pre-battery verification (Phase 6 evidence)
 
@@ -203,11 +262,12 @@ blob-panel text in BOTH themes · one-`ink`-section assertion · perf delta vs `
 - **Non-blob elements, measured live in both themes, zero failures:** study name 19.81/15.58,
   relationship pill on `bg-brand-fill` 5.39/5.22, "What shipped"/"How it fits together" subheads
   5.39/8.63, list items 6.74/5.60, stack tags 6.17/6.46, sketch labels 19.81/15.58.
-- **Perf delta vs `main` @ `e2e316d`** (gzip -9 of `.next/static/chunks/`, clean production builds on
-  both sides): JS **+76 B** (207,067 vs 206,991), CSS **+75 B** (12,034 vs 11,959). Two full case
-  studies and two inline SVGs for 151 bytes total because `CaseStudies` is a **server** component —
-  its copy and markup never enter the client bundle. Contrast with V6, where six FAQ answers cost
-  +1,518 B precisely because `Faq.tsx` is a client component. No new dependencies.
+- ~~**Perf delta vs `main` @ `e2e316d`**: JS **+76 B**, CSS **+75 B**. Two full case studies and two
+  inline SVGs for 151 bytes total because `CaseStudies` is a **server** component — its copy and
+  markup never enter the client bundle.~~ **WRONG — see finding #6 and the corrected table below.**
+  The static-chunk numbers were accurate but answered the wrong question: a server component's markup
+  DOES reach the client, serialized into the RSC flight payload. The real document delta is
+  **+6,711 B gzipped**. Struck through rather than deleted so the mistaken reasoning stays visible.
 
 ## Areas examined and rejected
 
@@ -226,7 +286,16 @@ blob-panel text in BOTH themes · one-`ink`-section assertion · perf delta vs `
 
 ## Open items NOT addressed in this PR
 
-(filled in Phase 7)
+Full list in `commitments.md`. All operator-owned; none block anything, and this is the plan's last
+bundle.
+
+- **The live Trello `[TEMPLATE] Codirity Client Board` still says "75% back"** — open since V5, only
+  a manual Trello edit closes it. The one genuinely user-facing loose end the whole plan leaves.
+- **+6.7 KB gzipped on the homepage document** for this section (finding #6). Real; the SVG sketches
+  are the first thing to trim if page weight ever outranks the proof.
+- Publishing the pause/cancel billing mechanics; the three stacked book-a-call prompts;
+  `Footer.tsx`'s pre-redesign copy and retired `font-mono`; `Hero.tsx`'s un-migrated `AccentWord`.
+- **V7 (real team photos)** stays gated on D2 — deferred at plan launch, not dropped.
 
 ## Durable handles
 
@@ -234,3 +303,7 @@ blob-panel text in BOTH themes · one-`ink`-section assertion · perf delta vs `
 - worktree: /Users/brunomaurino/projects/codirity-rv3-v8
 - worktree_entry: path
 - cron: (none of this run's own — the bundle-loop's `1b0f0c50` covers the loop)
+- battery_run_id: `wf_1daa7d60-fc4` (2 adversarial + 2 QA rounds, mixed finder, 3 verify voters,
+  `effortTiers: true`, **`customAgents: false`**). If this session dies mid-battery, RESUME it —
+  `Workflow({scriptPath: "<skill>/templates/review-battery.js", resumeFromRunId: "wf_1daa7d60-fc4"})`
+  — never re-run from scratch; read `journal.jsonl` in its transcript dir first.

@@ -104,7 +104,17 @@ export function CaseStudies() {
                   <h4 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-brand">
                     How it fits together
                   </h4>
-                  <div className="mt-4">
+                  {/* Horizontally scrollable rather than shrink-to-fit. The
+                      sketches carry a fixed 620-unit viewBox; scaled to a ~295px
+                      phone column their 15px node labels rendered at ~7 CSS px —
+                      illegible across the entire phone band, on the section's
+                      marquee proof deliverable. The `lg:` gate on the grid above
+                      protects the tablet band but mobile single-column IS the
+                      worst case. `min-w` on the SVG plus `overflow-x-auto` here
+                      keeps the type at a readable size and lets the reader pan.
+                      Found in Phase 4/5 review — the Phase-6 audit had measured
+                      the labels' CONTRAST and never their rendered SIZE. */}
+                  <div className="mt-4 -mx-2 overflow-x-auto px-2 pb-2">
                     <CaseStudySketch sketch={study.sketch} />
                   </div>
                 </div>
@@ -112,7 +122,13 @@ export function CaseStudies() {
 
               {/* Stack tags — reuse the pill language, muted so they read as
                   metadata rather than competing with the headline. */}
-              <ul className="mt-8 flex flex-wrap gap-2 border-t border-[var(--border)] pt-6">
+              {/* Labelled: unlike the other two lists in this article, the stack
+                  tags had no heading or accessible name, so a screen reader
+                  announced an unlabelled 5-item list (Phase 4/5 review). */}
+              <ul
+                aria-label={`${study.name} — stack`}
+                className="mt-8 flex flex-wrap gap-2 border-t border-[var(--border)] pt-6"
+              >
                 {study.stack.map((tag) => (
                   <li
                     key={tag}
