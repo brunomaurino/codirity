@@ -1,0 +1,168 @@
+<style>
+   :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #6a6a6a;
+      --border: #e5e5e5;
+      --blocker: #dc2626;
+      --major: #ea580c;
+      --minor: #6b7280;
+      --decision: #16a34a;
+      --deferral: #ca8a04;
+      --done: #16a34a;
+      --partial: #ca8a04;
+      --code-bg: #f5f5f5;
+      --link: #2563eb;
+   }
+   @media (prefers-color-scheme: dark) {
+      :root {
+         --bg: #1a1a1a;
+         --surface: #242424;
+         --text: #f0f0f0;
+         --text-muted: #a0a0a0;
+         --border: #3a3a3a;
+         --code-bg: #2a2a2a;
+         --link: #60a5fa;
+         --blocker: #f87171;
+         --major: #fb923c;
+         --minor: #9ca3af;
+         --decision: #4ade80;
+         --deferral: #fbbf24;
+         --done: #4ade80;
+         --partial: #fbbf24;
+      }
+   }
+   * { box-sizing: border-box; }
+   body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+   }
+   header.title-block-header,
+   #title-block-header {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 32px 0;
+   }
+   h1.title { font-size: 28px; margin: 0 0 8px; line-height: 1.2; }
+   .subtitle, .date { color: var(--text-muted); font-size: 14px; }
+   nav#TOC {
+      max-width: 980px;
+      margin: 16px auto 0;
+      padding: 16px 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+   }
+   nav#TOC > ul { margin: 0; padding-left: 20px; }
+   nav#TOC ul ul { font-size: 13px; padding-left: 16px; }
+   nav#TOC a { color: var(--text); text-decoration: none; }
+   nav#TOC a:hover { color: var(--link); text-decoration: underline; }
+   main, article, .body {
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 0 32px 80px;
+   }
+   h1, h2, h3, h4 { line-height: 1.25; margin-top: 28px; margin-bottom: 12px; }
+   h1 { font-size: 26px; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+   h2 { font-size: 21px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+   h3 { font-size: 17px; }
+   h4 { font-size: 15px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+   a { color: var(--link); }
+   p, li { margin: 8px 0; }
+   ul, ol { padding-left: 22px; }
+   code {
+      font-family: "SF Mono", "Menlo", "Monaco", "Cascadia Code", monospace;
+      font-size: 13px;
+      background: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+   }
+   pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font-size: 12.5px;
+      line-height: 1.45;
+   }
+   pre code { background: transparent; padding: 0; }
+   table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+      font-size: 13.5px;
+   }
+   th, td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      text-align: left;
+      vertical-align: top;
+   }
+   th { background: var(--code-bg); font-weight: 600; }
+   blockquote {
+      border-left: 3px solid var(--border);
+      margin: 12px 0;
+      padding: 4px 14px;
+      color: var(--text-muted);
+   }
+   hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+   /* Severity badge auto-styling — applied via CSS attribute selector
+    * on text content. Pandoc emits **BOLD** as <strong>; we color the
+    * specific tokens via descendant selectors below. */
+   strong { color: var(--text); }
+   /* Color BLOCKER / MAJOR / MINOR badges when they appear in headings + lists. */
+   p strong, li strong, td strong, h2 strong, h3 strong, h4 strong {
+      display: inline-block;
+   }
+</style>
+<script>
+   // After load: walk text nodes + tag severity / decision / deferral
+   // markers with colored badge spans. Runs purely client-side.
+   document.addEventListener('DOMContentLoaded', () => {
+      const SEVERITY_MAP = {
+         'BLOCKER': 'badge-blocker',
+         'MAJOR': 'badge-major',
+         'MINOR': 'badge-minor',
+         'DONE': 'badge-done',
+         'PARTIAL': 'badge-partial',
+         'DEFERRED': 'badge-deferral',
+         'RESOLVED': 'badge-done',
+         'EXAMINED+REJECTED': 'badge-minor',
+         'EXAMINED+DEFERRED': 'badge-partial',
+      };
+      const STYLE_MAP = {
+         'badge-blocker':  'background:var(--blocker);color:white;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:0.3px;',
+         'badge-major':    'background:var(--major);color:white;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:0.3px;',
+         'badge-minor':    'background:var(--minor);color:white;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:0.3px;',
+         'badge-done':     'background:var(--done);color:white;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:0.3px;',
+         'badge-partial':  'background:var(--partial);color:white;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:0.3px;',
+         'badge-deferral': 'background:var(--deferral);color:white;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:0.3px;',
+      };
+      // Walk every <strong> and <code> and decide if its text matches
+      // one of the badge keys. Apply inline style.
+      const walk = (root) => {
+         root.querySelectorAll('strong, code').forEach((el) => {
+            const t = el.textContent.trim();
+            // Exact match (e.g. <strong>BLOCKER</strong>)
+            if (SEVERITY_MAP[t]) {
+               el.style.cssText = STYLE_MAP[SEVERITY_MAP[t]];
+               return;
+            }
+            // Parenthetical (e.g. <strong>DONE (Bundle 1)</strong>)
+            const m = t.match(/^(BLOCKER|MAJOR|MINOR|DONE|PARTIAL|DEFERRED|RESOLVED)\b/);
+            if (m) {
+               el.style.cssText = STYLE_MAP[SEVERITY_MAP[m[1]]];
+            }
+         });
+      };
+      walk(document);
+   });
+</script>
