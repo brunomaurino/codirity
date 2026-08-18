@@ -86,8 +86,8 @@ export function Faq() {
             className={cn(
               "inline-flex items-center justify-center gap-2",
               "rounded-full px-8 py-4 text-base font-semibold",
-              "bg-brand text-white",
-              "transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-brand",
+              "bg-brand-fill text-white",
+              "transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-fill-dark hover:shadow-brand",
               "cursor-pointer"
             )}
           >

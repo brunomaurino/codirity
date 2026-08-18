@@ -87,10 +87,10 @@ export function Header() {
           className={cn(
             "hidden lg:inline-flex items-center gap-2",
             "px-6 py-3 rounded-full",
-            "bg-brand text-white",
+            "bg-brand-fill text-white",
             "font-semibold text-sm",
             "transition-all duration-300",
-            "hover:bg-brand-dark hover:-translate-y-0.5",
+            "hover:bg-brand-fill-dark hover:-translate-y-0.5",
             "hover:shadow-brand"
           )}
         >
@@ -151,10 +151,10 @@ export function Header() {
               className={cn(
                 "flex items-center justify-center gap-2",
                 "w-full px-6 py-4 rounded-full",
-                "bg-brand text-white",
+                "bg-brand-fill text-white",
                 "font-semibold text-base",
                 "transition-all duration-300",
-                "hover:bg-brand-dark"
+                "hover:bg-brand-fill-dark"
               )}
             >
               Contact Us

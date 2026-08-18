@@ -17,7 +17,10 @@ import "./globals.css";
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  // 800 dropped (Phase 4/5 review): grepped src/ for font-extrabold/
+  // font-black and found zero consumers, so that static face was pure
+  // unused payload against this bundle's own perf-delta gate.
+  weight: ["400", "500", "600", "700"],
 });
 
 // The one-word-per-headline expressive-emphasis accent (`.accent` in globals.css)

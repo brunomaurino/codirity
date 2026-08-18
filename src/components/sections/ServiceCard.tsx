@@ -36,7 +36,7 @@ export function ServiceCard({
           ? [
               "col-span-1 md:col-span-2 row-span-1 md:row-span-2",
               "flex flex-col justify-between",
-              "bg-gradient-to-br from-brand-dark to-[#1a5a1d]",
+              "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
               "text-white border-0",
             ]
           : [

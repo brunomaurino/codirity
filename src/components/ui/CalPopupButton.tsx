@@ -48,7 +48,14 @@ export function CalPopupButton({
       const { getCalApi } = await import("@calcom/embed-react");
       const cal = await getCalApi();
       cal("ui", {
-        styles: { branding: { brandColor: "#189656" } },
+        // --green-main #127a44 (globals.css) — was the pitch artifact's
+        // literal #189656, which globals.css documents rejecting for
+        // measuring 3.17:1 on paper (AA-large only); on Cal's own white-text
+        // primary-action buttons #189656 measured ~3.79:1, still below AA.
+        // #127a44 clears 5.39:1. Found + fixed in Phase 4/5 review — this
+        // was the same rejected hex leaking back in through a component
+        // that sets it as a literal string, not a CSS var reference.
+        styles: { branding: { brandColor: "#127a44" } },
         hideEventTypeDetails: false,
         layout: "month_view",
       });

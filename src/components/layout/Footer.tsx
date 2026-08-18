@@ -75,7 +75,7 @@ export function Footer() {
                       "bg-white/5 border border-white/10",
                       "text-white/60",
                       "transition-all duration-300",
-                      "hover:bg-brand hover:border-brand hover:text-white",
+                      "hover:bg-brand-fill hover:border-brand-fill hover:text-white",
                       "hover:-translate-y-1"
                     )}
                   >

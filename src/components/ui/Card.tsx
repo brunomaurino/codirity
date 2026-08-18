@@ -16,7 +16,7 @@ const cardVariants = cva(
           "hover:shadow-xl hover:border-brand/30 hover:-translate-y-2",
         ],
         featured: [
-          "bg-gradient-to-br from-brand-dark to-[#1a5a1d]",
+          "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
           "text-white",
           "border-0",
         ],

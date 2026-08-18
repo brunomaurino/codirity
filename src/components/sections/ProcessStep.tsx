@@ -22,7 +22,7 @@ export function ProcessStep({
           "flex items-center justify-center",
           "font-serif text-2xl font-bold text-gray-400",
           "shadow-sm transition-all duration-400",
-          "group-hover:bg-brand group-hover:border-brand group-hover:text-white",
+          "group-hover:bg-brand-fill group-hover:border-brand-fill group-hover:text-white",
           "group-hover:scale-110 group-hover:shadow-brand"
         )}
       >

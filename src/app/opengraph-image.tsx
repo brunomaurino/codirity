@@ -62,8 +62,17 @@ export default function OpengraphImage() {
           style={{
             marginTop: 44,
             fontSize: 26,
-            color: "#7CE3B2",
-            fontWeight: 600,
+            // White (was #7CE3B2, found in Phase 4/5 review to fail 3:1
+            // large-text AA against the gradient's brighter stops depending
+            // on exact pixel position — this text sits further along the
+            // 135deg gradient than the title, closer to the brightest
+            // #1CAE6B corner, where even pure white only just clears 3:1).
+            // White can only be equal-or-safer than any darker color at
+            // every position, resolving the ambiguity conservatively for a
+            // link-preview image that scrapers cache and is slow to correct
+            // post-ship.
+            color: "#FFFFFF",
+            fontWeight: 500,
             letterSpacing: "0.02em",
           }}
         >

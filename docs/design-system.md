@@ -1,6 +1,13 @@
 # Codirity Design System
 
 > Design style guide for building consistent UI components with Shadcn and Tailwind CSS.
+>
+> **Palette: "Monthly Club" (redesign v3, since 2026-08-18).** Values below are
+> the LIGHT-mode tokens actually shipped in `src/app/globals.css` (source of
+> truth — this doc is a readable mirror of it, not the reverse). Dark mode
+> repoints most of these; see `[data-theme="dark"]` in that file for the exact
+> dark values, since several (the greens especially) are NOT simple inversions
+> — they're independently contrast-tuned for their own background.
 
 ---
 
@@ -9,54 +16,47 @@
 ### Primary Palette
 
 ```css
-/* Green - Primary Brand Color */
---green-dark: #163F31      /* Dark green for text, dark backgrounds */
---green-main: #1E5C46      /* Primary actions, CTAs, accents */
---green-light: #4E8D74     /* Highlights, gradients, hover states */
+/* Green - Primary Brand Color (light mode) */
+--green-dark: #0F6B3D      /* Dark green for text, dark backgrounds, .accent */
+--green-main: #127A44      /* Primary actions, CTAs, accents */
+--green-light: #3F8A68     /* Highlights, gradients, hover states */
+
+/* Neutrals — warm, faint-green-biased (not a stark white/gray ramp) */
+--paper: #EBEBE4           /* page background */
+--ink: #0A0A08             /* primary text */
+--sage: #F5F5F0            /* raised-surface tint */
+--brass: #8B5A16           /* rare accent — currently only .blob-2 consumes it */
 ```
 
 ### Tailwind Config
 
-```js
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          dark: '#163F31',
-          DEFAULT: '#1E5C46',
-          light: '#4E8D74',
-        },
-        gray: {
-          50: '#f8f9fa',
-          100: '#f1f3f4',
-          200: '#e8eaed',
-          300: '#dadce0',
-          400: '#9aa0a6',
-          500: '#80868b',
-          600: '#5f6368',
-          700: '#3c4043',
-          800: '#202124',
-          900: '#171717',
-        },
-      },
-    },
-  },
-}
+Colors are wired via CSS custom properties in `src/app/globals.css`'s
+`@theme inline` block, not a `tailwind.config.js` — Tailwind v4 reads
+`--color-*` tokens directly from CSS. The token → utility mapping:
+
+```css
+--color-brand-dark: var(--green-dark);   /* bg-brand-dark, text-brand-dark, border-brand-dark */
+--color-brand: var(--green-main);        /* bg-brand, text-brand, border-brand */
+--color-brand-light: var(--green-light); /* bg-brand-light, text-brand-light */
+--color-ink: var(--ink);                 /* text-ink */
+--color-paper-raised: var(--paper-raised); /* bg-paper-raised */
 ```
+
+Tailwind's own `gray-50…900` keywords are ALSO repointed (see `--gray-*` in
+`globals.css`) onto the same warm-neutral hue family, so `bg-gray-50` etc.
+already read as part of this palette without a class rename.
 
 ### Usage Guidelines
 
 | Use Case | Color | Tailwind Class |
 |----------|-------|----------------|
-| Primary buttons | `#1E5C46` | `bg-brand` |
-| Button hover | `#163F31` | `hover:bg-brand-dark` |
-| Links | `#1E5C46` | `text-brand` |
-| Success states | `#1E5C46` | `text-brand` |
-| Accent borders | `#1E5C46` | `border-brand` |
-| Subtle backgrounds | `rgba(50,205,50,0.08)` | `bg-brand/[0.08]` |
-| Focus rings | `#1E5C46` | `ring-brand` |
+| Primary buttons | `#127A44` | `bg-brand` |
+| Button hover | `#0F6B3D` | `hover:bg-brand-dark` |
+| Links | `#127A44` | `text-brand` |
+| Success states | `#127A44` | `text-brand` |
+| Accent borders | `#127A44` | `border-brand` |
+| Subtle backgrounds | `rgba(18,122,68,0.08)` | `bg-brand-pale` |
+| Focus rings | `#127A44` | `ring-brand` |
 
 ---
 
@@ -64,16 +64,24 @@ module.exports = {
 
 ### Font Family
 
-```js
-// tailwind.config.js
-fontFamily: {
-  sans: ['Outfit', 'system-ui', 'sans-serif'],
-  mono: ['Space Mono', 'monospace'],
-}
+One family for everything — weight carries the hierarchy, not a font swap
+(mirrors designjoy.co's own one-family discipline). Wired via `next/font/google`
+in `src/app/layout.tsx`, not a Tailwind config block:
+
+```css
+--font-sans: var(--font-figtree), system-ui, sans-serif;
+--font-serif: var(--font-figtree), system-ui, sans-serif;  /* repointed, not deleted */
+--font-mono: var(--font-figtree), system-ui, sans-serif;   /* repointed, not deleted */
+--font-accent: var(--font-instrument-serif), Georgia, serif;
 ```
 
-**Primary Font:** Outfit (headings, body text)
-**Monospace Font:** Space Mono (code, metrics, labels)
+**Primary Font:** Figtree (headings, body, nav, labels — everything)
+**Expressive accent:** Instrument Serif Italic, via the `.accent` utility
+(`@layer components` in `globals.css`) — NOT the auto-generated `font-accent`
+utility, which only sets the family with no italic/color. Apply `.accent` to
+exactly ONE word inside a heading, never a whole heading or body copy; pair it
+with an explicit `text-*` utility when the surface isn't paper (`.accent`'s
+default green tint is meant to be overridden on dark/blob surfaces).
 
 ### Type Scale
 
@@ -179,7 +187,7 @@ fontFamily: {
 #### Featured Card (Dark)
 
 ```jsx
-<Card className="bg-gradient-to-br from-brand-dark to-[#1a5a1d] text-white border-0 rounded-3xl p-8 md:p-10">
+<Card className="bg-gradient-to-br from-brand-dark to-[var(--blob-forest)] text-white border-0 rounded-3xl p-8 md:p-10">
   <CardContent>
     {/* Content */}
   </CardContent>
@@ -260,15 +268,16 @@ Use **Lucide React** icons with these standard sizes:
 
 ### Shadows
 
-```js
-// tailwind.config.js
-boxShadow: {
-  'sm': '0 2px 8px rgba(0,0,0,0.06)',
-  'md': '0 4px 16px rgba(0,0,0,0.08)',
-  'lg': '0 12px 32px rgba(0,0,0,0.1)',
-  'xl': '0 24px 48px rgba(0,0,0,0.12)',
-  'brand': '0 12px 32px rgba(50, 205, 50, 0.2)',
-}
+Defined as `--shadow-*` CSS custom properties in `globals.css` (light + dark
+variants), not a `tailwind.config.js` block:
+
+```css
+--shadow-xs: 0 1px 2px rgba(10, 10, 8, 0.05);
+--shadow-sm: 0 2px 8px rgba(10, 10, 8, 0.06);
+--shadow-md: 0 4px 16px rgba(10, 10, 8, 0.07);
+--shadow-lg: 0 12px 32px rgba(10, 10, 8, 0.09);
+--shadow-xl: 0 24px 48px rgba(10, 10, 8, 0.1);
+--shadow-green: 0 8px 24px rgba(18, 122, 68, 0.18);  /* rgb of --green-main #127a44 */
 ```
 
 ### Transitions
@@ -314,6 +323,33 @@ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-br
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+```
+
+---
+
+## Shape System
+
+Utility classes in `globals.css` (`@layer components`), not yet wired into any
+component markup as of V0 (V1+ apply them where the section brief calls for
+them):
+
+```jsx
+// Pill button
+className="btn-pill"  // border-radius: 9999px — same as rounded-full
+
+// Soft card radius (16-22px band)
+className="card-soft"  // 18px
+
+// Blob-gradient background — 4 distinct combinations, CSS only, no images.
+// Each carries a built-in dark scrim so white text stays legible anywhere
+// inside it; use white/near-white text on all four.
+className="blob-1"  // gold + mint + green-dark, radial stack
+className="blob-2"  // mint + brass, radial stack
+className="blob-3"  // amber + green-main, radial stack (reversed base)
+className="blob-4"  // gold → mint → green conic sweep
+
+// Glassmorphic dark card (reserved for the pricing card)
+className="glass-dark"  // backdrop-filter: blur(6px) + translucent near-black bg
 ```
 
 ---
@@ -373,12 +409,19 @@ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-br
 
 | Element | Light Mode | Dark Mode |
 |---------|------------|-----------|
-| Background | `white` | `gray-900` |
+| Background | `#EBEBE4` (paper) | `#1C1C18` |
 | Surface | `gray-50` | `gray-800` |
 | Border | `gray-200` | `gray-700` |
-| Text primary | `gray-900` | `white` |
+| Text primary | `gray-900` | `white` (`--white` is pure `#ffffff` in BOTH themes — see the note in `globals.css`) |
 | Text secondary | `gray-600` | `gray-400` |
-| Brand | `#1E5C46` | `#4E8D74` |
+| Brand (`--green-dark`) | `#0F6B3D` | `#125E3A` |
+| Brand (`--green-main`) | `#127A44` | `#2F7A52` |
+
+Dark mode's brand greens are NOT the light-mode values lifted for legibility —
+they're independently tuned so `bg-brand text-white` (buttons, badges,
+`::selection`) clears WCAG AA as a SURFACE under white text, which is a
+different constraint than `text-brand` on paper. Don't derive one from the
+other; read both from `globals.css` directly.
 
 ### Implementation
 
@@ -434,9 +477,11 @@ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-br
 
 ### Color Contrast
 
-- Body text on white: `gray-600` minimum (4.5:1 ratio)
-- Headings on white: `gray-900` (15:1 ratio)
-- Brand green on white: Use `brand-dark` for text (7:1 ratio)
+- Body text on paper: `gray-600` minimum (4.5:1 ratio)
+- Headings on paper: `gray-900` (16.5:1 ratio)
+- Brand green on paper: Use `brand-dark` for text (5.5:1 ratio) — plain `brand`
+  also clears AA at 4.5:1 but with less margin; `brand-light` does NOT clear
+  AA as text on paper (it's a hover/gradient-stop color, not a text color)
 
 ### Interactive Elements
 
@@ -491,4 +536,4 @@ src/
 
 ---
 
-*Last updated: December 2024*
+*Last updated: 2026-08-18 (redesign v3 Bundle V0 — "Monthly Club" palette flip)*

@@ -28,7 +28,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Refer to `docs/design-system.md` for all styling decisions. Key points:
 
-- **Brand colors**: "La Firma" forest palette (`brand-dark: #163F31`, `brand: #1E5C46`, `brand-light: #4E8D74`, paper background `#FAF7F1`; supporting `sage #DCE5DC`, rare `brass #B3873F`)
-- **Fonts**: Outfit (headings/body), Space Mono (code/metrics)
-- **Components**: Shadcn UI with custom styling (rounded-full buttons, rounded-3xl cards)
+- **Brand colors**: "Monthly Club" palette (`brand-dark: #0F6B3D`, `brand: #127A44`, `brand-light: #3F8A68`, paper background `#EBEBE4`, ink `#0A0A08`; supporting `sage #F5F5F0`, rare `brass #8B5A16`; dark mode repoints these — see `src/app/globals.css` `[data-theme="dark"]`)
+- **Fonts**: Figtree (headings/body/everything — one family, weight carries the hierarchy), Instrument Serif Italic (`.accent` utility, one word per headline only)
+- **Shape**: pill buttons, 16-22px card radius (`.card-soft`), blob-gradient utilities (`.blob-1`-`.blob-4`), glassmorphic dark card (`.glass-dark`)
+- **Components**: Shadcn UI with custom styling (rounded-full buttons, rounded-2xl/rounded-3xl cards)
 - **Icons**: Lucide React
