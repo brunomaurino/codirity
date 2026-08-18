@@ -22,12 +22,14 @@ const sectionHeaderVariants = cva("", {
 });
 
 export interface SectionHeaderProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title">,
     VariantProps<typeof sectionHeaderVariants> {
   /** Small label above the title (mono font, uppercase) */
   label?: string;
-  /** Main title text */
-  title: string;
+  /** Main title text — usually a plain string, but accepts ReactNode so a
+   *  caller can wrap one word in the `.accent` treatment (see AccentWord)
+   *  without SectionHeader needing to know about that convention itself. */
+  title: React.ReactNode;
   /** Description text below the title */
   description?: string;
   /** Use gradient text for the title */
