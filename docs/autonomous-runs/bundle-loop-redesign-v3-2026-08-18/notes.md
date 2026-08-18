@@ -20,7 +20,7 @@ today).
 | V3 | Services (scope pill-cloud) | V0 | `[x]` complete (PR #23, 3ebedd5) |
 | V4 | Clients (eDairyCorp/Meshio/Vivi) | V0 | `[x]` complete (PR #24, 83b5b1a; content amended post-merge, see below) |
 | V5 | Pricing (D3/D5 resolved) | V0 | `[x]` complete (PR #25, dace932) |
-| V6 | FAQ + final CTA close | V0 | `[ ]` not started |
+| V6 | FAQ + final CTA close | V0 | `[x]` complete (PR #26, 164286b) |
 | V8 | Case studies (eDairyMarket + Meshio) | V0 | `[ ]` not started |
 
 V7 (real team photos) deliberately removed from the table — gated on D2, no photos supplied. Not
@@ -45,6 +45,7 @@ part of this run.
 | V3 | [#23](https://github.com/brunomaurino/codirity/pull/23) | `3ebedd5` | 6/6 confirmed (2 MAJOR, 4 MINOR), 0 refuted, 0 deferrals | Found + fixed a PRE-EXISTING dark-mode contrast bug in the shared `Badge` component (4.27:1, under AA) that was already live on `Pricing.tsx`'s founding banner and `PricingCard.tsx`'s plan badge before this bundle touched anything — fixed at the source so it propagates to every consumer, not just this bundle's own new usage |
 | V4 | [#24](https://github.com/brunomaurino/codirity/pull/24) | `83b5b1a` | 9/9 confirmed (1 BLOCKER, 1 MAJOR, 7 MINOR), 0 refuted, 0 deferrals | Content-sensitive bundle; battery caught a real BLOCKER (stale section header contradicting the honest client/ours cards). **Post-merge:** Bruno directed (live, in-session, after the trade-off was explicitly surfaced) that all 3 entries present as "client" uniformly, superseding the original D6 client/ours distinction this PR had just shipped — see the follow-up direct commit `4f47ca3` and the HANDOFF §5/§6 amendment note |
 | V5 | [#25](https://github.com/brunomaurino/codirity/pull/25) | `dace932` | 11 clusters, 3 MAJOR confirmed 5/5, 0 refuted, all 11 applied | **Salvaged run** — the orchestrating session was killed by the usage limit mid-Phase-5 (build + battery had both finished; 5 of 11 findings were applied but uncommitted in the worktree). Resumed from a fresh session via `/resume-anywhere`: battery NOT re-run (its journal was complete), remaining 6 findings applied, PR opened and merged from there. Battery's headline catch: `.glass-dark`'s backdrop blur never rendered outside Safari (Lightning CSS drops the second of two identical-value declarations) — the builder had examined and *rejected* this on a false premise, and the battery overturned it with live browser evidence. Also caught that the D3 75%→50% guarantee correction had leaked past the site into the **Trello onboarding template** copied to every new client |
+| V6 | [#26](https://github.com/brunomaurino/codirity/pull/26) | `164286b` | 24 raw → 12 deduped → 11 confirmed, 1 refuted, 73 areas examined, 0 deferrals; all 11 applied | Two process lessons, both worth carrying. (a) **A battery can report CLEAN while reviewing nothing**: the first invocation returned 0 findings with all 6 finders dead on `agent type 'at-reviewer' not found` — this build resolves the custom review types ONLY plugin-scoped, and `customAgents: true` makes the shipped script call the bare names. The failures appear in the task-notification's `<failures>` block, NOT in the returned object, so an empty result is structurally identical to a clean review. Re-run with `customAgents: false`. (b) **Resuming a partially-dead battery paid for itself**: one finder died on a transient Cloudflare 521; `resumeFromRunId` replayed the cached agents and re-ran only that one, taking the set from 8 findings to 11 — two of the three additions were MAJOR. The battery's headline catch was a contrast bug the builder's own audit had measured *around*: `.accent` declares its own colour, which beats the colour it inherits from the white heading, so the accented word on the new ink band rendered ~3.01:1 |
 
 ## Cross-bundle drift / surfaced concerns
 
@@ -141,11 +142,51 @@ part of this run.
   clarifying question. V8 does not need to re-litigate this; read §7 as
   currently written, it already reflects the amendment.
 
+## Session 2 — resumption 2026-08-18 15:4x (session `0556b7db-856d-4488-8df1-2cd5c38953b2`)
+
+Session 1 (`9ddef8ab`) was killed by the 5-hour usage limit mid-V5-Phase-5. Recovered via
+`/resume-anywhere` from the operator's other account: V5's build + review battery had both
+COMPLETED (journal `wf_6c08a024-6ad`, 12 agents, all returned), so the battery was NOT re-run —
+the remaining 6 of 11 findings were applied from the journal, shipped as PR #25 (`dace932`).
+V4's §2 row was also still `[ ]` (its status-update step never ran) and was reconciled in the
+same pass.
+
+Loop relaunched here for the two remaining bundles, V6 + V8, on the same plan-slug
+(`redesign-v3`) and the same §3 launch commands. Merge policy unchanged: full auto-merge.
+
+**Carried into V6/V8 from V5's battery** (in addition to the standing cross-bundle rules below):
+
+- `.glass-dark` is fixed but the CLASS of bug is not: Lightning CSS/Tailwind v4 drops whichever
+  of two identical-value declarations comes second. Any NEW hand-authored CSS in V6/V8 that
+  pairs a prefixed and unprefixed property must put the UNPREFIXED one LAST, and the fix must be
+  verified in the COMPILED chunk (`.next/static/chunks/*.css`), not in `globals.css`.
+- Gate any multi-column grid at `sm:` and up. V5 shipped an ungated `grid-cols-2` that forced two
+  columns of 0.85rem text at 320-375px; the battery caught it. V8's case-study layout and V6's
+  FAQ list are both multi-column candidates.
+- A real financial/commitment figure changed in one place must be grepped for across the WHOLE
+  repo, including `scripts/` and `docs/` that feed CLIENT-FACING artifacts. V5's 75%→50% change
+  was missed in the Trello template board copied into every new client's workspace.
+- The V5 builder examined the `.glass-dark` anomaly and REJECTED it on a plausible-but-false
+  premise; the battery overturned it with live browser evidence. An "Areas examined and rejected"
+  entry is not a verified negative — flag it explicitly in `reviewContext` when the rejection
+  rests on an assumption rather than a measurement.
+
 ## Durable handles
+
+**Session 2 (current, `0556b7db`):**
+
+- marker: /Users/brunomaurino/.claude/autonomous-active/autonomous-bundle-loop-redesign-v3 (+ .json sidecar)
+- heartbeat_pid: 13803 (bg task `bmi3nm8em`)
+- cron: 1b0f0c50 (*/17)
+- external watchdog: loaded (com.claude.autonomous-watchdog)
+
+**Session 1 (dead — killed by usage limit, `9ddef8ab`):**
 
 - marker: /Users/brunomaurino/.claude/autonomous-active/autonomous-bundle-loop-redesign-v3
 - heartbeat_pid: 35715
 - cron: 70844a99
 - external watchdog: loaded (com.claude.autonomous-watchdog)
-- dashboard: https://claude.ai/code/artifact/fe9686fb-8cc8-436f-8ccb-c6d8622eee61
+- dashboard (session 1, GONE — artifact deleted/unreachable): https://claude.ai/code/artifact/fe9686fb-8cc8-436f-8ccb-c6d8622eee61
+- dashboard (session 2, live): https://claude.ai/code/artifact/7a77bf63-4147-401e-ae1c-fe12ce3d585b
+- dashboard generator: <scratchpad>/gen-dashboard.py (+ dashboard-state.json) — re-render at each bundle boundary
 - dashboard scratchpad file: /private/tmp/claude-501/-Users-brunomaurino-projects-codirity/9ddef8ab-5417-4799-aa93-32a4f171aaad/scratchpad/bundle-loop-redesign-v3-dashboard.html

@@ -82,6 +82,8 @@ link if it's not in this session's history.
    faces, no fake urgency. Banned-word grep (§4) still applies to all copy — the REGISTER of the
    writing doesn't change with the visual system, only its container.
 
+**Dashboard (view-only render of §2):** https://claude.ai/code/artifact/7a77bf63-4147-401e-ae1c-fe12ce3d585b
+
 ## §2 — Bundle status surface
 
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
@@ -92,7 +94,7 @@ link if it's not in this session's history.
 | **V3** | Services ("what we build") as a scope pill-cloud + headline, mirroring Designjoy's "Apps, websites, logos & more" block | V0 | [x] complete | #23 | 3ebedd5 |
 | **V4** | Clients (`RecentWork.tsx`) — eDairyCorp / Meshio / Vivi, reusing the APPROVED honesty framing from `redesign-storytelling.md` §1 (client vs. ours, Vivi marked pre-launch), presented as Designjoy-style badge cards instead of ledger rows | V0, content in §5 below (already resolved) | [x] complete | #24 | 83b5b1a |
 | **V5** | Pricing: glassmorphic dark card over its own blob, two-column feature list, dashed-border trust boxes ("Pause anytime," "Fast delivery"), guarantee cluster (gated on D3) | V0, decision D3 | [x] complete | #25 | dace932 |
-| **V6** | FAQ + final CTA — FAQ deepened per v1 §6.R6's question list (still valid, register-only, not visual-system-specific), final CTA becomes the black band close | V0 | [ ] pending | | |
+| **V6** | FAQ + final CTA — FAQ deepened per v1 §6.R6's question list (still valid, register-only, not visual-system-specific), final CTA becomes the black band close | V0 | [x] complete | #26 | `164286b` |
 | **V8** | Case studies — eDairyMarket + Meshio, full briefs in §7 | V0 | [ ] pending | | |
 
 **V7 removed from this table entirely (not just marked incomplete)** — the bundle-loop mechanism
