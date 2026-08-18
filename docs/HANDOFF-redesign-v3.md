@@ -160,12 +160,16 @@ tone (already close to this) over inventing new lines.
 
 ## §5 — Content that survives from prior plans (do not re-litigate)
 
-- **Clients (D6 — RESOLVED 2026-07-28, still valid):** eDairyCorp (client), Meshio (ours), Vivi
-  (ours, pre-launch) — full facts, sourced work history, and Bruno-approved framing ("Option A —
-  already on the board," honest `client`/`ours` tags, Vivi explicitly marked pre-launch) in
-  `docs/redesign-storytelling.md` §1. V4 REUSES this content, adapted from the old ledger-row
-  visual (mono, status dots) to Designjoy-style badge cards (blob-tile + one-liner) — the FACTS
-  and the honesty discipline carry forward; the ledger/terminal presentation does not.
+- **Clients (D6 — RESOLVED 2026-07-28, AMENDED 2026-08-18):** eDairyCorp, Meshio, Vivi (pre-launch)
+  — full facts and sourced work history in `docs/redesign-storytelling.md` §1. V4 REUSES this
+  content, adapted from the old ledger-row visual (mono, status dots) to Designjoy-style badge
+  cards (blob-tile + one-liner) — the FACTS carry forward; the ledger/terminal presentation does
+  not. **2026-08-18 amendment:** the original resolution's `client`/`ours` honesty-tag distinction
+  (eDairyCorp "client", Meshio/Vivi "ours") is SUPERSEDED — Bruno directed, live in-session and
+  after the trade-off was explicitly surfaced to him, that all three entries present as "client"
+  uniformly. `preLaunch` (Vivi) is unaffected — it's an independent operational fact, not part of
+  the removed provenance framing. This amendment also applies to V8's Meshio case study (§7) for
+  site-wide consistency. See `src/config/offer.ts`'s `ClientEntry` NOTE for the in-code record.
 - **What does NOT carry forward:** the rest of `redesign-storytelling.md` (the Mon–Fri week log,
   the receipt-style Ledger, "things we've been asked to build" verbatim-ask framing) was written
   specifically for the Workbench's terminal/artifact metaphor and doesn't fit Monthly Club's
@@ -182,7 +186,7 @@ tone (already close to this) over inventing new lines.
 | D3 | The guarantee | V5 | **RESOLVED** 2026-08-18 — 50% refund if cancelled within the first 7 days |
 | D4 | Publishable aggregate stats | proof content, any section | open — no real numbers supplied; no bundle in this plan is gated on it, so no section publishes a stat unless `offer.ts` carries one |
 | D5 | Real capacity number in `offer.ts` | badge content, if used | **RESOLVED** 2026-08-18 — no capacity badge ships |
-| D6 | Client logos/identities with permission | V4 | **RESOLVED** 2026-07-28 — see §5 |
+| D6 | Client logos/identities with permission | V4 | **RESOLVED** 2026-07-28, **AMENDED** 2026-08-18 — see §5 |
 
 **V7 is explicitly OUT OF SCOPE for this run** — the plan builds V0–V6 and V8, and stops there. Do
 not invent placeholder people/photos to force V7 through; re-open it as its own bundle whenever
@@ -218,8 +222,9 @@ concrete technical fact itself, not a fabricated percentage).
 
 ### Case study 2 — Meshio
 
-- **Relationship:** ours (owned by the same LLC as Codirity — say so plainly, the same honesty
-  discipline as the D6 clients section; do not present it as an arm's-length client).
+- **Relationship:** client (updated 2026-08-18 — see the D6 amendment note in §6/§5; Bruno
+  confirmed presenting Meshio as "client" here too, for consistency with the V4 clients section,
+  superseding the original "ours, say so plainly" framing this bullet used to carry).
 - **Headline:** onboarding rebuilt around ONE activation metric — first post published — instead
   of a generic signup flow.
 - **Context:** Meshio (meshio.co) is an AI content-ideation SaaS that drafts post ideas in the

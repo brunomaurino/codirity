@@ -4,13 +4,13 @@ import { clients, sections } from "@/config/offer";
 import { cn } from "@/lib/utils";
 import type { BlobClass } from "@/lib/blob";
 
-// "Who's on the board" (D6, HANDOFF-redesign-v3 §5) — Designjoy-style
-// badge cards: one blob-gradient tile per client/product, an honest
-// client/ours provenance tag, a one-liner adapted from
-// docs/redesign-storytelling.md §1b. The honesty discipline carries
-// forward from the prior plan: eDairyCorp is tagged "client" plainly,
-// Meshio and Vivi are tagged "ours" (never presented as arm's-length
-// clients), and Vivi's card always shows "pre-launch" — never omitted.
+// "Who's on the board" — Designjoy-style badge cards: one blob-gradient
+// tile per entry, a one-liner adapted from docs/redesign-storytelling.md
+// §1b. All three entries render a "Client" tag (updated 2026-08-18 per
+// Bruno's direction — see the NOTE on `ClientEntry` in offer.ts for the
+// superseded client/ours distinction this replaces). `preLaunch` still
+// renders when true (Vivi) — that's an independent operational fact, not
+// part of the (now-removed) provenance framing.
 //
 // Starts at blob-3 (found in Phase 4/5 review): Benefits.tsx (the section
 // immediately before this one) cycles 6 tiles through all 4 blobs and its
@@ -60,9 +60,9 @@ export function RecentWork() {
                       "bg-black/20"
                     )}
                   >
-                    {entry.provenance}
+                    Client
                   </span>
-                  {entry.provenance === "ours" && entry.preLaunch && (
+                  {entry.preLaunch && (
                     <span
                       className={cn(
                         "btn-pill inline-flex items-center",
