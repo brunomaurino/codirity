@@ -411,6 +411,31 @@ full-opacity text — reduced-alpha text on top of it can drop below WCAG AA).
 640-767px band squeezed text too narrow; deferring to `md:` (768px) removes
 that band.
 
+### Pill Cloud (redesign v3 Bundle V3)
+
+For scope/category data with no natural checklist structure — extrapolated
+from Designjoy's own tag-cloud block (HANDOFF §1) rather than a literal
+mockup. Reuses `<Badge>`, not hand-rolled classes, so a future Badge
+restyle propagates here automatically:
+
+```jsx
+<ul className="flex flex-wrap justify-center gap-3 list-none">
+  {items.map((item) => (
+    <li key={item}>
+      <Badge size="lg">{item}</Badge>
+    </li>
+  ))}
+</ul>
+```
+
+A sibling "not in scope" list next to a pill cloud should stay a PLAIN list
+(no pill styling) — decorating what's explicitly out of scope like a
+feature highlight undercuts the honesty the plain treatment is meant to
+signal. Use `text-gray-600` for that list's text, not `text-gray-500` —
+`-500` on this section's `bg-gray-50` measures under WCAG AA (4.09:1);
+`-600` clears it (6.17:1) per this doc's own "Body text on paper: gray-600
+minimum" rule below.
+
 ---
 
 ## Dark Mode
@@ -546,4 +571,4 @@ src/
 
 ---
 
-*Last updated: 2026-08-18 (redesign v3 Bundle V0 — "Monthly Club" palette flip)*
+*Last updated: 2026-08-18 (redesign v3 Bundle V3 — services pill cloud; also carries V0's "Monthly Club" palette flip and V2's blob-card Process pattern)*
