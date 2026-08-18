@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, ArrowRight } from "lucide-react";
+import { CalPopupButton } from "@/components/ui";
+import { hero, CAL_LINK } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -81,22 +83,36 @@ export function Header() {
           ))}
         </ul>
 
-        {/* Desktop CTA */}
-        <Link
-          href="#contact"
-          className={cn(
-            "hidden lg:inline-flex items-center gap-2",
-            "px-6 py-3 rounded-full",
-            "bg-brand-fill text-white",
-            "font-semibold text-sm",
-            "transition-all duration-300",
-            "hover:bg-brand-fill-dark hover:-translate-y-0.5",
-            "hover:shadow-brand"
-          )}
-        >
-          Contact Us
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        {/* Desktop CTAs — Book a call / See pricing pill pair (HANDOFF-redesign-v3 §1,
+            mirrors the hero's own two-CTA pattern in the persistent nav) */}
+        <div className="hidden lg:flex items-center gap-3">
+          <CalPopupButton
+            calLink={CAL_LINK}
+            className={cn(
+              "btn-pill inline-flex items-center justify-center",
+              "px-5 py-2.5 text-sm font-semibold",
+              "text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
+              "hover:border-brand hover:text-brand dark:hover:text-brand hover:bg-brand-pale",
+              "transition-all duration-300 cursor-pointer"
+            )}
+          >
+            Book a call
+          </CalPopupButton>
+          <Link
+            href={hero.primaryCta.href}
+            className={cn(
+              "btn-pill inline-flex items-center gap-2",
+              "px-5 py-2.5 text-sm font-semibold",
+              "bg-brand-fill text-white",
+              "transition-all duration-300",
+              "hover:bg-brand-fill-dark hover:-translate-y-0.5",
+              "hover:shadow-brand"
+            )}
+          >
+            {hero.primaryCta.label}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
 
         {/* Mobile Menu Button */}
         <button
@@ -144,9 +160,21 @@ export function Header() {
               </li>
             ))}
           </ul>
-          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+            <CalPopupButton
+              calLink={CAL_LINK}
+              className={cn(
+                "flex items-center justify-center",
+                "w-full px-6 py-4 rounded-full",
+                "text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
+                "font-semibold text-base",
+                "transition-all duration-300 cursor-pointer"
+              )}
+            >
+              Book a call
+            </CalPopupButton>
             <Link
-              href="#contact"
+              href={hero.primaryCta.href}
               onClick={() => setIsMobileMenuOpen(false)}
               className={cn(
                 "flex items-center justify-center gap-2",
@@ -157,7 +185,7 @@ export function Header() {
                 "hover:bg-brand-fill-dark"
               )}
             >
-              Contact Us
+              {hero.primaryCta.label}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

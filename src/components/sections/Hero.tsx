@@ -2,9 +2,20 @@ import { ArrowRight } from "lucide-react";
 import { Badge, CalPopupButton, TrackedLink } from "@/components/ui";
 import { Container } from "@/components/layout";
 import { HeroBackground } from "./HeroBackground";
-import { HeroCards } from "./HeroCards";
+import { HeroVisual } from "./HeroVisual";
 import { hero, CAL_LINK } from "@/config/offer";
 import { cn } from "@/lib/utils";
+
+// The HANDOFF §1.2 one-word-per-headline emphasis technique applies to
+// exactly one word. Split hero.headline (the single source of truth,
+// offer.ts) around it at render time rather than hardcoding the headline
+// text in JSX — so a future copy change in offer.ts can't silently drift
+// out of sync with a duplicated string here. Falls back to the plain
+// (un-accented) headline if the word is ever removed from the copy.
+const ACCENT_WORD = "subscription";
+const [headlineLead, headlineTail] = hero.headline.includes(ACCENT_WORD)
+  ? hero.headline.split(ACCENT_WORD)
+  : [hero.headline, ""];
 
 export function Hero() {
   return (
@@ -47,7 +58,15 @@ export function Hero() {
                 "opacity-0 animate-slide-up animation-delay-300"
               )}
             >
-              {hero.headline}
+              {headlineTail ? (
+                <>
+                  {headlineLead}
+                  <span className="accent">{ACCENT_WORD}</span>
+                  {headlineTail}
+                </>
+              ) : (
+                headlineLead
+              )}
             </h1>
 
             <p
@@ -107,8 +126,8 @@ export function Hero() {
           </div>
 
           {/* Hero Visual */}
-          <div className="hidden lg:block">
-            <HeroCards />
+          <div>
+            <HeroVisual />
           </div>
         </div>
       </Container>
