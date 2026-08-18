@@ -29,3 +29,5 @@ export type { SectionHeaderProps } from "./SectionHeader";
 export { CalPopupButton } from "./CalPopupButton";
 
 export { TrackedLink } from "./TrackedLink";
+
+export { AccentWord } from "./AccentWord";
