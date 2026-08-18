@@ -32,8 +32,6 @@ export interface SectionHeaderProps
   title: React.ReactNode;
   /** Description text below the title */
   description?: string;
-  /** Use gradient text for the title */
-  gradientTitle?: boolean;
   /** Surface this header sits on.
    *  - `default`: the light/dark page ground — title is `text-gray-900
    *    dark:text-white`, which is correct there and ONLY there.
@@ -55,7 +53,6 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       label,
       title,
       description,
-      gradientTitle,
       tone = "default",
       ...props
     },
@@ -70,7 +67,7 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         {label && (
           <span
             className={cn(
-              "inline-block font-sans text-[13px] font-semibold uppercase tracking-[0.12em] mb-4",
+              "inline-block font-sans text-[13px] font-medium uppercase tracking-[0.12em] mb-4",
               // On the ink band the brand green measures under AA against
               // #0a0a08; brand-light is the tuned-for-dark-ground value.
               tone === "ink" ? "text-brand-light" : "text-brand"
@@ -81,9 +78,8 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         )}
         <h2
           className={cn(
-            "text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight",
-            tone === "ink" ? "text-white" : "text-gray-900 dark:text-white",
-            gradientTitle && "gradient-text"
+            "text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight",
+            tone === "ink" ? "text-white" : "text-gray-900 dark:text-white"
           )}
         >
           {title}

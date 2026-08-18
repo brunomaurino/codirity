@@ -122,7 +122,7 @@ export function ContactForm() {
             this bundle: this sub-copy and the privacy note below both moved off
             `text-gray-500`, which measures 4.47:1 on the white card — under AA
             for 14px text. */}
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
           Write it out
         </h3>
         <p className="text-[0.95rem] text-gray-600 dark:text-gray-400">

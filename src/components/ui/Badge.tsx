@@ -6,7 +6,7 @@ const badgeVariants = cva(
   [
     "inline-flex items-center gap-2",
     "rounded-full",
-    "font-semibold text-sm",
+    "font-medium text-sm",
   ],
   {
     variants: {

@@ -37,7 +37,7 @@ export function HeroVisual() {
             "inline-flex w-fit items-center gap-2",
             "px-4 py-1.5 rounded-full",
             "bg-black/20 backdrop-blur-sm",
-            "text-sm font-semibold"
+            "text-sm font-medium"
           )}
         >
           <span className="w-2 h-2 bg-white rounded-full animate-pulse-dot" />
@@ -45,7 +45,7 @@ export function HeroVisual() {
         </div>
 
         <div>
-          <p className="text-2xl md:text-[1.75rem] font-semibold leading-snug mb-6">
+          <p className="text-2xl md:text-[1.75rem] font-medium leading-snug mb-6">
             {hero.visualHeadline}
           </p>
 
@@ -58,7 +58,7 @@ export function HeroVisual() {
             eventParams={{ location: "hero_visual" }}
             className={cn(
               "btn-pill inline-flex items-center justify-center gap-2",
-              "px-6 py-3 text-sm font-semibold",
+              "px-6 py-3 text-sm font-medium",
               "bg-black/20 hover:bg-black/30",
               "transition-all duration-300"
             )}

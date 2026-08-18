@@ -69,7 +69,7 @@ export function ServiceCard({
       <div>
         <h3
           className={cn(
-            "font-bold mb-3 tracking-tight",
+            "font-medium mb-3 tracking-tight",
             featured
               ? "text-2xl md:text-3xl text-white"
               : "text-xl text-gray-900 dark:text-white"
@@ -94,7 +94,7 @@ export function ServiceCard({
         href={linkHref}
         className={cn(
           "inline-flex items-center gap-2 mt-6",
-          "font-semibold text-[0.95rem]",
+          "font-medium text-[0.95rem]",
           "transition-[gap] duration-300",
           "hover:gap-3",
           featured ? "text-brand-light" : "text-brand"
@@ -116,7 +116,7 @@ export function ServiceCard({
                   "bg-white/10 border border-white/15"
                 )}
               >
-                <div className="font-serif text-2xl md:text-3xl font-bold text-brand-light mb-1">
+                <div className="font-serif text-2xl md:text-3xl font-medium text-brand-light mb-1">
                   {stat.value}
                 </div>
                 <div className="text-sm text-white/70">{stat.label}</div>

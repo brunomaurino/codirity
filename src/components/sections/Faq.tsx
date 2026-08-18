@@ -45,7 +45,7 @@ export function Faq() {
                   aria-controls={answerId}
                   className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
                 >
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     {item.question}
                   </span>
                   <ChevronDown
@@ -89,7 +89,7 @@ export function Faq() {
             analyticsLocation="faq"
             className={cn(
               "inline-flex items-center justify-center gap-2",
-              "rounded-full px-8 py-4 text-base font-semibold",
+              "rounded-full px-8 py-4 text-base font-medium",
               "bg-brand-fill text-white",
               "transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-fill-dark hover:shadow-brand",
               "cursor-pointer"

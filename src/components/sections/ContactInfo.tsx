@@ -52,7 +52,7 @@ export function ContactInfo() {
           event="email_click"
           eventParams={{ location: "contact_section" }}
           className={cn(
-            "font-semibold text-brand-light underline underline-offset-4",
+            "font-medium text-brand-light underline underline-offset-4",
             "decoration-brand-light/40 transition-colors hover:text-white hover:decoration-white"
           )}
         >
@@ -90,7 +90,7 @@ export function ContactInfo() {
         className={cn(
           "mt-3 inline-flex items-center gap-3",
           "rounded-full px-8 py-4",
-          "bg-white text-base font-semibold text-gray-900",
+          "bg-white text-base font-medium text-gray-900",
           "transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100",
           "cursor-pointer"
         )}

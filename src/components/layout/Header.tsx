@@ -55,7 +55,7 @@ export function Header() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 font-mono text-2xl font-bold text-gray-900 dark:text-white tracking-tight"
+          className="flex items-center gap-2 font-mono text-2xl font-medium text-gray-900 dark:text-white tracking-tight"
         >
           <span>Codirity</span>
           <span className="w-2.5 h-2.5 bg-brand rounded-full animate-pulse-dot" />
@@ -90,7 +90,7 @@ export function Header() {
             calLink={CAL_LINK}
             className={cn(
               "btn-pill inline-flex items-center justify-center",
-              "px-5 py-2.5 text-sm font-semibold",
+              "px-5 py-2.5 text-sm font-medium",
               "text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
               "hover:border-brand hover:text-brand dark:hover:text-brand hover:bg-brand-pale",
               "transition-all duration-300 cursor-pointer"
@@ -102,7 +102,7 @@ export function Header() {
             href={hero.primaryCta.href}
             className={cn(
               "btn-pill inline-flex items-center gap-2",
-              "px-5 py-2.5 text-sm font-semibold",
+              "px-5 py-2.5 text-sm font-medium",
               "bg-brand-fill text-white",
               "transition-all duration-300",
               "hover:bg-brand-fill-dark hover:-translate-y-0.5",
@@ -168,7 +168,7 @@ export function Header() {
                 "flex items-center justify-center",
                 "w-full px-6 py-4 rounded-full",
                 "text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
-                "font-semibold text-base",
+                "font-medium text-base",
                 "transition-all duration-300 cursor-pointer"
               )}
             >
@@ -181,7 +181,7 @@ export function Header() {
                 "flex items-center justify-center gap-2",
                 "w-full px-6 py-4 rounded-full",
                 "bg-brand-fill text-white",
-                "font-semibold text-base",
+                "font-medium text-base",
                 "transition-all duration-300",
                 "hover:bg-brand-fill-dark"
               )}
