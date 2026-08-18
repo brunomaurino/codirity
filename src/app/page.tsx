@@ -7,6 +7,7 @@ import {
   Services,
   Benefits,
   RecentWork,
+  CaseStudies,
   About,
   Pricing,
   Faq,
@@ -37,6 +38,13 @@ export default function Home() {
             always renders, not gated on offer.caseStudies (that array is
             unrelated content V8 owns separately). */}
         <RecentWork />
+        {/* S5b — Case studies (D1): eDairyMarket + Meshio, content from
+            HANDOFF-redesign-v3.md §7. Placed immediately after the clients
+            roll-call and before Pricing, per the bundle brief. Chosen over
+            after-About so the proof runs clients → the two studies in one
+            uninterrupted stretch, and the reader reaches pricing having just
+            read the strongest evidence rather than the team blurb. */}
+        <CaseStudies />
         <About />
         {/* S6 — Pricing (two-tier + Stripe + founding banner + guarantee) */}
         <Pricing />

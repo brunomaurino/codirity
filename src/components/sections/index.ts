@@ -14,6 +14,9 @@ export { Benefits } from "./Benefits";
 
 export { RecentWork } from "./RecentWork";
 
+export { CaseStudies } from "./CaseStudies";
+export { CaseStudySketch } from "./CaseStudySketch";
+
 export { Faq } from "./Faq";
 
 export { About } from "./About";
