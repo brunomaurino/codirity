@@ -126,3 +126,4 @@ structure (read before editing) — investigation, not a content ambiguity.
 - worktree: /Users/brunomaurino/projects/codirity-rv3-v1
 - worktree_entry: path
 - dev_server_pid: 64869 (port 3002)
+- battery_run_id: wf_bc6a93d3-357
