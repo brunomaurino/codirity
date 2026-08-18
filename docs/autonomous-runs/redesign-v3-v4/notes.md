@@ -119,3 +119,4 @@ read in full before writing.
 - worktree: /Users/brunomaurino/projects/codirity-rv3-v4
 - worktree_entry: path
 - dev_server_pid: 41712
+- battery_run_id: wf_7132fe68-e08
