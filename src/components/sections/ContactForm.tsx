@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { Send, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input, Select, Button } from "@/components/ui";
+import { RESPONSE_TIME_CLAIM } from "@/config/offer";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
@@ -113,11 +114,19 @@ export function ContactForm() {
     >
       {/* Header */}
       <div className="mb-8">
+        {/* §4 voice pass (Bundle V6): the prior "Send Us a Message" / "Fill out
+            the form below and we'll get back to you shortly" predated the voice
+            gate. This card stays a LIGHT card on the near-black band — see
+            Contact.tsx — so it keeps its own light-surface foreground pairs
+            rather than being re-tuned for dark. Two of those pairs DID change in
+            this bundle: this sub-copy and the privacy note below both moved off
+            `text-gray-500`, which measures 4.47:1 on the white card — under AA
+            for 14px text. */}
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          Send Us a Message
+          Write it out
         </h3>
-        <p className="text-[0.95rem] text-gray-500 dark:text-gray-400">
-          Fill out the form below and we&apos;ll get back to you shortly.
+        <p className="text-[0.95rem] text-gray-600 dark:text-gray-400">
+          A paragraph is plenty. {RESPONSE_TIME_CLAIM}.
         </p>
       </div>
 
@@ -224,7 +233,7 @@ export function ContactForm() {
         </div>
 
         {/* Privacy Note */}
-        <p className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500 dark:text-gray-400">
+        <p className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600 dark:text-gray-400">
           <Lock className="w-4 h-4 stroke-brand" />
           Your information is secure and will never be shared.
         </p>

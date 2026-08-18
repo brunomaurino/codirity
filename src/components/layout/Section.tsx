@@ -9,8 +9,16 @@ interface SectionProps {
    * - default: white background
    * - gray: light gray background
    * - gradient: green gradient background
+   * - ink: near-black band. HANDOFF-redesign-v3.md §1 rule 4 allows exactly
+   *   ONE of these on the site — the final CTA, which sits directly above the
+   *   footer so the two read as a single closing band. Do not add a second
+   *   `ink` section elsewhere; the beat only works because it is unique.
+   *   Uses the same `gray-900` token pair the footer already uses (#0a0a08
+   *   light / #171713 dark) so the CTA and footer are the same black, and
+   *   `text-white` — true white in BOTH themes, the correct foreground for a
+   *   permanently-dark surface (see the `--white` note in globals.css).
    */
-  variant?: "default" | "gray" | "gradient";
+  variant?: "default" | "gray" | "gradient" | "ink";
   /**
    * Padding size
    * - default: standard section padding
@@ -40,6 +48,7 @@ export function Section({
         // Background variants
         variant === "default" && "bg-white dark:bg-gray-900",
         variant === "gray" && "bg-gray-50 dark:bg-gray-800",
+        variant === "ink" && "bg-gray-900 text-white",
         variant === "gradient" && [
           "bg-[linear-gradient(180deg,_rgba(50,_205,_50,_0.06)_0%,_rgba(89,_243,_89,_0.1)_50%,_rgba(50,_205,_50,_0.06)_100%)]",
           "dark:bg-[linear-gradient(180deg,_rgba(50,_205,_50,_0.1)_0%,_rgba(89,_243,_89,_0.15)_50%,_rgba(50,_205,_50,_0.1)_100%)]",

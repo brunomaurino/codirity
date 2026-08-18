@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Section, Container } from "@/components/layout";
-import { SectionHeader, CalPopupButton } from "@/components/ui";
+import { SectionHeader, CalPopupButton, AccentWord } from "@/components/ui";
 import { faq, sections, CAL_LINK } from "@/config/offer";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export function Faq() {
       <Container size="narrow">
         <SectionHeader
           label={sections.faq.label}
-          title={sections.faq.title}
+          title={<AccentWord text={sections.faq.title} word="answered" />}
           description={sections.faq.description}
           className="mb-12"
         />
@@ -33,7 +33,7 @@ export function Faq() {
             return (
               <div
                 key={item.question}
-                className="reveal overflow-hidden rounded-2xl border border-[var(--border)] bg-white dark:bg-gray-800"
+                className="reveal card-soft overflow-hidden border border-[var(--border)] bg-white dark:bg-gray-800"
               >
                 <button
                   type="button"
@@ -83,6 +83,10 @@ export function Faq() {
           </p>
           <CalPopupButton
             calLink={CAL_LINK}
+            // Labelled so this booking is distinguishable from the closing
+            // band's Cal CTA one section below — they fired an identical
+            // unparameterized `call_booked` until now (Phase 4/5 review).
+            analyticsLocation="faq"
             className={cn(
               "inline-flex items-center justify-center gap-2",
               "rounded-full px-8 py-4 text-base font-semibold",

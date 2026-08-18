@@ -27,7 +27,15 @@
      --green-light is #3F8A68, not the pitch artifact's literal #4FD98C —
      that value measured 1.80:1 for the white icon strokes on ContactInfo's
      brand→brand-light gradient tiles (WCAG 1.4.11 needs 3:1 for non-text UI
-     graphics); #3F8A68 clears 4.16:1. Found + fixed in Phase 4/5 review. */
+     graphics); #3F8A68 clears 4.16:1. Found + fixed in Phase 4/5 review.
+     NOTE (V6): those gradient icon tiles no longer exist — V6's black-band
+     close replaced them — so the ORIGINAL justification above is historical.
+     The token's binding constraint is now a different and tighter one: it is
+     the accent/link colour ON the near-black band (`Section variant="ink"`,
+     `SectionHeader tone="ink"`), where it measures 4.76:1 in light mode against
+     #0a0a08 — only 0.26 over the AA floor for normal text. Darkening this token
+     will break that band; check ContactInfo's eyebrow + email link before
+     touching it. (Dark mode repoints it to #7ce3b2, 11.54:1 — comfortable.) */
   --green-dark: #0f6b3d;
   --green-main: #127a44;
   --green-light: #3f8a68;

@@ -155,6 +155,7 @@ export interface SectionsContent {
   recentWork: SectionCopy;
   pricing: SectionCopy;
   faq: SectionCopy;
+  contact: SectionCopy;
 }
 
 export interface Offer {
@@ -183,6 +184,13 @@ export const LEGAL_ENTITY = "BOMAU LLC";
 export const CONTACT_EMAIL = "support@codirity.com";
 /** Cal.com link (namespace/event) used by CalPopupButton. */
 export const CAL_LINK = "support-codirity-lz8rjc/30min";
+
+/** The response-time promise, stated ONCE. It is a real commitment to anyone who
+ *  writes in, and Bundle V6's review battery caught it restated twice in the same
+ *  viewport with two different figures ("within 24 hours" in the contact facts vs.
+ *  "answer within a day" in the form) — two strings free to drift apart, and one
+ *  of them silently wider than the other. Both call sites now render this. */
+export const RESPONSE_TIME_CLAIM = "We reply within 24 hours";
 
 export const hero: HeroContent = {
   badge: "AI & automation, on subscription",
@@ -245,6 +253,17 @@ export const sections: SectionsContent = {
     title: "Questions, answered",
     description:
       "Everything you might want to know before subscribing. Still unsure? Book a quick call.",
+  },
+  // The final CTA — rendered on the site's one near-black band
+  // (HANDOFF-redesign-v3.md §1 rule 4). Replaces the pre-redesign copy that
+  // was hardcoded in ContactInfo.tsx ("Let's Build Something Great Together" /
+  // "transform your business with AI-powered solutions"), which predated the
+  // §4 voice gate and never went through it.
+  contact: {
+    label: "Start here",
+    title: "Tell us what's eating your week",
+    description:
+      "Send it over and we'll tell you whether it's a task, a build, or something we'd talk you out of. If you'd rather just start, pick a plan above.",
   },
 };
 
@@ -414,7 +433,52 @@ export const faq: FaqItem[] = [
   {
     question: "Can I pause or cancel?",
     answer:
-      "Anytime. Pause your subscription when your queue is empty and resume when you need us again. No contracts, no lock-in.",
+      "Anytime. Pause your subscription when your queue is empty and resume when you need us again. Your board, your code, and your history stay put while you're away. No contracts, no lock-in.",
+  },
+  {
+    question: "Why not just hire someone?",
+    answer:
+      "If you have forty hours a week of engineering work, hire — we'll tell you so on the call. If you have five or fifteen, a full-time salary is the expensive way to get them, and you're still doing the recruiting.",
+  },
+  {
+    question: "Who actually writes the code, you or the AI?",
+    answer:
+      "Engineers. The AI drafts; we own what ships. Nothing reaches your repo that a senior engineer hasn't read, changed, and put their name on.",
+  },
+  {
+    question: "Who owns the code and the accounts?",
+    answer:
+      "You do. Repos in your org, infrastructure in your cloud accounts, credentials in your vault. If we disappeared tomorrow you'd lose a vendor, not a system.",
+  },
+  {
+    question: "What if something breaks a month later?",
+    answer:
+      "Add a card. Fixes to things we built are requests like any other, and ongoing fixes are part of the subscription. We don't ship what we can't maintain — it's why the list of what we don't do is short and specific.",
+  },
+  // Gated on `foundingRate.active`, and the number and price are read from that
+  // object rather than written into the prose. Both are required, not tidiness:
+  // this answer is the only place the founding offer would have been stated as a
+  // plain always-rendered string, so flipping the documented one-line kill-switch
+  // when the seats fill would have left the FAQ — and the FAQPage JSON-LD served
+  // to Google — advertising an expired price. Found in Phase 4/5 review.
+  ...(foundingRate.active
+    ? [
+        {
+          question: `Why only ${foundingRate.slots} founding seats?`,
+          // Deliberately NOT framed as a capacity cap. `foundingRate` is a launch
+          // PRICE promo, not a limit on how many clients we take, and the earlier
+          // draft of this answer ("one engineer works one queue, one task at a
+          // time... we cap how many queues exist") both invented that cap and
+          // contradicted the Pro tier's two-active-tasks promise two entries
+          // above it. Also found in Phase 4/5 review.
+          answer: `It's a launch price, not a waiting list. The first ${foundingRate.slots} subscriptions keep ${foundingRate.price} for as long as they stay on it; after that the rate is the one listed above. The work is identical either way — same queue, same delivery.`,
+        },
+      ]
+    : []),
+  {
+    question: "Do I have to get on a call first?",
+    answer:
+      "No. Pick a plan, check out, and add your first task the same day. The call is there if you'd rather talk it through first.",
   },
   {
     question: "What don't you do?",
