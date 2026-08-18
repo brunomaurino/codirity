@@ -71,9 +71,9 @@ Benefits.tsx structure (read before editing) — investigation, not a content am
   `Omit<React.HTMLAttributes<HTMLDivElement>, "title">` on the interface to avoid colliding with
   the native HTML `title` tooltip attribute) so `AccentWord`'s output can pass through it. Kept
   every existing plain-string caller working unchanged (ReactNode is a superset).
-  the picked word "subscribe" for the Benefits headline "Why teams subscribe" is the section's
-  own real title text, not invented — consistent with the subscription theme V1 already
-  established with "subscription" in the H1.
+- **Picked "subscribe" as the Benefits headline's accented word.** It's the section's own real
+  title text ("Why teams subscribe" — the word isn't invented), and consistent with the
+  subscription theme V1 already established with "subscription" in the Hero H1.
 - **6 Benefits tiles cycle through only 4 `.blob-*` utilities** (V0 shipped exactly 4) — two
   blobs necessarily repeat. Cycled by `index % 4` so no two VERTICALLY adjacent tiles in the
   3-column desktop grid share a blob (row 1: blob-1/2/3, row 2: blob-4/1/2 — every column's
@@ -113,11 +113,65 @@ Benefits.tsx structure (read before editing) — investigation, not a content am
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Phase 4/5 review battery (`wf_a09d23d8-c96`): 2 adversarial rounds + 1 mixed-model
+round + 2 QA rounds + 3-voter verify. 21 raw findings → 10 unique after semantic
+dedup → 10/10 confirmed real (0 refuted). All 10 `applyInline`, 0 deferrals.
+
+**MAJOR (2):**
+1. Body copy (`opacity-85`) and the ProcessStep step-number (`opacity-70`)
+   rendered over `.blob-*` surfaces dropped below WCAG AA — the blob
+   utilities' 50%-black scrim (V0/V1) is tuned for FULL-opacity white text;
+   compositing at reduced alpha on top of that undoes the headroom.
+   Removed both opacity utilities in `Benefits.tsx` and `ProcessStep.tsx`.
+2. Process cards could render at unequal heights — `min-h-[280px]` without
+   `h-full`, while the grid wrapper stretches to row height. Added
+   `h-full` to `ProcessStep`'s card element.
+
+**MINOR (8):** `blobClass` widened from a bare `string` to a typed
+`BlobClass` union (new shared `src/lib/blob.ts`, so a typo can't compile
+clean and silently render an unstyled card); Process's first card reordered
+off `blob-1` (it repeated HeroVisual's blob immediately above it — no
+section in between); moved `reveal` off the element also carrying
+`transition-transform` in `Benefits.tsx` (same-element cascade conflict
+snapped the hover-lift instead of easing it — `ProcessStep` already had
+this right); `AccentWord` upgraded from a raw substring match to a
+whole-word match (a future copy edit lengthening the target word could
+otherwise split mid-token); `AccentWord`'s docstring corrected — it claimed
+Hero.tsx was migrated to use it, but Hero.tsx still carries its own
+independent copy of the pre-word-boundary-fix logic (an outstanding
+follow-up, not done here to avoid re-touching an already-shipped file from
+a different bundle); `Process.tsx`'s grid breakpoint moved from
+`sm:grid-cols-3` to `md:grid-cols-3` (the 640-767px tablet band squeezed
+description text to ~120px wide); this file's own malformed bullet (missing
+marker) fixed; `docs/design-system.md`'s Process/Timeline pattern updated
+off the retired numbered-circle layout to the new blob-card one.
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+- **AccentWord split correctness against the real content** — verified the
+  `index === -1` found-check is independent of tail truthiness (the exact
+  V1 failure mode), confirmed in the prerendered SSR output that "Why teams
+  subscribe" renders with exactly one accented word.
+- **`SectionHeader`'s `title: React.ReactNode` widening against all 7
+  callers** — enumerated every consumer; six still pass plain strings
+  (ReactNode is a superset, none break); confirmed the `Omit<...,"title">`
+  is required (native HTML `title` attribute) and doesn't leak into the DOM.
+- **Benefits' blob adjacency at every breakpoint, not just 3-column** —
+  verified `index % 4` (sequence 1,2,3,4,1,2) produces no row-wise or
+  column-wise repeat at 1-, 2-, or 3-column layouts.
+- **Whether removing Process's old connecting-line/radial-overlay was
+  justified** — confirmed a direct, necessary consequence of the card
+  rework (nothing to connect once steps are solid cards; the tint wasn't
+  visible under them anyway), not independent scope expansion.
+- **Real `howItWorks`/`benefits` content reproduced verbatim** — diffed
+  against `offer.ts`; no invented copy, no icon substitutions beyond the
+  existing `ICONS` map.
+- **`ProcessStep`'s prop-signature change (new required `blobClass`)** —
+  confirmed via grep it has exactly one consumer (`Process.tsx`), already
+  updated in the same diff.
+- **Gates** — `lint`/`tsc`/`build` all independently re-run clean; SSR
+  check confirmed both sections' real content renders; banned-word grep
+  clean.
 
 ## Open items NOT addressed in this PR
 

@@ -382,24 +382,34 @@ className="glass-dark"  // backdrop-filter: blur(6px) + translucent near-black b
 </div>
 ```
 
-### Process/Timeline Grid
+### Process Grid (blob-card pattern, redesign v3 Bundle V2)
+
+Replaces the earlier numbered-circle + connecting-line pattern below — each
+step is now a full `.blob-*` card, not a circle floating on a plain
+background, so there's no line to connect (the cards themselves carry the
+visual weight and each gets its own distinct blob per HANDOFF §1.3):
 
 ```jsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
-  {/* Connecting line */}
-  <div className="hidden lg:block absolute top-12 left-[12%] right-[12%] h-0.5 bg-gradient-to-r from-gray-200 via-brand to-gray-200" />
-
+<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
   {steps.map((step, i) => (
-    <div key={i} className="text-center relative z-10">
-      <div className="w-24 h-24 mx-auto mb-6 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center font-mono text-xl font-bold text-gray-400 hover:bg-brand hover:border-brand hover:text-white transition-all duration-300">
-        {String(i + 1).padStart(2, '0')}
-      </div>
-      <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-      <p className="text-gray-500">{step.description}</p>
+    <div key={step.number} className="reveal">
+      <ProcessStep
+        number={step.number}
+        title={step.title}
+        description={step.description}
+        blobClass={STEP_BLOBS[i % STEP_BLOBS.length]}
+      />
     </div>
   ))}
 </div>
 ```
+
+`ProcessStep` itself: `.blob-N card-soft h-full min-h-[280px] p-8 md:p-10`,
+full-opacity white text throughout (a blob's dark scrim is tuned for
+full-opacity text — reduced-alpha text on top of it can drop below WCAG AA).
+`md:grid-cols-3` (not `sm:`) — 3 equal columns plus this padding at the
+640-767px band squeezed text too narrow; deferring to `md:` (768px) removes
+that band.
 
 ---
 
