@@ -103,11 +103,76 @@ read in full before writing.
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Phase 4/5 review battery (`wf_7132fe68-e08`): 2 adversarial rounds + 1 mixed-model
+round + 2 QA rounds + 3-voter verify. 25 raw findings → 9 unique after semantic
+dedup → 9/9 confirmed real (0 refuted). All 9 `applyInline`, 0 deferrals. This
+was a content-sensitive bundle and the battery was briefed to fact-check
+heavily — it caught a genuine BLOCKER.
+
+**BLOCKER (1):** `sections.recentWork`'s label/title/description ("Recent
+work" / "What we've shipped" / "...teams like yours") was never updated for
+the new clients content and rendered directly above the client/ours cards —
+framing Meshio and Vivi as arm's-length client work (exactly what D6
+forbids) and asserting everything had "shipped" despite Vivi being tagged
+pre-launch. The section header was silently contradicting its own cards.
+Fixed by adapting (not copying verbatim) redesign-storytelling.md §1a's
+approved "Option A" framing: label "Clients", title "Already on the board",
+description explaining the client/ours split and why it's tagged.
+
+**MAJOR (1):** eDairyCorp's one-liner said the 404s were "in Google's own
+sitemap" — a technical misstatement (the sitemap belongs to the client's
+site; Google only crawls it) in front of a technical audience, on the one
+section whose whole pitch is verifiable honesty. Fixed: "the sitemap
+Google was crawling."
+
+**MINOR (7):** `ClientEntry.preLaunch` changed from a bare optional
+`boolean` to a discriminated union requiring it explicitly whenever
+`provenance` is `"ours"` — a future edit could otherwise drop
+`preLaunch: true` from Vivi and still compile/lint/build clean, silently
+presenting unreleased work as shipped; now it's a compile error to omit.
+Fixed a stale comment in `page.tsx` claiming `RecentWork` was "hidden
+until offer.caseStudies has content" (it no longer reads that array at
+all). Fixed blob adjacency — `CLIENT_BLOBS` started at `blob-3` but its
+3rd entry (`blob-2`) matched Benefits' own bottom-row 3rd column,
+stacking the same gradient across the section boundary at desktop; also
+widened it to cycle through all 4 blobs (not 3) so a future 4th client
+entry won't land under the 1st with an identical gradient — same
+discipline Benefits.tsx already uses. Widened the grid from
+`md:grid-cols-3` to `md:grid-cols-2 lg:grid-cols-3` (these cards' copy is
+much longer than Process's; 3 equal columns starting at 768px squeezed
+text unreadably). Split eDairyCorp's one 44-word sentence into three
+shorter ones to match its sibling cards' register and HANDOFF's "short
+sentences" voice rule. Corrected `ClientEntry`'s `provenance` JSDoc, which
+asserted eDairyCorp is "an actual paying client" — the source doc records
+commercials as TBC and never published; reworded to not assert an
+unconfirmed commercial fact in the canonical type definition.
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+- **Fact-trace of every claim in all three one-liners against both source
+  docs** — no invented, exaggerated, or unsourced numbers found. "since
+  2003" / "17k visits a month" / "10% of the catalog" (27 of 273) / the
+  NestJS+Next.js SSR facts all trace cleanly; the forbidden WordPress-fleet
+  dollar figure correctly never appears.
+- **Vivi copy vs. the explicit AI-vendor prohibition** — confirmed no
+  vendor/model is named anywhere (not even generically as "AI"), so the
+  "do not imply Claude, the real model is undisclosed GPT-5.5" constraint
+  can't be violated by omission.
+- **Honesty-discipline mechanics** — confirmed (pre-fix) that Meshio/Vivi
+  are tagged "ours" not "client", eDairyCorp is tagged "client", and
+  post-fix that `preLaunch` can no longer be silently omitted for an
+  "ours" entry.
+- **Whether splitting `clients` from `caseStudies` is architecturally
+  sound** — confirmed sound: V8's own brief builds an entirely separate
+  new component for the D1 case studies, so the two content types were
+  always meant to be distinct; no confusing duplication.
+- **Pill contrast on the blob cards, both themes** — `bg-black/20` overlay
+  on top of an already-scrimmed blob surface, full-opacity inherited white
+  text throughout (no `opacity-*` utilities) — follows the darkening-only
+  rule V1/V2 established.
+- **Gates** — `lint`/`tsc`/`build` all independently re-run clean; SSR
+  check confirmed all three names, both tags, "pre-launch", and the
+  adapted stories' key facts render; banned-word grep clean.
 
 ## Open items NOT addressed in this PR
 

@@ -33,7 +33,9 @@ export default function Home() {
         <Services />
         {/* S4 — Membership benefits */}
         <Benefits />
-        {/* S5 — Recent work (hidden until offer.caseStudies has content) */}
+        {/* S5 — Clients (D6): "who's on the board", from offer.clients —
+            always renders, not gated on offer.caseStudies (that array is
+            unrelated content V8 owns separately). */}
         <RecentWork />
         <About />
         {/* S6 — Pricing (two-tier + Stripe + founding banner + guarantee) */}

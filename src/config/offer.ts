@@ -96,19 +96,31 @@ export interface CaseStudy {
  *  client or ours), not a metrics-bearing case study; V8 builds its own
  *  new component for the full eDairyMarket/Meshio case studies rather than
  *  reusing this array or `RecentWork.tsx`. */
-export interface ClientEntry {
-  name: string;
-  /** "client" = an actual paying client (eDairyCorp). "ours" = Bruno's own
-   *  product, same honesty discipline as a client — never presented as
-   *  arm's-length. */
-  provenance: "client" | "ours";
-  /** Only set for "ours" entries not yet shipped to the App Store — must
-   *  render visibly on the card, never omitted (D6 honesty discipline). */
-  preLaunch?: boolean;
-  /** One sentence, real facts only — see redesign-storytelling.md §1b for
-   *  the full sourced material this is adapted (not copied verbatim) from. */
-  story: string;
-}
+/** `preLaunch` is REQUIRED (not optional) whenever `provenance` is "ours"
+ *  (found in Phase 4/5 review) — a bare optional field let the D6 honesty
+ *  discipline ("Vivi's card must always show pre-launch") be enforced only
+ *  by a code comment, so a future edit could drop `preLaunch: true` and
+ *  still compile/lint/build clean, silently presenting unreleased work as
+ *  shipped. This discriminated union makes it a compile error instead:
+ *  every "ours" entry must explicitly state true or false. */
+export type ClientEntry =
+  | {
+      name: string;
+      /** commercials (retainer, amount) are recorded as TBC per
+       *  redesign-storytelling.md §1a and never appear on the site — this
+       *  tag asserts only that the relationship is a client engagement,
+       *  not that it's a specific confirmed paid arrangement. */
+      provenance: "client";
+      story: string;
+    }
+  | {
+      name: string;
+      /** Bruno's own product — same honesty discipline as a client, never
+       *  presented as arm's-length. */
+      provenance: "ours";
+      preLaunch: boolean;
+      story: string;
+    };
 
 export interface Cta {
   label: string;
@@ -225,10 +237,17 @@ export const sections: SectionsContent = {
       "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
   },
   recentWork: {
-    label: "Recent work",
-    title: "What we've shipped",
+    // Rewritten for D6's clients content (redesign v3 Bundle V4, found in
+    // Phase 4/5 review — a BLOCKER): the prior copy ("What we've shipped" /
+    // "...teams like yours") framed Meshio and Vivi as arm's-length client
+    // work and asserted everything had "shipped" despite Vivi being
+    // pre-launch, directly contradicting the honesty discipline the
+    // per-card tags establish. Adapted (not copied verbatim) from
+    // redesign-storytelling.md §1a's approved "Option A" framing.
+    label: "Clients",
+    title: "Already on the board",
     description:
-      "A look at recent automations and systems we've built for teams like yours.",
+      "One is a client. Two are our own products — we ran the subscription on ourselves before selling it to anyone else. Tagged below so you can tell which is which.",
   },
   pricing: {
     label: "Pricing",
@@ -431,11 +450,12 @@ export const clients: ClientEntry[] = [
     name: "eDairyCorp",
     provenance: "client",
     story:
-      "A dairy-industry marketplace running since 2003, with 17k visits a month — we're rebuilding it in place, new APIs and a server-rendered storefront, and along the way found (and fixed) 10% of the catalog silently 404ing in Google's own sitemap.",
+      "A dairy-industry marketplace running since 2003, with 17k visits a month. We're rebuilding it in place — new APIs, a server-rendered storefront — without losing that traffic. Along the way we found (and fixed) 10% of the catalog silently 404ing in the sitemap Google was crawling.",
   },
   {
     name: "Meshio",
     provenance: "ours",
+    preLaunch: false,
     story:
       "Our own AI content app — same LLC as Codirity, so we're not hiding it — run through the same subscription queue as every client. When paid conversions stalled, we didn't redesign the logo: we rebuilt onboarding around getting a user's first post published.",
   },
