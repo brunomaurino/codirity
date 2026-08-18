@@ -77,15 +77,43 @@ export interface FaqItem {
   answer: string;
 }
 
+/** A full case study (redesign v3 Bundle V8).
+ *
+ *  This SHAPE replaces a placeholder written before the content existed
+ *  (`title`/`summary`/`result`/`industry`/`href`), which never matched what
+ *  `HANDOFF-redesign-v3.md` §7 actually resolved to and had zero consumers —
+ *  the array was empty. Keeping it alongside a second, real array would have
+ *  left one dead shape and one live one to drift apart.
+ *
+ *  EVERY field here is filled verbatim from §7. §7 is the source of truth and
+ *  the ONLY permitted source: it carries explicit per-study "Do NOT include"
+ *  exclusions (no WordPress cost-savings figure for eDairyMarket, no
+ *  activation-rate percentage for Meshio) precisely because those numbers were
+ *  never recorded. Do not enrich these entries from the codebase, from
+ *  `redesign-storytelling.md`, or from memory. */
 export interface CaseStudy {
-  title: string;
-  client: string;
-  industry?: string;
-  summary: string;
-  /** Headline outcome, e.g. "40 hrs/week saved". */
-  result: string;
-  tags: string[];
-  href?: string;
+  /** Product name as it ships publicly. */
+  name: string;
+  /** Relationship tag. Both studies are "client" per the 2026-08-18 D6
+   *  amendment (see the NOTE on `ClientEntry`); §7 already reflects it. */
+  relationship: string;
+  /** One-line description of what the product IS, for readers who don't know it. */
+  context: string;
+  /** The headline. §7's rule: since no real before/after conversion number
+   *  exists for either study, the headline is the concrete TECHNICAL fact
+   *  itself, never a fabricated percentage. */
+  headline: string;
+  /** The word inside `headline` that takes the `.accent` italic treatment. */
+  headlineAccent: string;
+  /** Longer context paragraph — the situation the work happened in. */
+  background: string;
+  /** What was actually built. Each item is a §7 "What shipped" bullet. */
+  whatShipped: string[];
+  /** Stack tags, exactly as §7 lists them. */
+  stack: string[];
+  /** Selects the architecture sketch. A union, not a free string, so a study
+   *  can never silently render no diagram — or another study's. */
+  sketch: "edairymarket" | "meshio";
 }
 
 /** The "who's on the board" clients section (redesign v3 Bundle V4).
@@ -156,6 +184,7 @@ export interface SectionsContent {
   pricing: SectionCopy;
   faq: SectionCopy;
   contact: SectionCopy;
+  caseStudies: SectionCopy;
 }
 
 export interface Offer {
@@ -241,6 +270,15 @@ export const sections: SectionsContent = {
     label: "Clients",
     title: "Already on the board",
     description: "A look at who's been through the queue.",
+  },
+  caseStudies: {
+    label: "Case studies",
+    // No count in the prose: "Two of them, in detail" hardcoded a number with no
+    // link to `caseStudies.length`, so adding or removing a study would silently
+    // contradict the heading (Phase 4/5 review).
+    title: "In detail",
+    description:
+      "What was actually built, what it replaced, and the diagram of how it fits together.",
   },
   pricing: {
     label: "Pricing",
@@ -487,10 +525,79 @@ export const faq: FaqItem[] = [
   },
 ];
 
-/** Typed placeholder — real case studies supplied later (D1, RESOLVED
- *  2026-08-18 — eDairyMarket + Meshio; V8 builds the component that
- *  populates this). */
-export const caseStudies: CaseStudy[] = [];
+/** D1 RESOLVED 2026-08-18 — eDairyMarket + Meshio. Every string below is
+ *  transcribed from `docs/HANDOFF-redesign-v3.md` §7, which is Bruno-approved
+ *  and itself traceable to `docs/redesign-storytelling.md` §1b. Nothing here is
+ *  inferred, rounded, or enriched.
+ *
+ *  Two exclusions §7 states explicitly, both because the number was never
+ *  recorded — a missing number is not an invitation to estimate one:
+ *   - eDairyMarket: NO WordPress-fleet cost figure and no "saved $X" claim.
+ *     The before-cost exists (~$770-800/mo) but the after-cost does not, so no
+ *     savings can be printed; this bundle prints neither.
+ *   - Meshio: NO before/after activation-rate percentage. That onboarding was
+ *     rebuilt around ONE measurable activation event IS the story; a claimed
+ *     lift would be fabricated.
+ *  Also per §7: do not name an LLM model or vendor for Meshio — the existing
+ *  site copy doesn't commit to one either. */
+export const caseStudies: CaseStudy[] = [
+  {
+    name: "eDairyMarket",
+    relationship: "Client",
+    context: "A B2B dairy marketplace, part of the eDairyCorp group.",
+    // The concrete technical fact, per §7's headline rule — not a metric.
+    // §7's headline ends "Found and fixed." — restored in Phase 4/5 review. Without
+    // it the section's largest claim reads as a live unresolved defect on a named
+    // client's production catalog rather than as delivered work, inverting §7's
+    // outcome-first intent.
+    headline: "27 of 273 product pages were returning 404 — 10% of the catalog, still listed in the sitemap Google was crawling. Found and fixed.",
+    headlineAccent: "404",
+    background:
+      "A 20+ year old marketplace doing around 17k visits a month on a legacy Angular and Node stack, rebuilt in place — new NestJS APIs, a Next.js SSR storefront, a React admin panel — without dropping the SEO traffic the old stack was still serving.",
+    whatShipped: [
+      "Stripe seller subscriptions across three tiers",
+      // "guest FAVORITES", not "guest carts". §7 and redesign-storytelling.md both
+      // say buyer favorites merge guest→account on login; an earlier draft of this
+      // line said "carts", which invented a shipped e-commerce feature for a real
+      // client. Caught as a BLOCKER in Phase 4/5 review — and it slipped the
+      // builder's own fact-provenance gate because that gate asserted §7's strings
+      // were PRESENT and never checked for substituted nouns.
+      "Buyer favorites, with guest favorites merged into the account on login",
+      "A product-page revamp — seller cards, related products — with seller identity resolved server-side so crawlers see it",
+      "Server-side table filtering across two APIs and the admin panel",
+      "A move off a shared box that had run prod, dev and admin together for years, onto isolated AWS infra with merge-to-trunk auto-deploy",
+    ],
+    stack: ["NestJS", "Next.js (SSR)", "React", "Stripe", "AWS"],
+    sketch: "edairymarket",
+  },
+  {
+    name: "Meshio",
+    relationship: "Client",
+    context:
+      "An AI content-ideation product that drafts post ideas in your own voice for X, LinkedIn and Threads.",
+    headline:
+      "Onboarding rebuilt around one activation metric — first post published — instead of a generic signup flow.",
+    headlineAccent: "published",
+    // Rewritten in Phase 4/5 review. The previous opener — "Signup asked for
+    // everything up front and measured nothing that mattered." — was a
+    // characterization of the prior product state that §7 never makes. It read as
+    // fact and was invented; a plausible inference about a real client's product is
+    // still a fabrication. Every clause below now restates §7's own words:
+    // "rebuilt around ONE activation metric — first post published — instead of a
+    // generic signup flow" and "OAuth sign-in deliberately deferred until the point
+    // the user actually needs it (pushed friction past the moment the user has
+    // already seen the product, not before)".
+    background:
+      "Onboarding became a state machine with a single destination — the first published post — rather than a generic signup flow. Sign-in is deferred to the point a user actually needs an account, which puts the friction after they have already seen the product rather than before.",
+    whatShipped: [
+      "A New → Niche Set → Voice Set → Activated state machine",
+      "OAuth sign-in deliberately deferred until the point the user actually needs it — friction pushed past the moment they have already seen the product, not before",
+      "Stripe subscription tiers specced",
+    ],
+    stack: ["Next.js", "Stripe"],
+    sketch: "meshio",
+  },
+];
 
 /** "Who's on the board" — underlying facts sourced from
  *  docs/redesign-storytelling.md §1b, adapted (not copied verbatim) into
