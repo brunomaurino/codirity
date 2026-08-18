@@ -472,6 +472,28 @@ className="text-gray-900 dark:text-white"
 className="text-gray-600 dark:text-gray-400"
 ```
 
+### Permanently-dark surfaces (the ink band)
+
+Every pattern above assumes the element sits on the PAGE GROUND, which flips with
+the theme. Two surfaces don't flip — they are dark in both themes: the footer, and
+the closing CTA band (`<Section variant="ink">`, the site's one deliberate
+contrast beat per `HANDOFF-redesign-v3.md` §1 rule 4; don't add a second one).
+
+On those, `text-gray-900 dark:text-white` is **wrong and invisible**: in LIGHT
+mode `text-gray-900` resolves to `#0a0a08`, which is the band's own background.
+Foregrounds there are pinned light in both themes instead:
+
+| Role | On the ink band |
+|---|---|
+| Heading | `text-white` (or `<SectionHeader tone="ink">`, which pins all three) |
+| Body / secondary | `text-gray-300` (the gray ramp is NOT inverted in dark mode) |
+| Accent, links, eyebrow | `text-brand-light` — 4.76:1 light / 11.54:1 dark, i.e. only 0.26 over AA in light mode; re-measure if that token ever changes |
+| Primary control | a white pill with `text-gray-900` ON it (19.81:1) |
+
+`.accent` needs special care: it declares its own `color`, which BEATS an
+inherited one, so an accented word inside a white heading renders green on the
+band (~3.01:1). Pass the colour explicitly — `<AccentWord … className="text-white" />`.
+
 ---
 
 ## Responsive Breakpoints

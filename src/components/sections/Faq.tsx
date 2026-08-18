@@ -83,6 +83,10 @@ export function Faq() {
           </p>
           <CalPopupButton
             calLink={CAL_LINK}
+            // Labelled so this booking is distinguishable from the closing
+            // band's Cal CTA one section below — they fired an identical
+            // unparameterized `call_booked` until now (Phase 4/5 review).
+            analyticsLocation="faq"
             className={cn(
               "inline-flex items-center justify-center gap-2",
               "rounded-full px-8 py-4 text-base font-semibold",

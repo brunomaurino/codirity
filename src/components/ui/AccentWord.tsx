@@ -21,7 +21,27 @@
  * an outstanding follow-up, not done here to avoid re-touching an
  * already-shipped, already-reviewed file from a different bundle.
  */
-export function AccentWord({ text, word }: { text: string; word: string }) {
+export function AccentWord({
+  text,
+  word,
+  className,
+}: {
+  text: string;
+  word: string;
+  /** Extra classes for the accent `<span>` itself — NOT the surrounding text.
+   *
+   *  Required on any permanently-dark surface. `.accent` carries its own
+   *  `color: var(--green-dark)` declaration (globals.css), which BEATS a color
+   *  the heading merely inherits — so inside a `tone="ink"` heading the accented
+   *  word ignores the parent's `text-white` and renders #0f6b3d on #0a0a08 in
+   *  light mode: ~3.01:1, which scrapes past AA-large by 0.01 and fails
+   *  normal-text AA outright. globals.css documents the remedy (pair `.accent`
+   *  with an explicit text-color utility); this prop is how a call site applies
+   *  it. Found by Bundle V6's review battery — the CTA headline's accent span
+   *  was the one band element the builder's contrast audit measured around
+   *  rather than through, because it read the h2's color and not the span's. */
+  className?: string;
+}) {
   const isWordChar = (c: string | undefined) => c !== undefined && /\w/.test(c);
 
   let searchFrom = 0;
@@ -43,7 +63,7 @@ export function AccentWord({ text, word }: { text: string; word: string }) {
   return (
     <>
       {text.slice(0, index)}
-      <span className="accent">{word}</span>
+      <span className={className ? `accent ${className}` : "accent"}>{word}</span>
       {text.slice(index + word.length)}
     </>
   );

@@ -93,7 +93,13 @@ three corrections the draft itself needs (see Decisions).
    pre-redesign slop copy still live in `ContactInfo.tsx` gets replaced with §4-voice copy from
    `offer.ts`.
 5. `ContactForm.tsx` — **not restyled for dark**: it stays a light card floating on the band (see
-   Decisions). Only its heading copy moves to `offer.ts`.
+   Decisions). Its heading copy is voice-passed in place (form microcopy stays in the component,
+   matching how its labels and placeholders already live there); the only string it takes from
+   `offer.ts` is the shared response-time claim.
+
+*(Corrected post-review: an earlier draft of this Plan said the heading copy "moves to `offer.ts`",
+which contradicted what actually shipped two sections down. Flagged by the battery as a durable
+false record for the next bundle to read — the notes are only worth committing if they're true.)*
 
 **FAQPage JSON-LD needs no edit** — `FaqPageJsonLd` maps over the same `offer.faq` array, so it
 tracks the new questions automatically. The brief's "update the JSON-LD to match" is satisfied
@@ -189,7 +195,57 @@ measured WCAG AA contrast for every foreground element on the band in BOTH theme
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Battery `wf_6352c39e-5cc` (13 agents, 2 adversarial + 2 QA rounds, mixed opus/sonnet finders,
+3 verify voters): **24 raw → 12 after semantic dedup (7 clusters merged) → 11 confirmed, 1 refuted,
+73 areas examined.** 0 proposed deferrals, 0 forced-apply, 0 escalations, 0 `unverifiedDeferred`.
+**All 11 applied inline.**
+
+The first attempt at this battery died mid-run when one finder hit a Cloudflare 521 (`adversarial-r2`
+— origin down, explicitly `retryable`). Transient failures are retryable, never terminal, and round
+counts are floors, so it was RESUMED via `resumeFromRunId` rather than accepted as-is. That was not
+bookkeeping: the resumed round took the set from 8 findings to 11, and two of the three additions are
+MAJOR (the founding-rate gating and the `.accent` contrast, the latter independently re-found by the
+resumed finder). Accepting the partial run would have shipped both.
+
+| # | Sev | Where | Resolution |
+|---|---|---|---|
+| 1 | MAJOR 3/3 | `ContactInfo.tsx:35` + `AccentWord.tsx` | **Fixed — and it is the one my own audit missed.** `.accent` declares its own `color: var(--green-dark)`, which beats the colour the span merely INHERITS from the white `h2`; on the ink band that is #0f6b3d on #0a0a08 = **~3.01:1** in light mode, scraping past AA-large by 0.01 and failing normal-text AA. My Phase-6 contrast table measured the `h2`'s colour and never isolated the span inside it — I measured *around* the broken element. `AccentWord` gained a `className` prop (it had no way to apply the override `globals.css` already documented); the call site passes `text-white`. Now **19.81:1 light / 17.97:1 dark**, re-measured. |
+| 2 | MAJOR 3/3 | `offer.ts` — "Do I have to get on a call first?" | **Fixed.** Answer ended "plenty of people skip it" — behavioural social proof with no source, on a product with zero recorded checkouts (`foundingRate` still active and unfilled, `caseStudies` empty). Straight violation of the site's own "if a stat can't be defended, it doesn't ship". Clause removed. |
+| 3 | MAJOR 3/3 | `offer.ts` — founding-seats answer | **Fixed, and the premise was wrong, not just the wording.** My answer justified scarcity with "one engineer works one queue, one task at a time" — which contradicts the Pro tier's two-active-tasks promise AND the "What counts as one task?" answer two entries above it, both rendered in the same accordion. Worse, it asserted a capacity cap that does not exist: `foundingRate` is a launch PRICE promo, not a limit on how many clients we take, so the sentence manufactured urgency out of nothing. Rewritten to say exactly what is true — a launch price, not a waiting list, with the work identical either way. |
+| 4 | MAJOR 3/3 | `ContactForm.tsx:231` | **Fixed.** The privacy note kept `text-gray-500` at 4.474:1 — the identical sub-AA value this same diff had already fixed 90 lines earlier in the same file. One of two instances; I fixed the one I had touched and never grepped the file for the other. |
+| 5 | MAJOR 3/3 | `offer.ts` founding-seats entry | **Fixed structurally.** The entry hardcoded "five founding seats" and "price for life" as a plain always-rendered array item, while every other founding-rate surface is gated on `foundingRate.active`. Flipping that documented one-line kill-switch when the seats fill would have left the FAQ — and the FAQPage JSON-LD served to Google — advertising an expired offer. The entry is now conditionally spread on `foundingRate.active` and interpolates `slots` and `price`, so it cannot drift and disappears on its own. |
+| 6 | MINOR | `offer.ts:449` | **Fixed.** "that's why the \"no\" list exists" named a section that exists in v1's layout, not v3 (the real heading is "Not included"). Reworded to reference what actually renders. |
+| 7 | MINOR | `ContactInfo.tsx` + `ContactForm.tsx` | **Fixed.** The response-time promise appeared twice in one viewport with two different figures ("within 24 hours" vs "answer within a day") and neither lived in `offer.ts` — under a comment of mine claiming copy now follows the source-of-truth convention. Both now render the new `RESPONSE_TIME_CLAIM` export. |
+| 8 | MINOR | `ContactInfo.tsx:80` | **Fixed.** "Book a call **instead**" had no antecedent on mobile, where this column stacks ABOVE the form it is an alternative to. Now "Book a call" under a "Rather talk it through?" lead-in, which reads correctly in either stacking order. The same finding noted both Cal CTAs fired an identical unparameterized `call_booked` — `CalPopupButton` gained an optional `analyticsLocation`, and the FAQ's and the close's buttons are now distinguishable in the funnel. |
+| 9 | MINOR | `globals.css:27-30` | **Fixed.** The comment justifying `--green-light` cited the gradient icon tiles this very bundle deleted, while the token silently acquired a new and much tighter constraint: it is the accent/link colour on the ink band at **4.76:1 — 0.26 over the AA floor**. Comment rewritten to record the real binding constraint and warn against darkening it. |
+| 10 | MINOR | this file | **Fixed.** The committed Plan section said ContactForm's heading copy "moves to `offer.ts`", contradicting the Decisions section of the same file — a durable false record for the next bundle to read. Corrected in place, with the correction marked. |
+| 11 | MINOR | `ContactForm.tsx:116-119` | **Fixed.** A comment asserted the card's foreground pairs were unchanged, four lines above a hunk that changed one. Rewritten to state which two pairs changed and why. |
+
+**Also applied though the resumed run did not re-raise it** (it appeared in the first pass and the
+resumed run's `areasExamined` addressed only the narrower Section-variant question): `design-system.md`
+had no guidance for a permanently-dark surface, and presented `text-gray-900 dark:text-white` as THE
+text pattern unqualified — on the ink band that pattern is the invisible one. Added a
+"Permanently-dark surfaces" subsection with the measured foreground table and the `.accent` caveat.
+`CLAUDE.md` names that file as the authority for all styling decisions, so leaving it silent about the
+site's newest surface primitive was worth closing regardless of adjudication.
+
+**Refuted (1/12), correctly:** the claim that adding `Section variant="ink"` stranded documentation —
+`design-system.md` carries no Section-variant table and `CLAUDE.md`'s summary lists shape/colour
+utilities, not the variant union, so there was nothing to strand. (The doc gap I did fix is a
+different one: the text-pattern guidance, not a variant table.)
+
+### Post-fix re-verification
+
+`tsc` ✅ `eslint` ✅ clean `npm run build` ✅. SSR gate re-run and extended to assert each applied
+finding is gone from the RENDERED output (not just from source) — `PASS — 12 FAQ entries,
+JSON-LD↔render parity, all 11 findings verified applied, 0 banned words`; it also asserts the
+founding answer carries `foundingRate.price`/`slots` rather than prose, and that the accent span
+ships with its explicit `text-white`. Contrast re-measured live in BOTH themes with the accent span
+explicitly probed this time: **zero failures**, accent span 19.81 / 17.97, everything else at or
+above its threshold.
+
+**Final perf delta vs `main` @ `45089e7`** (gzip -9, clean production build): JS **+1,518 B**
+(206,991 vs 205,473), CSS **+216 B** (11,959 vs 11,743). No new dependencies.
 
 ## Pre-battery verification (Phase 6 evidence)
 
@@ -259,7 +315,19 @@ All measured, none assumed.
 
 ## Open items NOT addressed in this PR
 
-(filled in Phase 7)
+Full list with reasoning in `commitments.md`. Headline items, all operator-owned:
+
+- **The live Trello `[TEMPLATE] Codirity Client Board` still says "75% back"** (carried from V5, still
+  open — only a manual Trello edit closes it; every new client currently lands in a board that
+  contradicts the site's 50%).
+- **Whether to publish the pause/cancel billing mechanics** ("31-day cycles, unused days banked") —
+  real and approved internally, more generous than what the site says, but publishing it is a new
+  public financial commitment and therefore Bruno's call.
+- **Three book-a-call prompts now stack in a row** (FAQ header line, FAQ button, closing band). All
+  live and instrumented, so none were removed unilaterally.
+- **`Footer.tsx`** still carries pre-redesign slop copy and a `font-mono` brand mark although V0
+  retired Space Mono. Not V6's surface.
+- **`Hero.tsx`** still hasn't migrated to the shared `AccentWord` (outstanding since V2).
 
 ## Durable handles
 
@@ -267,3 +335,33 @@ All measured, none assumed.
 - worktree: /Users/brunomaurino/projects/codirity-rv3-v6
 - worktree_entry: path
 - cron: (none of this run's own — the bundle-loop's `1b0f0c50` covers the whole loop)
+- battery_run_id: `wf_33e76c82-22e` — **VOID, do not resume or trust.** See the skill-bug note below.
+- battery_run_id: `wf_6352c39e-5cc` — the real battery (2 adversarial + 2 QA rounds, mixed finder,
+  3 verify voters, `effortTiers: true`, `customAgents: **false**`).
+  **If this session dies mid-battery, RESUME it** —
+  `Workflow({scriptPath: "<skill>/templates/review-battery.js", resumeFromRunId: "wf_6352c39e-5cc"})`
+  — do NOT re-run from scratch; read `journal.jsonl` in its transcript dir first to see how far it
+  got. That is exactly what salvaged V5.
+
+### Skill bug worth reporting — a battery that reports CLEAN while reviewing nothing
+
+The first battery invocation (`wf_33e76c82-22e`) returned
+`{rawFindings: 0, confirmedReal: 0, areasExamined: 0, applyInline: []}` — a clean review — while
+**all 6 finder agents had errored**: `agent type 'at-reviewer' not found`. This build resolves the
+custom review-agent types ONLY plugin-scoped (`autonomous-task:at-reviewer`), never bare
+(`at-reviewer`); Step-0 probe (f) measured exactly that (`customBare: false, customScoped: true`),
+but `customAgents: true` makes the shipped `review-battery.js` call the **bare** names, so every
+finder died on spawn and the aggregate came back empty.
+
+Two things make this dangerous rather than merely annoying: the failures are reported in the
+task-notification's `<failures>` block, NOT in the returned object, and an empty result is
+structurally identical to a genuinely clean review. Only the script's own hedge (`"Verify the
+areas-examined lists look real before trusting a clean review"`) plus `areasExamined: 0` and
+`agents_error: 6` distinguish them. A run that trusted the return value would have shipped an
+entirely UNREVIEWED bundle while its notes and PR body claimed a clean battery.
+
+Fix applied: re-invoked with `customAgents: false`, the documented fallback (built-in
+`general-purpose` inline prompts — identical finding behavior, only the per-repo `memory: project`
+priors are lost). Suggested upstream fix: probe (f) should record WHICH form resolved and the
+battery should use that form, or the script should try scoped→bare; and a battery returning zero
+findings with zero `areasExamined` should hard-fail rather than return a clean verdict.

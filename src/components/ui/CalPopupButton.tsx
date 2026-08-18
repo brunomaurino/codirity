@@ -12,6 +12,14 @@ interface CalPopupButtonProps {
    *  menu the button sits inside so the Cal popup isn't left rendering over
    *  a still-open menu. */
   onOpen?: () => void;
+  /** Where on the page this button sits, attached to the `call_booked` event as
+   *  `location`. Six CalPopupButtons render on the homepage and they all fired
+   *  an identical unparameterized event, so the funnel could not tell which one
+   *  actually drove a booking — and Bundle V6 put two of them in adjacent
+   *  sections (the FAQ's "Prefer to talk first?" and the closing band's), making
+   *  that ambiguity concrete. Optional: omitting it preserves the previous
+   *  no-params behaviour for call sites that haven't been labelled yet. */
+  analyticsLocation?: string;
 }
 
 // The Cal.com embed API is a page-level singleton shared by every
@@ -38,6 +46,7 @@ export function CalPopupButton({
   children,
   className,
   onOpen,
+  analyticsLocation,
 }: CalPopupButtonProps) {
   const ready = useRef(false);
   const loading = useRef(false);
@@ -100,7 +109,7 @@ export function CalPopupButton({
       onPointerDown={ensureCal}
       onClick={() => {
         void ensureCal();
-        track("call_booked");
+        track("call_booked", analyticsLocation ? { location: analyticsLocation } : undefined);
         onOpen?.();
       }}
       className={className}

@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AccentWord, CalPopupButton, SectionHeader, TrackedLink } from "@/components/ui";
-import { sections, CAL_LINK, CONTACT_EMAIL } from "@/config/offer";
+import { sections, CAL_LINK, CONTACT_EMAIL, RESPONSE_TIME_CLAIM } from "@/config/offer";
 
 // The left half of the final CTA — rendered on the site's ONE near-black band
 // (HANDOFF-redesign-v3.md §1 rule 4). Everything here is a permanently-dark
@@ -17,11 +17,13 @@ import { sections, CAL_LINK, CONTACT_EMAIL } from "@/config/offer";
 // source-of-truth convention.
 
 // Facts already live on the site before this bundle — restated compactly here,
-// not invented. Kept out of `offer.ts` for now because they are labels for the
-// SAME two claims the prior version showed, not new offer content.
+// not invented. The response-time promise is imported rather than retyped: it is
+// a real commitment, and V6's review battery caught it stated twice in one
+// viewport with two different figures (here vs. the form's "answer within a
+// day"). One string, one home.
 const FACTS = [
   "Remote-first, worldwide",
-  "We reply within 24 hours",
+  RESPONSE_TIME_CLAIM,
 ];
 
 export function ContactInfo() {
@@ -32,7 +34,13 @@ export function ContactInfo() {
         align="left"
         maxWidth="full"
         label={sections.contact.label}
-        title={<AccentWord text={sections.contact.title} word="week" />}
+        title={
+          // `text-white` is load-bearing, not decoration: `.accent` declares its
+          // own `color: var(--green-dark)`, which overrides the colour this span
+          // would otherwise inherit from the h2 — #0f6b3d on the #0a0a08 band is
+          // ~3.01:1 in light mode. Found in Phase 4/5 review.
+          <AccentWord text={sections.contact.title} word="week" className="text-white" />
+        }
         description={sections.contact.description}
       />
 
@@ -64,20 +72,30 @@ export function ContactInfo() {
         ))}
       </ul>
 
-      {/* Cal booking — unchanged behaviour (same CAL_LINK, same popup), restyled
-          for the band: a white pill on near-black is the highest-contrast
-          control available here. */}
+      {/* Cal booking — same CAL_LINK and same popup as before, restyled for the
+          band: a white pill on near-black is the highest-contrast control
+          available here.
+
+          Label is "Book a call", not "Book a call instead": on mobile this column
+          stacks ABOVE the form, so "instead" pointed at something the reader had
+          not seen yet. The lead-in line supplies the contrast the word was doing,
+          and works in either stacking order. `analyticsLocation` distinguishes
+          this booking from the FAQ's Cal CTA one section up — both previously
+          fired an identical unparameterized `call_booked`. Both found in Phase
+          4/5 review. */}
+      <p className="mt-10 text-sm text-gray-300">Rather talk it through?</p>
       <CalPopupButton
         calLink={CAL_LINK}
+        analyticsLocation="contact_close"
         className={cn(
-          "mt-10 inline-flex items-center gap-3",
+          "mt-3 inline-flex items-center gap-3",
           "rounded-full px-8 py-4",
           "bg-white text-base font-semibold text-gray-900",
           "transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100",
           "cursor-pointer"
         )}
       >
-        Book a call instead
+        Book a call
         <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
       </CalPopupButton>
     </div>

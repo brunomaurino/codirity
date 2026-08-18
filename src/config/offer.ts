@@ -185,6 +185,13 @@ export const CONTACT_EMAIL = "support@codirity.com";
 /** Cal.com link (namespace/event) used by CalPopupButton. */
 export const CAL_LINK = "support-codirity-lz8rjc/30min";
 
+/** The response-time promise, stated ONCE. It is a real commitment to anyone who
+ *  writes in, and Bundle V6's review battery caught it restated twice in the same
+ *  viewport with two different figures ("within 24 hours" in the contact facts vs.
+ *  "answer within a day" in the form) — two strings free to drift apart, and one
+ *  of them silently wider than the other. Both call sites now render this. */
+export const RESPONSE_TIME_CLAIM = "We reply within 24 hours";
+
 export const hero: HeroContent = {
   badge: "AI & automation, on subscription",
   headline: "Your AI & automation team, on subscription.",
@@ -446,17 +453,32 @@ export const faq: FaqItem[] = [
   {
     question: "What if something breaks a month later?",
     answer:
-      "Add a card. Fixes to things we built are requests like any other, and ongoing fixes are part of the subscription. We don't ship what we can't maintain — that's why the \"no\" list exists.",
+      "Add a card. Fixes to things we built are requests like any other, and ongoing fixes are part of the subscription. We don't ship what we can't maintain — it's why the list of what we don't do is short and specific.",
   },
-  {
-    question: "Why only five founding spots?",
-    answer:
-      "Because one engineer works one queue, one task at a time. That only holds if we cap how many queues exist. The five founding seats keep their price for life; after that the rate is the listed one.",
-  },
+  // Gated on `foundingRate.active`, and the number and price are read from that
+  // object rather than written into the prose. Both are required, not tidiness:
+  // this answer is the only place the founding offer would have been stated as a
+  // plain always-rendered string, so flipping the documented one-line kill-switch
+  // when the seats fill would have left the FAQ — and the FAQPage JSON-LD served
+  // to Google — advertising an expired price. Found in Phase 4/5 review.
+  ...(foundingRate.active
+    ? [
+        {
+          question: `Why only ${foundingRate.slots} founding seats?`,
+          // Deliberately NOT framed as a capacity cap. `foundingRate` is a launch
+          // PRICE promo, not a limit on how many clients we take, and the earlier
+          // draft of this answer ("one engineer works one queue, one task at a
+          // time... we cap how many queues exist") both invented that cap and
+          // contradicted the Pro tier's two-active-tasks promise two entries
+          // above it. Also found in Phase 4/5 review.
+          answer: `It's a launch price, not a waiting list. The first ${foundingRate.slots} subscriptions keep ${foundingRate.price} for as long as they stay on it; after that the rate is the one listed above. The work is identical either way — same queue, same delivery.`,
+        },
+      ]
+    : []),
   {
     question: "Do I have to get on a call first?",
     answer:
-      "No. Pick a plan, check out, and add your first task the same day. The call is there if you'd rather talk it through first — plenty of people skip it.",
+      "No. Pick a plan, check out, and add your first task the same day. The call is there if you'd rather talk it through first.",
   },
   {
     question: "What don't you do?",
