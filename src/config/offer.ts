@@ -88,6 +88,40 @@ export interface CaseStudy {
   href?: string;
 }
 
+/** The "who's on the board" clients section (redesign v3 Bundle V4, D6
+ *  RESOLVED — see docs/HANDOFF-redesign-v3.md §5 and
+ *  docs/redesign-storytelling.md §1 for the sourced facts + honesty
+ *  discipline these entries carry forward). Deliberately a SEPARATE shape
+ *  from `CaseStudy` — this is a lightweight provenance badge (who is this,
+ *  client or ours), not a metrics-bearing case study; V8 builds its own
+ *  new component for the full eDairyMarket/Meshio case studies rather than
+ *  reusing this array or `RecentWork.tsx`. */
+/** `preLaunch` is REQUIRED (not optional) whenever `provenance` is "ours"
+ *  (found in Phase 4/5 review) — a bare optional field let the D6 honesty
+ *  discipline ("Vivi's card must always show pre-launch") be enforced only
+ *  by a code comment, so a future edit could drop `preLaunch: true` and
+ *  still compile/lint/build clean, silently presenting unreleased work as
+ *  shipped. This discriminated union makes it a compile error instead:
+ *  every "ours" entry must explicitly state true or false. */
+export type ClientEntry =
+  | {
+      name: string;
+      /** commercials (retainer, amount) are recorded as TBC per
+       *  redesign-storytelling.md §1a and never appear on the site — this
+       *  tag asserts only that the relationship is a client engagement,
+       *  not that it's a specific confirmed paid arrangement. */
+      provenance: "client";
+      story: string;
+    }
+  | {
+      name: string;
+      /** Bruno's own product — same honesty discipline as a client, never
+       *  presented as arm's-length. */
+      provenance: "ours";
+      preLaunch: boolean;
+      story: string;
+    };
+
 export interface Cta {
   label: string;
   href?: string;
@@ -151,6 +185,7 @@ export interface Offer {
   howItWorks: HowItWorksStep[];
   faq: FaqItem[];
   caseStudies: CaseStudy[];
+  clients: ClientEntry[];
 }
 
 export const BRAND = "Codirity";
@@ -202,10 +237,17 @@ export const sections: SectionsContent = {
       "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
   },
   recentWork: {
-    label: "Recent work",
-    title: "What we've shipped",
+    // Rewritten for D6's clients content (redesign v3 Bundle V4, found in
+    // Phase 4/5 review — a BLOCKER): the prior copy ("What we've shipped" /
+    // "...teams like yours") framed Meshio and Vivi as arm's-length client
+    // work and asserted everything had "shipped" despite Vivi being
+    // pre-launch, directly contradicting the honesty discipline the
+    // per-card tags establish. Adapted (not copied verbatim) from
+    // redesign-storytelling.md §1a's approved "Option A" framing.
+    label: "Clients",
+    title: "Already on the board",
     description:
-      "A look at recent automations and systems we've built for teams like yours.",
+      "One is a client. Two are our own products — we ran the subscription on ourselves before selling it to anyone else. Tagged below so you can tell which is which.",
   },
   pricing: {
     label: "Pricing",
@@ -393,8 +435,38 @@ export const faq: FaqItem[] = [
   },
 ];
 
-/** Typed placeholder — real case studies supplied later (D5). */
+/** Typed placeholder — real case studies supplied later (D1, RESOLVED
+ *  2026-08-18 — eDairyMarket + Meshio; V8 builds the component that
+ *  populates this). */
 export const caseStudies: CaseStudy[] = [];
+
+/** "Who's on the board" — D6 RESOLVED, facts sourced from
+ *  docs/redesign-storytelling.md §1b, adapted (not copied verbatim) into
+ *  the warmer Monthly Club voice per HANDOFF-redesign-v3.md §4. Order
+ *  matches the storytelling doc: the one real client first, then the two
+ *  "ours" products, Vivi (pre-launch) last. */
+export const clients: ClientEntry[] = [
+  {
+    name: "eDairyCorp",
+    provenance: "client",
+    story:
+      "A dairy-industry marketplace running since 2003, with 17k visits a month. We're rebuilding it in place — new APIs, a server-rendered storefront — without losing that traffic. Along the way we found (and fixed) 10% of the catalog silently 404ing in the sitemap Google was crawling.",
+  },
+  {
+    name: "Meshio",
+    provenance: "ours",
+    preLaunch: false,
+    story:
+      "Our own AI content app — same LLC as Codirity, so we're not hiding it — run through the same subscription queue as every client. When paid conversions stalled, we didn't redesign the logo: we rebuilt onboarding around getting a user's first post published.",
+  },
+  {
+    name: "Vivi",
+    provenance: "ours",
+    preLaunch: true,
+    story:
+      "An outfit-scoring iOS app we're building pre-launch — camera, scoring, paywall — one queue item at a time, the same way every other request comes through.",
+  },
+];
 
 export const offer: Offer = {
   brand: BRAND,
@@ -412,6 +484,7 @@ export const offer: Offer = {
   howItWorks,
   faq,
   caseStudies,
+  clients,
 };
 
 export default offer;
