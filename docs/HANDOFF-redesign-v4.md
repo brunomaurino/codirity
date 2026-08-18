@@ -92,6 +92,8 @@ matches the mockup.
    queue chips are LABELED illustrative; every number on the page traceable to `offer.ts` or the
    approved case-study content now living in `caseStudies[]`.
 
+**Dashboard (view-only render of §2):** https://claude.ai/code/artifact/5dce4966-9e4c-43d1-893f-839155990869
+
 ## §2 — Bundle status surface
 
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
