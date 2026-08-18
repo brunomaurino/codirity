@@ -361,8 +361,8 @@ no meetings" moved to the week log (Thursday line); "you own everything" moved t
     either way. *(Stack list traceable to projects.md/tech-stack; trim to taste.)*
 11. **What if I don't like what ships?**
     Revisions are part of the request — we iterate until it's right. And the first week carries
-    the guarantee: not convinced, 75% back. *(Keep consistent with D3's resolution; current
-    `offer.ts` says 7-day / 75%.)*
+    the guarantee: not convinced, 50% back. *(D3 RESOLVED 2026-08-18 in Bundle V5 — `offer.ts`
+    now says 7-day / 50%; keep any future copy on that figure.)*
 12. **What don't you do?**
     Native mobile apps for clients, blockchain, brand design, staffing manual operations, and
     anything that's really a full-time hire. The full "no" list is above — it's short, but it's

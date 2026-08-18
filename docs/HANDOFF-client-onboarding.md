@@ -343,7 +343,7 @@ A task is something we can ship in roughly 1–2 days: an automation, an AI agen
 Average delivery: 2–3 business days per task (complex ones can take longer — we'll tell you upfront in the card). We work async from GMT-3, and you'll typically see progress overnight if you're in the US. Everything ships with a short Loom or written summary of what we did and how to use it.
 
 **Card 5 — "Pausing & billing"**
-Billing cycles are 31 days. Pause anytime: unused days are banked and available whenever you return. Cancel anytime, no questions. First week not working for you? 75% back, no questions asked.
+Billing cycles are 31 days. Pause anytime: unused days are banked and available whenever you return. Cancel anytime, no questions. First week not working for you? 50% back, no questions asked.
 
 **Card 6 — "🔐 Grant us access (do this first)"**
 Before we can ship, we need access to your tools: {accessFormUrl}

@@ -1,4 +1,4 @@
-import { Sparkles, PauseCircle, Zap } from "lucide-react";
+import { Sparkles, PauseCircle, Rocket } from "lucide-react";
 import { Section, Container } from "@/components/layout";
 import { SectionHeader, TrackedLink } from "@/components/ui";
 import { PricingCard } from "./PricingCard";
@@ -8,15 +8,24 @@ import { cn } from "@/lib/utils";
 
 // Reused verbatim from existing offer.ts claims (HANDOFF-redesign-v3 §1,
 // Bundle V5 — "reuse existing site claims for delivery time, do not invent
-// a new figure"): "Pause or cancel anytime" (tiers[].features,
-// benefits[].title) and "Most tasks land in days" (benefits[] "Fast, async
-// delivery" entry's own description). Not imported from `benefits` — that
-// array's shape (icon name + title + description) doesn't fit a compact
-// trust-box label, so the exact same wording is restated here rather than
-// reshaping shared data for one consumer.
+// a new figure"): both `detail` lines are the exact `benefits[].description`
+// text for the matching entry (PauseCircle / Rocket icons — Rocket, not
+// Zap, found in Phase 4/5 review: Zap is already the "Senior engineering,
+// AI-accelerated" benefit's icon elsewhere on the page, and Rocket is what
+// "Fast, async delivery" actually uses). Not imported from `benefits` —
+// that array's shape (icon name + title + description) doesn't fit a
+// compact trust-box label, so the exact same wording is restated here
+// rather than reshaping shared data for one consumer. The "Pause anytime"
+// detail was originally a bare restatement of its own label (found in
+// Phase 4/5 review) — now the real benefit description instead, which
+// adds information (resuming) rather than repeating the heading.
 const TRUST_BOXES = [
-  { icon: PauseCircle, label: "Pause anytime", detail: "Pause or cancel anytime — no lock-in." },
-  { icon: Zap, label: "Fast delivery", detail: "Most tasks land in days." },
+  {
+    icon: PauseCircle,
+    label: "Pause anytime",
+    detail: "No lock-in. Pause when your queue is empty and resume when you need us.",
+  },
+  { icon: Rocket, label: "Fast delivery", detail: "Most tasks land in days." },
 ];
 
 export function Pricing() {
@@ -103,7 +112,7 @@ export function Pricing() {
                 <div className="text-sm font-semibold text-gray-900 dark:text-white">
                   {label}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   {detail}
                 </div>
               </div>

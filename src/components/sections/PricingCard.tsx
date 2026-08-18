@@ -20,6 +20,11 @@ export interface PricingCardProps {
   analyticsEvent?: AnalyticsEvent;
   calLink?: string;
   featured?: boolean;
+  /** Applied to the outermost element this card renders. NOTE: that is the card
+   *  itself when `featured` is false, but the positioning wrapper around it when
+   *  `featured` is true (the wrapper owns the blob halo). Layout/spacing classes
+   *  work in both cases; card-surface classes (background, border, radius) only
+   *  land on the card in the non-featured branch. */
   className?: string;
 }
 
@@ -139,9 +144,14 @@ export function PricingCard({
         {description}
       </p>
 
-      {/* Features — two columns (HANDOFF-redesign-v3 §1, Bundle V5) */}
+      {/* Features — two columns from sm: up (HANDOFF-redesign-v3 §1, Bundle
+          V5). Gated at sm: (found in Phase 4/5 review): ungated, this
+          forced 2 columns even at 320-375px phone widths, wrapping the
+          smaller 0.85rem feature text to 2-4 ragged lines each on the
+          site's primary conversion section — the trust boxes added in the
+          same bundle already gate their own 2-up grid this way. */}
       {features.length > 0 && (
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-3 mb-10">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mb-10">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-2">
               <div
@@ -199,10 +209,20 @@ export function PricingCard({
   // caught that exact same-element cascade conflict.
   return (
     <div className={cn("relative", className)}>
+      {/* Clipped to a 12px halo (found in Phase 4/5 review): the original
+          -inset-6 (24px) exactly matched the grid's own gap-6, and
+          blur-2xl's spread reaches well beyond that regardless of inset
+          size, so the blob painted over the adjacent card's edge (and the
+          mobile-stacked card below it). Nesting the blur inside its own
+          overflow-hidden, inset-3 (12px) container clips the effect to a
+          tight glow that can never reach the 24px gap, while still giving
+          the card a distinct color halo at its own edges. */}
       <div
-        className="blob-4 absolute -inset-6 rounded-[32px] blur-2xl opacity-60 -z-10"
+        className="absolute -inset-3 overflow-hidden rounded-[32px] -z-10"
         aria-hidden="true"
-      />
+      >
+        <div className="blob-4 absolute inset-0 blur-2xl opacity-60" />
+      </div>
       <div
         className={cn(
           "glass-dark card-soft relative overflow-hidden p-8 md:p-10",

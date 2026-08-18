@@ -755,12 +755,19 @@ body {
     border-radius: 18px;
   }
 
-  /* Glassmorphic dark card — reserved for V5's pricing card, added here so
-     later bundles have it available without touching globals.css again. */
+  /* Glassmorphic dark card — V5's pricing card is the first real consumer.
+     -webkit-backdrop-filter declared BEFORE the unprefixed backdrop-filter
+     (found in Phase 4/5 review): the Tailwind v4/Lightning CSS build was
+     dropping whichever of the two identical-value declarations came
+     SECOND, and with the unprefixed one listed second it was the one
+     getting dropped — leaving only the webkit-prefixed alias in the
+     compiled CSS, which Chrome and Firefox don't honor, so the blur
+     silently failed to render outside Safari. Swapping the order keeps
+     the standard property (needed by Chrome/Firefox) as the survivor. */
   .glass-dark {
     background: rgba(10, 10, 8, 0.88);
-    backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     border: 1px solid rgba(244, 251, 246, 0.08);
     color: #f4fbf6;
   }
