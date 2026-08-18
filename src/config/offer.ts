@@ -155,6 +155,7 @@ export interface SectionsContent {
   recentWork: SectionCopy;
   pricing: SectionCopy;
   faq: SectionCopy;
+  contact: SectionCopy;
 }
 
 export interface Offer {
@@ -245,6 +246,17 @@ export const sections: SectionsContent = {
     title: "Questions, answered",
     description:
       "Everything you might want to know before subscribing. Still unsure? Book a quick call.",
+  },
+  // The final CTA — rendered on the site's one near-black band
+  // (HANDOFF-redesign-v3.md §1 rule 4). Replaces the pre-redesign copy that
+  // was hardcoded in ContactInfo.tsx ("Let's Build Something Great Together" /
+  // "transform your business with AI-powered solutions"), which predated the
+  // §4 voice gate and never went through it.
+  contact: {
+    label: "Start here",
+    title: "Tell us what's eating your week",
+    description:
+      "Send it over and we'll tell you whether it's a task, a build, or something we'd talk you out of. If you'd rather just start, pick a plan above.",
   },
 };
 
@@ -414,7 +426,37 @@ export const faq: FaqItem[] = [
   {
     question: "Can I pause or cancel?",
     answer:
-      "Anytime. Pause your subscription when your queue is empty and resume when you need us again. No contracts, no lock-in.",
+      "Anytime. Pause your subscription when your queue is empty and resume when you need us again. Your board, your code, and your history stay put while you're away. No contracts, no lock-in.",
+  },
+  {
+    question: "Why not just hire someone?",
+    answer:
+      "If you have forty hours a week of engineering work, hire — we'll tell you so on the call. If you have five or fifteen, a full-time salary is the expensive way to get them, and you're still doing the recruiting.",
+  },
+  {
+    question: "Who actually writes the code, you or the AI?",
+    answer:
+      "Engineers. The AI drafts; we own what ships. Nothing reaches your repo that a senior engineer hasn't read, changed, and put their name on.",
+  },
+  {
+    question: "Who owns the code and the accounts?",
+    answer:
+      "You do. Repos in your org, infrastructure in your cloud accounts, credentials in your vault. If we disappeared tomorrow you'd lose a vendor, not a system.",
+  },
+  {
+    question: "What if something breaks a month later?",
+    answer:
+      "Add a card. Fixes to things we built are requests like any other, and ongoing fixes are part of the subscription. We don't ship what we can't maintain — that's why the \"no\" list exists.",
+  },
+  {
+    question: "Why only five founding spots?",
+    answer:
+      "Because one engineer works one queue, one task at a time. That only holds if we cap how many queues exist. The five founding seats keep their price for life; after that the rate is the listed one.",
+  },
+  {
+    question: "Do I have to get on a call first?",
+    answer:
+      "No. Pick a plan, check out, and add your first task the same day. The call is there if you'd rather talk it through first — plenty of people skip it.",
   },
   {
     question: "What don't you do?",

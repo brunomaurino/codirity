@@ -113,11 +113,15 @@ export function ContactForm() {
     >
       {/* Header */}
       <div className="mb-8">
+        {/* §4 voice pass (Bundle V6): the prior "Send Us a Message" / "Fill out
+            the form below and we'll get back to you shortly" predated the voice
+            gate. This card stays a LIGHT card on the near-black band — see
+            Contact.tsx — so its own foreground pairs are unchanged. */}
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          Send Us a Message
+          Write it out
         </h3>
-        <p className="text-[0.95rem] text-gray-500 dark:text-gray-400">
-          Fill out the form below and we&apos;ll get back to you shortly.
+        <p className="text-[0.95rem] text-gray-600 dark:text-gray-400">
+          A paragraph is plenty. We read every one and answer within a day.
         </p>
       </div>
 

@@ -1,111 +1,85 @@
-import { Mail, MapPin, Clock, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CalPopupButton, TrackedLink } from "@/components/ui";
+import { AccentWord, CalPopupButton, SectionHeader, TrackedLink } from "@/components/ui";
+import { sections, CAL_LINK, CONTACT_EMAIL } from "@/config/offer";
 
-const CAL_LINK = "support-codirity-lz8rjc/30min";
+// The left half of the final CTA — rendered on the site's ONE near-black band
+// (HANDOFF-redesign-v3.md §1 rule 4). Everything here is a permanently-dark
+// surface, so foregrounds are pinned light in BOTH themes rather than carrying
+// `dark:` pairs: the band is #0a0a08 in light mode and #171713 in dark, and a
+// `text-gray-900 dark:text-white` pattern would render near-black on near-black
+// in light mode (the same class of failure V0's battery caught on `--white`).
+//
+// The pre-redesign copy this replaces ("Let's Build Something Great Together",
+// "Ready to transform your business with AI-powered solutions?", "Prefer a Live
+// Conversation?") predated the §4 voice gate and never went through it; the new
+// copy lives in `offer.ts` under `sections.contact` per this project's
+// source-of-truth convention.
 
-interface ContactMethod {
-  icon: React.ReactNode;
-  title: string;
-  content: React.ReactNode;
-}
-
-const contactMethods: ContactMethod[] = [
-  {
-    icon: <Mail className="w-[22px] h-[22px] stroke-white" />,
-    title: "Email Us",
-    content: (
-      <TrackedLink
-        href="mailto:support@codirity.com"
-        event="email_click"
-        eventParams={{ location: "contact_section" }}
-        className="text-brand font-semibold hover:text-brand-dark transition-colors"
-      >
-        support@codirity.com
-      </TrackedLink>
-    ),
-  },
-  {
-    icon: <MapPin className="w-[22px] h-[22px] stroke-white" />,
-    title: "Based In",
-    content: <span>Available worldwide, remote-first</span>,
-  },
-  {
-    icon: <Clock className="w-[22px] h-[22px] stroke-white" />,
-    title: "Response Time",
-    content: <span>We respond within 24 hours</span>,
-  },
+// Facts already live on the site before this bundle — restated compactly here,
+// not invented. Kept out of `offer.ts` for now because they are labels for the
+// SAME two claims the prior version showed, not new offer content.
+const FACTS = [
+  "Remote-first, worldwide",
+  "We reply within 24 hours",
 ];
 
 export function ContactInfo() {
   return (
     <div className="lg:sticky lg:top-[120px]">
-      <h2 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold tracking-tight text-gray-900 dark:text-white mb-4">
-        Let&apos;s Build Something Great Together
-      </h2>
-      <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-10">
-        Ready to transform your business with AI-powered solutions? Get in touch
-        and let&apos;s discuss how we can help you modernize your processes.
-      </p>
+      <SectionHeader
+        tone="ink"
+        align="left"
+        maxWidth="full"
+        label={sections.contact.label}
+        title={<AccentWord text={sections.contact.title} word="week" />}
+        description={sections.contact.description}
+      />
 
-      {/* Contact Methods */}
-      <div className="flex flex-col gap-6 mb-10">
-        {contactMethods.map((method, index) => (
-          <div key={index} className="flex items-start gap-4">
-            <div
-              className={cn(
-                "w-12 h-12 flex-shrink-0",
-                "bg-gradient-to-br from-brand to-brand-light",
-                "rounded-xl flex items-center justify-center",
-                "shadow-brand"
-              )}
-            >
-              {method.icon}
-            </div>
-            <div>
-              <h4 className="text-[0.95rem] font-semibold text-gray-900 dark:text-white mb-1">
-                {method.title}
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{method.content}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Schedule Call Box */}
-      <div
-        className={cn(
-          "relative overflow-hidden",
-          "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
-          "rounded-2xl p-8 text-white",
-          "before:absolute before:-top-1/2 before:-right-1/2",
-          "before:w-[150%] before:h-[150%]",
-          "before:bg-[radial-gradient(circle,rgba(244,251,246,0.12)_0%,transparent_50%)]",
-          "before:pointer-events-none"
-        )}
-      >
-        <h4 className="text-xl font-bold mb-2 relative z-[1]">
-          Prefer a Live Conversation?
-        </h4>
-        <p className="text-sm opacity-85 mb-6 relative z-[1]">
-          Book a free 30-minute consultation call to discuss your project
-          requirements and how we can help.
-        </p>
-        <CalPopupButton
-          calLink={CAL_LINK}
+      {/* Email — the plain-text address, per §6.R6's "form + Cal button + the
+          email address in plain text" close. */}
+      <p className="mt-10 text-lg">
+        <TrackedLink
+          href={`mailto:${CONTACT_EMAIL}`}
+          event="email_click"
+          eventParams={{ location: "contact_section" }}
           className={cn(
-            "inline-flex items-center gap-3",
-            "px-6 py-3 rounded-full",
-            "bg-white text-brand-dark font-bold",
-            "hover:-translate-y-0.5 hover:shadow-lg",
-            "transition-all duration-300",
-            "relative z-[1]"
+            "font-semibold text-brand-light underline underline-offset-4",
+            "decoration-brand-light/40 transition-colors hover:text-white hover:decoration-white"
           )}
         >
-          Book a Call
-          <ArrowRight className="w-[18px] h-[18px]" />
-        </CalPopupButton>
-      </div>
+          {CONTACT_EMAIL}
+        </TrackedLink>
+      </p>
+
+      <ul className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-6">
+        {FACTS.map((fact) => (
+          <li key={fact} className="flex items-center gap-2 text-sm text-gray-300">
+            <span
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-light"
+              aria-hidden="true"
+            />
+            {fact}
+          </li>
+        ))}
+      </ul>
+
+      {/* Cal booking — unchanged behaviour (same CAL_LINK, same popup), restyled
+          for the band: a white pill on near-black is the highest-contrast
+          control available here. */}
+      <CalPopupButton
+        calLink={CAL_LINK}
+        className={cn(
+          "mt-10 inline-flex items-center gap-3",
+          "rounded-full px-8 py-4",
+          "bg-white text-base font-semibold text-gray-900",
+          "transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100",
+          "cursor-pointer"
+        )}
+      >
+        Book a call instead
+        <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
+      </CalPopupButton>
     </div>
   );
 }

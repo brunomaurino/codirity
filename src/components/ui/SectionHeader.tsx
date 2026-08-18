@@ -34,6 +34,16 @@ export interface SectionHeaderProps
   description?: string;
   /** Use gradient text for the title */
   gradientTitle?: boolean;
+  /** Surface this header sits on.
+   *  - `default`: the light/dark page ground — title is `text-gray-900
+   *    dark:text-white`, which is correct there and ONLY there.
+   *  - `ink`: the near-black band (`<Section variant="ink">`, HANDOFF §1
+   *    rule 4). Required on that surface: the default title color resolves
+   *    to `#0a0a08` in LIGHT mode, which is the band's own background —
+   *    near-black on near-black, invisible. `ink` pins the title to true
+   *    white and the description to a light neutral in BOTH themes, since
+   *    the band is permanently dark regardless of site theme. */
+  tone?: "default" | "ink";
 }
 
 const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
@@ -46,6 +56,7 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       title,
       description,
       gradientTitle,
+      tone = "default",
       ...props
     },
     ref
@@ -57,20 +68,35 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         {...props}
       >
         {label && (
-          <span className="inline-block font-sans text-[13px] font-semibold text-brand uppercase tracking-[0.12em] mb-4">
+          <span
+            className={cn(
+              "inline-block font-sans text-[13px] font-semibold uppercase tracking-[0.12em] mb-4",
+              // On the ink band the brand green measures under AA against
+              // #0a0a08; brand-light is the tuned-for-dark-ground value.
+              tone === "ink" ? "text-brand-light" : "text-brand"
+            )}
+          >
             {label}
           </span>
         )}
         <h2
           className={cn(
-            "text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-white",
+            "text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight",
+            tone === "ink" ? "text-white" : "text-gray-900 dark:text-white",
             gradientTitle && "gradient-text"
           )}
         >
           {title}
         </h2>
         {description && (
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p
+            className={cn(
+              "mt-4 text-lg leading-relaxed",
+              tone === "ink"
+                ? "text-gray-300"
+                : "text-gray-600 dark:text-gray-400"
+            )}
+          >
             {description}
           </p>
         )}
