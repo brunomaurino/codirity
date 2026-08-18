@@ -163,6 +163,7 @@ export function Header() {
           <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-3">
             <CalPopupButton
               calLink={CAL_LINK}
+              onOpen={() => setIsMobileMenuOpen(false)}
               className={cn(
                 "flex items-center justify-center",
                 "w-full px-6 py-4 rounded-full",

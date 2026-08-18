@@ -435,30 +435,6 @@ body {
   }
 }
 
-/* Float Card */
-@keyframes float-card {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-15px);
-  }
-}
-
-/* Progress Fill */
-@keyframes progress-fill {
-  0% {
-    width: 0;
-  }
-  50% {
-    width: 100%;
-  }
-  100% {
-    width: 0;
-  }
-}
-
 /* Slide Up */
 @keyframes slide-up {
   from {
@@ -535,22 +511,6 @@ body {
 
 .animate-dot-pulse-slow {
   animation: dot-pulse 5s ease-in-out infinite 2s;
-}
-
-.animate-float-card {
-  animation: float-card 6s ease-in-out infinite;
-}
-
-.animate-float-card-delayed {
-  animation: float-card 7s ease-in-out infinite 1s;
-}
-
-.animate-float-card-fast {
-  animation: float-card 5s ease-in-out infinite 0.5s;
-}
-
-.animate-progress-fill {
-  animation: progress-fill 2.5s var(--transition-smooth) infinite;
 }
 
 .animate-slide-up {

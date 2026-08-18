@@ -7,13 +7,21 @@ interface CalPopupButtonProps {
   calLink: string;
   children: React.ReactNode;
   className?: string;
+  /** Optional side effect to run on click, alongside (never instead of) the
+   *  embed load + `call_booked` tracking below — e.g. closing a mobile nav
+   *  menu the button sits inside so the Cal popup isn't left rendering over
+   *  a still-open menu. */
+  onOpen?: () => void;
 }
 
 // The Cal.com embed API is a page-level singleton shared by every
-// CalPopupButton on the page (Hero, Faq and ContactInfo — three instances
-// today), so the booking listener must be registered exactly once. Registering
-// per instance would emit one duplicate `call_booking_completed` per mounted
-// button for a single real booking.
+// CalPopupButton on the page (Hero, Faq, ContactInfo, PricingCard, and the
+// Header's desktop + mobile nav — six instances as of redesign-v3 Bundle V1;
+// mounted from the root layout, so every route renders at least the two nav
+// instances now, not just the ones on the homepage), so the booking listener
+// must be registered exactly once. Registering per instance would emit one
+// duplicate `call_booking_completed` per mounted button for a single real
+// booking.
 //
 // The latch lives on `window`, not in module scope, because a module-scope flag
 // is reset by React Fast Refresh while the listener it guards — held by the Cal
@@ -29,6 +37,7 @@ export function CalPopupButton({
   calLink,
   children,
   className,
+  onOpen,
 }: CalPopupButtonProps) {
   const ready = useRef(false);
   const loading = useRef(false);
@@ -92,6 +101,7 @@ export function CalPopupButton({
       onClick={() => {
         void ensureCal();
         track("call_booked");
+        onOpen?.();
       }}
       className={className}
     >

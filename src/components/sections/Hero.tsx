@@ -12,10 +12,24 @@ import { cn } from "@/lib/utils";
 // text in JSX — so a future copy change in offer.ts can't silently drift
 // out of sync with a duplicated string here. Falls back to the plain
 // (un-accented) headline if the word is ever removed from the copy.
+//
+// Uses indexOf/slice, not split() (found in Phase 4/5 review: split() plus
+// branching on the TAIL's truthiness silently dropped the accent word
+// whenever the headline ended exactly on it — an empty tail was
+// indistinguishable from "word not found" — and silently discarded
+// everything after a second occurrence, since split() returns 3+ parts if
+// the word repeats). indexOf/slice always reconstructs the full string and
+// the presence check (`hasAccentWord`) is independent of whether the tail
+// happens to be empty.
 const ACCENT_WORD = "subscription";
-const [headlineLead, headlineTail] = hero.headline.includes(ACCENT_WORD)
-  ? hero.headline.split(ACCENT_WORD)
-  : [hero.headline, ""];
+const accentIndex = hero.headline.indexOf(ACCENT_WORD);
+const hasAccentWord = accentIndex !== -1;
+const headlineLead = hasAccentWord
+  ? hero.headline.slice(0, accentIndex)
+  : hero.headline;
+const headlineTail = hasAccentWord
+  ? hero.headline.slice(accentIndex + ACCENT_WORD.length)
+  : "";
 
 export function Hero() {
   return (
@@ -58,7 +72,7 @@ export function Hero() {
                 "opacity-0 animate-slide-up animation-delay-300"
               )}
             >
-              {headlineTail ? (
+              {hasAccentWord ? (
                 <>
                   {headlineLead}
                   <span className="accent">{ACCENT_WORD}</span>
@@ -85,11 +99,18 @@ export function Hero() {
                 "opacity-0 animate-slide-up animation-delay-500"
               )}
             >
-              {/* Top of the funnel: this is the click that sends a visitor from
-                  the hero to pricing, so it's the denominator for pricing_viewed. */}
+              {/* Top of the funnel: hero_cta_click (summed across both `location`
+                  values below) is the denominator for pricing_viewed. HeroVisual's
+                  card CTA (location: "hero_visual") fires the SAME event for the
+                  same action reached a second way — tag both with `location` (the
+                  param key every other TrackedLink site already uses, see
+                  Footer.tsx/ContactInfo.tsx/privacy/page.tsx) so GA4 can break the
+                  total down by entry point instead of only distinguishing them by
+                  one having no param at all. */}
               <TrackedLink
                 href={hero.primaryCta.href}
                 event="hero_cta_click"
+                eventParams={{ location: "hero_primary" }}
                 className={cn(
                   "inline-flex items-center justify-center gap-2",
                   "px-8 py-4 text-base font-semibold rounded-full",

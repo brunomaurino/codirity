@@ -110,11 +110,93 @@ structure (read before editing) — investigation, not a content ambiguity.
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Phase 4/5 review battery (`wf_bc6a93d3-357`): 2 adversarial rounds + 1 mixed-model
+round + 2 QA rounds + 3-voter verify. 30 raw findings → 7 unique after semantic
+dedup → 7/7 confirmed real (0 refuted). All 7 `applyInline`, 0 deferrals.
+
+**MAJOR (3):**
+1. `HeroVisual`'s badge/CTA pill used a LIGHTENING `bg-white/15` translucent
+   overlay directly on top of `.blob-1`'s brightest hotspot — undoing V0's
+   50%-black scrim (added specifically so white text stays ≥4.5:1 anywhere
+   in the blob) and dropping contrast to ~2.9-3.9:1. `HeroVisual` was the
+   first real consumer of `.blob-1`, so this was previously only a
+   theoretical risk. Fixed by switching to a DARKENING `bg-black/20` fill —
+   can only move contrast further from the already-safe scrimmed baseline,
+   never toward it.
+2. `hero_cta_click` had two emitters (the original hero CTA and the new
+   card's CTA) with no way to distinguish them in analytics except one
+   having no param at all, silently inflating the "denominator for
+   pricing_viewed" the original code comment describes, and the one param
+   it did have (`surface`) diverged from every other site's convention
+   (`location`, used by `Footer.tsx`/`ContactInfo.tsx`/`privacy/page.tsx`).
+   Fixed: both CTAs now carry `eventParams={{ location: "hero_primary" }}`
+   / `{{ location: "hero_visual" }}`, and the denominator comment now
+   explains the breakdown.
+3. `HeroVisual` hardcoded "Unlimited requests. One flat rate." directly in
+   JSX instead of sourcing it from `offer.ts` — violated the bundle's own
+   "real offer.ts copy only" scope and was internally inconsistent with
+   `Hero.tsx`'s own `ACCENT_WORD` logic in the same diff, which exists
+   specifically to avoid this kind of duplicated string. Fixed: added
+   `hero.visualHeadline` to `offer.ts` (kept as its own field rather than
+   re-derived from `subhead`, so the two can be edited independently) and
+   imported it.
+
+**MINOR (4):**
+4. The `.accent`-word split branched on `headlineTail`'s truthiness instead
+   of the already-computed `.includes()` check, and only kept 2 parts from
+   `split()` — would have silently dropped the accent word if the headline
+   ever ended exactly on it, and silently discarded text after a second
+   occurrence of the word. Fixed: rewrote using `indexOf`/`slice` with a
+   `hasAccentWord` boolean independent of tail emptiness.
+5. The mobile-menu "Book a call" button never closed the menu on click
+   (every sibling control did), leaving the Cal popup rendering over a
+   still-open menu. `CalPopupButtonProps` had no way to pass an extra
+   click side-effect. Fixed: added an optional `onOpen` prop to
+   `CalPopupButton`, called alongside (never instead of) its own
+   `ensureCal`/`track` calls, wired from Header's mobile instance to
+   `setIsMobileMenuOpen(false)`.
+6. Deleting `HeroCards.tsx` left its `float-card`/`progress-fill`
+   `@keyframes` and their 4 utility classes as dead CSS (zero consumers
+   left in `src/`, confirmed via grep) — shipped to every visitor for no
+   reason. Removed both keyframe blocks and all 4 utilities from
+   `globals.css`.
+7. `CalPopupButton.tsx`'s listener-latch comment said "three instances
+   today" (Hero, Faq, ContactInfo) — this bundle's two new Header instances
+   (desktop + mobile nav) bring the real total to six, and since Header
+   mounts from the root layout, every route now renders at least the two
+   nav instances, not just the homepage. Updated the comment with the
+   accurate count and the route-blast-radius note.
 
 ## Areas examined and rejected
 
-(filled in Phase 4/5)
+- **Cal.com booking-event double-fire from the two new Header CalPopupButton
+  instances** — the `bookingSuccessfulV2` listener is guarded by a
+  `window`-scoped (not per-instance) latch, so 6 mounted buttons still
+  register exactly one listener; `call_booked` fires per-click and only one
+  Header button (`hidden lg:flex` vs. `lg:hidden`) is ever reachable at a
+  time. No regression.
+- **`.accent` word contrast in both themes on the new H1 span** — `.accent`
+  sets its own `color: var(--green-dark)` directly on the span (V0's fix),
+  so the h1's `dark:text-white` doesn't reach it; verified both themes'
+  `--green-dark` values clear AA independently (5.50:1 light, 6.02:1 dark,
+  both established in V0).
+- **Whether `HeroBackground`'s decorative layer visually competes with the
+  new solid `.blob-1` card** — reviewed live in both themes; the ambient
+  blurred circles/dots/wave sit at low opacity behind/around the content,
+  not fighting the blob card's visual weight. Not flagged as a defect.
+- **`hero_cta_click`/`call_booked` event names and shapes** — unchanged from
+  before this bundle; only the `eventParams` on `hero_cta_click`'s two call
+  sites were touched (see MAJOR #2 above).
+- **Whether the nav's new "See pricing" `Link` needed its own tracked
+  event** — deliberately left untracked, consistent with the pre-existing
+  (untracked) `Services`/`Process`/`Contact` nav links; only
+  `CalPopupButton` instances carry built-in tracking site-wide.
+- **`sections/index.ts` and other barrel exports for stale `HeroCards`
+  references** — confirmed clean after the export removal; grepped the
+  whole `src/` tree for any remaining `HeroCards` reference (none).
+- **Gates** — `lint`/`tsc`/`build` all independently re-run clean by the
+  reviewers; SSR script-stripped check confirmed real content renders
+  (5859 chars, includes both new nav CTA labels); banned-word grep clean.
 
 ## Open items NOT addressed in this PR
 
