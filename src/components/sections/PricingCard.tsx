@@ -49,8 +49,8 @@ export function PricingCard({
           "hover:bg-gray-100 hover:-translate-y-0.5 hover:shadow-lg",
         ]
       : [
-          "bg-brand text-white",
-          "hover:bg-brand-dark hover:-translate-y-0.5 hover:shadow-brand",
+          "bg-brand-fill text-white",
+          "hover:bg-brand-fill-dark hover:-translate-y-0.5 hover:shadow-brand",
         ]
   );
   return (
@@ -60,7 +60,7 @@ export function PricingCard({
         "transition-all duration-400",
         featured
           ? [
-              "bg-gradient-to-br from-brand-dark to-[#1a5a1d]",
+              "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
               "text-white border-0",
               "shadow-brand",
             ]

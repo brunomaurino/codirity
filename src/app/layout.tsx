@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Space_Mono, Fraunces } from "next/font/google";
+import { Figtree, Instrument_Serif } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/Toaster";
@@ -9,24 +9,29 @@ import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+// Monthly Club (redesign v3): ONE family for everything — headlines, body, nav,
+// labels — the same one-family discipline designjoy.co's own site uses (verified
+// live, 2026-08-18: their whole site is Figtree at different weights). Replaces
+// Outfit (body) AND Fraunces (La Firma's heading serif, retired) AND Space Mono
+// (retired as a system voice entirely).
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  // 800 dropped (Phase 4/5 review): grepped src/ for font-extrabold/
+  // font-black and found zero consumers, so that static face was pure
+  // unused payload against this bundle's own perf-delta gate.
+  weight: ["400", "500", "600", "700"],
 });
 
-const spaceMono = Space_Mono({
-  variable: "--font-space-mono",
+// The one-word-per-headline expressive-emphasis accent (`.accent` in globals.css)
+// — mirrors designjoy.co's own licensed custom hand-lettered face doing the same
+// job on words like "everyone" / "you'll never go back", using a real Google Font
+// instead of claiming to be their proprietary type.
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
   subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-// La Firma (redesign v2): the display serif that carries every heading. Variable
-// font with the optical-size axis on, so large headlines get the display cut.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["opsz"],
+  weight: "400",
+  style: "italic",
 });
 
 // Subscription-forward copy (Bundle D): the live body now leads with the subscription
@@ -81,7 +86,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body
-        className={`${outfit.variable} ${spaceMono.variable} ${fraunces.variable} font-sans antialiased`}
+        className={`${figtree.variable} ${instrumentSerif.variable} font-sans antialiased`}
       >
         <ThemeProvider>
           {/* Background Pattern */}

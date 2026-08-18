@@ -74,8 +74,8 @@ export function Hero() {
                 className={cn(
                   "inline-flex items-center justify-center gap-2",
                   "px-8 py-4 text-base font-semibold rounded-full",
-                  "bg-brand text-white",
-                  "hover:bg-brand-dark hover:-translate-y-0.5 hover:shadow-brand",
+                  "bg-brand-fill text-white",
+                  "hover:bg-brand-fill-dark hover:-translate-y-0.5 hover:shadow-brand",
                   "transition-all duration-300"
                 )}
               >

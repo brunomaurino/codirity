@@ -13,7 +13,7 @@ export function Toaster() {
           border: "1px solid var(--toast-border, #e5e5e5)",
         },
         classNames: {
-          success: "!bg-brand-dark !text-white !border-brand-dark",
+          success: "!bg-brand-fill-dark !text-white !border-brand-fill-dark",
           error: "!bg-red-600 !text-white !border-red-600",
         },
       }}
