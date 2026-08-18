@@ -21,7 +21,7 @@ today).
 | V4 | Clients (eDairyCorp/Meshio/Vivi) | V0 | `[x]` complete (PR #24, 83b5b1a; content amended post-merge, see below) |
 | V5 | Pricing (D3/D5 resolved) | V0 | `[x]` complete (PR #25, dace932) |
 | V6 | FAQ + final CTA close | V0 | `[x]` complete (PR #26, 164286b) |
-| V8 | Case studies (eDairyMarket + Meshio) | V0 | `[ ]` not started |
+| V8 | Case studies (eDairyMarket + Meshio) | V0 | `[x]` complete (PR #27, 4515c3f) |
 
 V7 (real team photos) deliberately removed from the table — gated on D2, no photos supplied. Not
 part of this run.
@@ -46,6 +46,7 @@ part of this run.
 | V4 | [#24](https://github.com/brunomaurino/codirity/pull/24) | `83b5b1a` | 9/9 confirmed (1 BLOCKER, 1 MAJOR, 7 MINOR), 0 refuted, 0 deferrals | Content-sensitive bundle; battery caught a real BLOCKER (stale section header contradicting the honest client/ours cards). **Post-merge:** Bruno directed (live, in-session, after the trade-off was explicitly surfaced) that all 3 entries present as "client" uniformly, superseding the original D6 client/ours distinction this PR had just shipped — see the follow-up direct commit `4f47ca3` and the HANDOFF §5/§6 amendment note |
 | V5 | [#25](https://github.com/brunomaurino/codirity/pull/25) | `dace932` | 11 clusters, 3 MAJOR confirmed 5/5, 0 refuted, all 11 applied | **Salvaged run** — the orchestrating session was killed by the usage limit mid-Phase-5 (build + battery had both finished; 5 of 11 findings were applied but uncommitted in the worktree). Resumed from a fresh session via `/resume-anywhere`: battery NOT re-run (its journal was complete), remaining 6 findings applied, PR opened and merged from there. Battery's headline catch: `.glass-dark`'s backdrop blur never rendered outside Safari (Lightning CSS drops the second of two identical-value declarations) — the builder had examined and *rejected* this on a false premise, and the battery overturned it with live browser evidence. Also caught that the D3 75%→50% guarantee correction had leaked past the site into the **Trello onboarding template** copied to every new client |
 | V6 | [#26](https://github.com/brunomaurino/codirity/pull/26) | `164286b` | 24 raw → 12 deduped → 11 confirmed, 1 refuted, 73 areas examined, 0 deferrals; all 11 applied | Two process lessons, both worth carrying. (a) **A battery can report CLEAN while reviewing nothing**: the first invocation returned 0 findings with all 6 finders dead on `agent type 'at-reviewer' not found` — this build resolves the custom review types ONLY plugin-scoped, and `customAgents: true` makes the shipped script call the bare names. The failures appear in the task-notification's `<failures>` block, NOT in the returned object, so an empty result is structurally identical to a clean review. Re-run with `customAgents: false`. (b) **Resuming a partially-dead battery paid for itself**: one finder died on a transient Cloudflare 521; `resumeFromRunId` replayed the cached agents and re-ran only that one, taking the set from 8 findings to 11 — two of the three additions were MAJOR. The battery's headline catch was a contrast bug the builder's own audit had measured *around*: `.accent` declares its own colour, which beats the colour it inherits from the white heading, so the accented word on the new ink band rendered ~3.01:1 |
+| V8 | [#27](https://github.com/brunomaurino/codirity/pull/27) | `4515c3f` | 27 raw → 10 deduped → 9 confirmed (2 BLOCKER, 5 MAJOR, 2 MINOR), 1 refuted, 76 areas examined, 0 deferrals; all 9 applied | **The battery's best run of the plan, and the most uncomfortable.** Both BLOCKERs were fabrications the builder wrote, in the one bundle whose entire premise was "invent no fact beyond §7": a single substituted noun ("guest **carts**" where §7 says buyer **favorites**) that invented a shipped e-commerce feature for a named real client, and a wholly invented opening sentence characterizing Meshio's prior product state. Four of five finders independently flagged the second. The builder's own fact-provenance gate PASSED the diff, because it asserted §7's strings were PRESENT — which catches omission and nothing else, while both blockers were an addition and a substitution inside otherwise-correct sentences. Two MAJORs were the same class in the SVG diagrams (an unsourced `Sellers → admin panel` arrow, and an AWS boundary drawn around end users and third-party Stripe) — **what a diagram encloses is itself a claim**. One MAJOR corrected a wrong perf model: a server component's markup DOES reach the client via the RSC flight payload, so the real cost was +6,711 B gz on the document, not the +76 B reported |
 
 ## Cross-bundle drift / surfaced concerns
 
@@ -190,3 +191,65 @@ Loop relaunched here for the two remaining bundles, V6 + V8, on the same plan-sl
 - dashboard (session 2, live): https://claude.ai/code/artifact/7a77bf63-4147-401e-ae1c-fe12ce3d585b
 - dashboard generator: <scratchpad>/gen-dashboard.py (+ dashboard-state.json) — re-render at each bundle boundary
 - dashboard scratchpad file: /private/tmp/claude-501/-Users-brunomaurino-projects-codirity/9ddef8ab-5417-4799-aa93-32a4f171aaad/scratchpad/bundle-loop-redesign-v3-dashboard.html
+
+## Plan closed — 2026-08-18
+
+**All 7 bundles shipped: V0 · V1 · V2 · V3 · V4 · V5 · V6 · V8** (PRs #20–#27). V7 (real team
+photos) was removed from §2 at launch, gated on D2 with no photos supplied — deferred, not dropped;
+§6's D2 entry keeps the reference alive and it needs a real §2 row plus a §3 command whenever Bruno
+supplies photos.
+
+**Open commitments at close: NONE.** Every bundle's `commitments.md` recorded `(none)` against its
+successors, and every review finding across the plan was applied inline — 0 deferrals in all seven
+bundles. The two `STATUS: OPEN` lines still greppable in `docs/autonomous-runs/` belong elsewhere:
+`B4-D-opsidempotency1` is the client-onboarding plan's, and `B1-D-jsonld1` was closed by a
+`COMPLETED-IN-B5` amendment (the OPEN line survives only in an immutable historical file). Nothing
+was routed to `long-term backlog`.
+
+**Review totals across the plan:** 17 + 7 + 10 + 6 + 9 + 11 + 11 + 9 = **80 confirmed findings, all
+applied, 0 deferred.** Three BLOCKERs (V0, V4, V8×2 — four, counting V8's pair).
+
+### What the batteries actually bought
+
+Worth recording, because the cost is real and the case for it should rest on evidence:
+
+- **V0** — `--green-main`/`--green-dark` could not serve as both text colour and solid fill in dark
+  mode; the AA luminance ranges don't overlap. Forced the `--green-fill` split that every later
+  bundle depends on.
+- **V3** — a pre-existing dark-mode contrast bug in the shared `Badge` (4.27:1), already live on two
+  pricing surfaces before that bundle touched anything. Fixed at the source.
+- **V5** — `.glass-dark`'s backdrop blur never rendered outside Safari, and the builder had examined
+  and *rejected* that on a plausible-but-false premise; the battery overturned it with live browser
+  evidence. Same run caught the D3 75%→50% correction stranded in the Trello template copied to
+  every new client.
+- **V6** — `.accent` declares its own colour, which beats an inherited one, so the accented word on
+  the new ink band rendered ~3.01:1. The builder's contrast audit had measured the heading and never
+  the span inside it — it measured *around* the broken element.
+- **V8** — two content-honesty BLOCKERs that were fabrications about a **named real client**: a
+  substituted noun inventing a shipped e-commerce feature, and an invented characterization of a
+  product's prior state. Plus two diagram claims (an unsourced arrow; an AWS boundary drawn around
+  end users and a third-party payment provider).
+
+The pattern across V5, V6 and V8: **the builder's own gates and self-audits kept passing the exact
+defects the adversarial review caught**, because a gate can only refute what it is told to look for,
+and a self-audit measures what its author already thought to measure. That is the argument for the
+battery, and it is the argument for not letting a clean gate stand in for one.
+
+### Process lessons for future loops
+
+1. **A battery can report CLEAN while reviewing nothing.** V6's first run returned 0 findings with
+   all 6 finders dead on `agent type 'at-reviewer' not found`. The failures appear only in the task
+   notification's `<failures>` block, never in the returned object, so an empty result is
+   structurally identical to a real clean review. In this repo, always pass `customAgents: false` —
+   custom review agent types resolve plugin-scoped only, and the shipped script calls the bare names.
+   Cross-check `areasExamined` and the agent error count before trusting any clean verdict.
+2. **Resume a partially-dead battery; never accept it.** V6 lost one finder to a transient
+   Cloudflare 521; `resumeFromRunId` replayed the cached agents and re-ran only that one, taking the
+   set from 8 findings to 11 — two of the three additions MAJOR.
+3. **Turbopack hard-panics on a symlinked `node_modules`** in a worktree. Use `cp -Rl` from the
+   parent checkout.
+4. **`gh auth` silently reverts to `brunoiwp`.** Re-check before every push and PR, every bundle.
+5. **Don't measure computed colours across a runtime theme flip** without disabling transitions —
+   V6 produced a convincing false sub-AA reading that a fresh-element control disproved.
+6. **A server component's markup is not free.** It ships in the RSC flight payload; V8's real cost
+   was +6.7 KB gz on the document against a +76 B static-chunk delta.
