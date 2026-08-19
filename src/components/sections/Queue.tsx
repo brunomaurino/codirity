@@ -76,8 +76,15 @@ export function Queue() {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
+    // Resize matters because the scene's height is viewport-relative: a resize
+    // changes `travel` without changing scrollY, so the step would stay stale
+    // until the reader happened to scroll again. Same handler, same rAF gate.
+    window.addEventListener("resize", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, [reduced]);
 
   return (

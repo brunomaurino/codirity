@@ -35,8 +35,20 @@ for banned, why in [
     if re.search(banned, code):
         fails.append(f"scroll-jacking: {why} — found /{banned}/ in {SRC}")
 
-if not re.search(r"addEventListener\(\s*[\"']scroll[\"'].*?passive:\s*true", code, re.S):
-    fails.append("the scroll listener must be registered { passive: true }")
+# EVERY scroll-ish listener must be passive — checked one call at a time.
+# A single regex spanning `addEventListener("scroll" ... passive: true` with
+# DOTALL matched ACROSS calls, so adding a second listener let a non-passive
+# first one hide behind the second one's options. The self-test caught it.
+listeners = re.findall(
+    r"addEventListener\(\s*[\"'](scroll|resize|wheel|touchmove|touchstart)[\"']\s*,([^;]*?)\)\s*;",
+    code,
+    re.S,
+)
+if not listeners:
+    fails.append("no scroll listener found at all — did the quantizer move?")
+for name, rest in listeners:
+    if "passive:true" not in rest.replace(" ", ""):
+        fails.append(f"the `{name}` listener is not registered {{ passive: true }}")
 
 # The handler must write a ROUNDED integer, never the raw progress ratio.
 if not re.search(r"Math\.round\(", code):

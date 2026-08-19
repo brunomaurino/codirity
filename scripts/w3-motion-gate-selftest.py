@@ -29,8 +29,14 @@ SRC_MUTATIONS = {
         "e.preventDefault();\n        const r = scene.getBoundingClientRect();",
         1,
     ),
-    "non-passive-listener": lambda s: s.replace(
-        '{ passive: true }', "{ passive: false }", 1
+    # Mutate the SCROLL listener specifically. Replacing the first
+    # `{ passive: true }` anywhere is what let the loose first-draft regex pass:
+    # it matched across calls and found the RESIZE listener's options instead.
+    "non-passive-scroll": lambda s: s.replace(
+        '"scroll", onScroll, { passive: true }', '"scroll", onScroll, { passive: false }', 1
+    ),
+    "non-passive-resize": lambda s: s.replace(
+        '"resize", onScroll, { passive: true }', '"resize", onScroll, { passive: false }', 1
     ),
     "one-to-one-linking": lambda s: s.replace(
         "const next = Math.round(progress * steps);",
