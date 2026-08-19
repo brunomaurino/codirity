@@ -58,9 +58,14 @@ export function Faq() {
           <CalPopupButton
             calLink={CAL_LINK}
             analyticsLocation="faq"
+            /* Bordered with --ink-dim, not --rule-ink. The hairline rule token
+               composites to ~1.4:1 on paper — under WCAG 1.4.11's 3:1 for a UI
+               component's boundary, and identical to the non-interactive rules
+               used elsewhere on this very page, so the control stopped reading
+               as a control (Phase 4/5 review). */
             className={cn(
               "inline-flex items-center justify-center rounded-full",
-              "border border-[var(--rule-ink)] px-7 py-3.5 text-[15px] font-medium",
+              "border border-[var(--ink-dim)] px-7 py-3.5 text-[15px] font-medium",
               "text-ink transition-transform duration-300 hover:-translate-y-0.5",
               "cursor-pointer"
             )}

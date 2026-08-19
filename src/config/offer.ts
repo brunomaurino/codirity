@@ -240,14 +240,14 @@ export interface QueueContent {
 }
 
 export interface SectionsContent {
-  howItWorks: SectionCopy;
-  whatWeBuild: SectionCopy;
+  howItWorks: Pick<SectionCopy, "label">;
+  whatWeBuild: Pick<SectionCopy, "label">;
   benefits: SectionCopy;
   /** Only the title is consumed — the v4 clients strip renders it as its own
    *  heading and shows no eyebrow or description (W4). */
   recentWork: Pick<SectionCopy, "title">;
   terms: SectionCopy;
-  faq: SectionCopy;
+  faq: Pick<SectionCopy, "title">;
   contact: SectionCopy;
 }
 
@@ -299,26 +299,17 @@ export const hero: HeroContent = {
   trustLine: "Built by engineers from Globant & Ualá",
 };
 
-/** Section headings for the "What we build" included / not-included lists
- *  (a pill cloud + a plain list, stacked — not columns, since
- *  redesign-v3 Bundle V3). */
-export const scopeLabels = {
-  included: "What's included",
-  notIncluded: "Not included",
-} as const;
-
 export const sections: SectionsContent = {
+  // Only `label` survives for these two: W5's v4 treatment renders it as the
+  // section's own heading and shows no explanatory title or description — the
+  // ruled list and the three steps do the explaining. Dead REQUIRED fields are
+  // deleted on sight in this file (the W2 precedent, restated by W4's review):
+  // a write-only string drifts from what ships and resurfaces as a stale claim.
   howItWorks: {
     label: "How it works",
-    title: "From idea to shipped, on repeat",
-    description:
-      "Subscribe, add tasks to your queue, and we build them one at a time. No scoping calls, no contracts.",
   },
   whatWeBuild: {
     label: "What we build",
-    title: "AI, automation, and custom systems",
-    description:
-      "If it's software that makes your business run faster, it's in scope. Here's where we focus — and where we don't.",
   },
   benefits: {
     label: "Membership benefits",
@@ -347,11 +338,10 @@ export const sections: SectionsContent = {
     label: "The whole offer, in {n} numbers",
     title: "Simple, monthly pricing",
   },
+  // `title` only — the v4 accordion renders it as the heading and shows no
+  // eyebrow or description.
   faq: {
-    label: "FAQ",
     title: "Questions, answered",
-    description:
-      "Everything you might want to know before subscribing. Still unsure? Book a quick call.",
   },
   // The final CTA — rendered on the site's one near-black band
   // (HANDOFF-redesign-v3.md §1 rule 4). Replaces the pre-redesign copy that
@@ -534,8 +524,20 @@ export const howItWorks: HowItWorksStep[] = [
   },
 ];
 
+/** The index of the entry the founder block promotes to a display-size quote.
+ *  A NAMED index, not a magic-string `.find()` in the component: the first
+ *  draft looked the entry up by its question text and silently rendered
+ *  NOTHING if that wording ever changed — no type error, no build error, no
+ *  runtime warning, on the most actively edited file in the project (Phase 4/5
+ *  review). An out-of-range index here is a compile-time-visible constant next
+ *  to the array it indexes, and the component asserts it rather than
+ *  disappearing. */
+export const FOUNDER_FAQ_INDEX = 0;
+
 export const faq: FaqItem[] = [
   {
+    // Promoted to the founder block — see FOUNDER_FAQ_INDEX. Keep it first, or
+    // move the index with it.
     question: "Who does the work?",
     answer:
       "A senior engineer with years at companies like Globant and Ualá, working AI-accelerated. You work directly with the person building your systems — no account managers, no offshore hand-offs.",

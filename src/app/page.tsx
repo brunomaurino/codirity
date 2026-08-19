@@ -47,9 +47,13 @@ export default function Home() {
             as the mockup has it. Benefits is a v3 survivor with no counterpart
             in the mockup and is left in place for W6's sweep to decide on. */}
         <Hero />
+        {/* S4 — Membership benefits: a v3 survivor with no mockup counterpart.
+            The bands terminate at `--paper`, so the section is pinned to the
+            SAME ground rather than its legacy `bg-white` — otherwise each
+            gradient lands on #EDEDE6 against a #FFFFFF section and leaves a
+            visible seam at exactly the boundary it exists to soften (Phase 4/5
+            review). Retiring or reworking the section itself is W6's. */}
         <div className="band band-dl" aria-hidden="true" />
-        {/* S4 — Membership benefits (v3 survivor; still the legacy light
-            treatment, hence its own pair of transitions). */}
         <Benefits />
         <div className="band band-ld" aria-hidden="true" />
 

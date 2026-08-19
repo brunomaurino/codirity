@@ -27,6 +27,33 @@ if not chunks:
     sys.exit("no compiled CSS chunk — run `npm run build` first")
 css_orig = open(chunks[0], encoding="utf-8").read()
 
+
+def _drop_pin(css, media_keyword):
+    """Delete the `.declined .svc-name .strike{background-size:…}` pin from the
+    @media block whose condition mentions `media_keyword`, leaving every other
+    block untouched."""
+    i = css.find(media_keyword)
+    if i == -1:
+        return css
+    start = css.rfind("@media", 0, i)
+    depth, k = 0, css.find("{", i)
+    end = len(css)
+    while k < len(css):
+        if css[k] == "{":
+            depth += 1
+        elif css[k] == "}":
+            depth -= 1
+            if depth == 0:
+                end = k + 1
+                break
+        k += 1
+    block = css[start:end]
+    pinned = re.sub(
+        r"\.declined\s*\.svc-name\s*\.strike\{[^}]*background-size[^}]*\}", "", block, count=1
+    )
+    return css[:start] + pinned + css[end:]
+
+
 PAGE_MUTATIONS = {
     # ---- the two v3 actually shipped ----
     "v3-paraphrased-service-row": lambda p: p.replace(
@@ -47,8 +74,10 @@ PAGE_MUTATIONS = {
     "declined-row-loses-we-say-no": lambda p: p.replace(
         '<span class="svc-no">we say no</span>', "", 1
     ),
+    # The strike WRAPS the words now (that is what makes it fragment per line),
+    # so "losing" it means unwrapping the text, not deleting an empty span.
     "declined-row-loses-its-strike": lambda p: p.replace(
-        '<span class="strike" aria-hidden="true"></span>', "", 1
+        '<span class="strike">Native mobile apps</span>', "Native mobile apps", 1
     ),
     "faq-answer-leaves-the-dom": lambda p: re.sub(
         r"(</summary>)<p[^>]*>.*?</p>", r"\1", p, count=1, flags=re.S
@@ -76,16 +105,26 @@ PAGE_MUTATIONS = {
 }
 
 CSS_MUTATIONS = {
-    "strike-frozen-in-reduced-motion": lambda c: re.sub(
-        r"(@media\s*\(prefers-reduced-motion:\s*reduce\)\{(?:[^{}]|\{[^{}]*\})*?)"
-        r"\.declined\s*\.svc-name\s*\.strike\{[^}]*\}",
-        r"\1",
-        c,
-        count=1,
+    # Remove the PIN inside a given @media block — the rule whose body actually
+    # sets the drawn width. An earlier version removed the first
+    # `.declined .svc-name .strike{...}` in the block, which is the tail of the
+    # transition-KILL selector list, leaving the pin intact and the gate
+    # legitimately passing.
+    "strike-frozen-in-reduced-motion": lambda c: _drop_pin(c, "prefers-reduced-motion"),
+    "strike-frozen-in-no-js": lambda c: _drop_pin(c, "scripting"),
+    # The strike must FRAGMENT with the text. Dropping box-decoration-break
+    # silently reverts it to one bar for the whole inline box — the exact defect
+    # the mockup's absolutely-positioned bar had, invisible at desktop widths
+    # and wrong on the three rows that wrap at 375px.
+    # Target the STANDARD property, not the -webkit- alias: `replace(...,1)` on
+    # the bare name hits `-webkit-box-decoration-break` first (it contains the
+    # string), leaving the standard one intact and the gate legitimately passing.
+    "strike-stops-fragmenting-per-line": lambda c: re.sub(
+        r"(?<!-)box-decoration-break:\s*clone", "box-decoration-break:slice", c, count=1
     ),
     "strike-becomes-a-width-animation": lambda c: c.replace(
-        "transition:transform .7s var(--ease)", "transition:width .7s var(--ease)", 1
-    ).replace("transition:transform.7svar(--ease)", "transition:width.7svar(--ease)", 1),
+        "transition:background-size", "transition:width", 1
+    ),
     "hover-moves-by-padding": lambda c: re.sub(
         r"(\.svc-list li:hover \.svc-name\{)transform:translate\(14px\)",
         r"\1padding-left:14px",

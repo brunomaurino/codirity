@@ -52,7 +52,13 @@ export function Section({
         padding === "hero" &&
           "min-h-screen py-24 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16",
         // Background variants
-        variant === "default" && "bg-white dark:bg-gray-900",
+        // `--paper`, not pure white: this is the page's light GROUND, and the
+        // `.band-*` gradients terminate on `--paper`. While `default` painted
+        // #FFFFFF, every band adjacent to a default section left a visible seam
+        // at exactly the boundary it exists to soften (Phase 4/5 review). The
+        // only consumer is the v3 Benefits survivor, which W6 reworks or
+        // retires; until then it at least sits on the right ground.
+        variant === "default" && "bg-paper-v4",
         variant === "gray" && "bg-gray-50 dark:bg-gray-800",
         // v4 tokens directly: the legacy pair resolved the ground correctly
         // but painted pure white instead of --chalk (Phase 4/5 review).

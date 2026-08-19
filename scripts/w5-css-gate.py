@@ -48,24 +48,37 @@ def media_body(cond):
 
 
 # ---------- 1. the strike is a transform, and it draws ----------
-strike = rule(".declined.svc-name.strike")
+# Same anchoring: `rule()` searches `flat`, where `.declined.svc-name.strike`
+# is a substring of the `.in`-prefixed selector.
+_m = re.search(r"(?<!\.in)\.declined\.svc-name\.strike\{([^}]*)\}", flat)
+strike = _m.group(1) if _m else None
 if strike is None:
     fails.append(".declined .svc-name .strike did not compile")
 else:
-    if "transform:scalex(0)" not in strike.lower():
-        fails.append(f"the strike does not start at scaleX(0): {strike}")
-    if "transition:transform" not in strike:
-        fails.append("the strike does not transition TRANSFORM — a width animation relayouts")
-    if re.search(r"transition:[^;]*\bwidth\b", strike):
+    # The strike must FRAGMENT with the text: it is an inline box wrapping the
+    # words, with box-decoration-break:clone, so a row that wraps gets a bar per
+    # LINE. The mockup's absolutely-positioned `transform: scaleX()` bar struck
+    # only line 1, at the box's width rather than the text's — three of the five
+    # declined rows wrap at 375px (Phase 4/5 review).
+    if "display:inline" not in strike.replace("-block", "!"):
+        fails.append(f"the strike is not an inline box, so it cannot fragment per line: {strike}")
+    # The STANDARD property, not the -webkit- alias: `-webkit-box-decoration-break`
+    # CONTAINS the bare name, so a plain substring test was satisfied by the
+    # prefixed declaration alone. Third time this substring hazard has appeared
+    # in this gate — the self-test found each one.
+    if not re.search(r"(?<!-)box-decoration-break:clone", strike):
+        fails.append("the strike lacks box-decoration-break:clone — it would draw once, not per line")
+    if not re.search(r"background-size:0(px)? 2px|background-size:02px", strike.replace(" ", "")):
+        fails.append(f"the strike does not start at zero width: {strike}")
+    if "transition:background-size" not in strike:
+        fails.append("the strike does not transition background-size")
+    if re.search(r"transition:[^;]*\bwidth\b(?!-)", strike.replace("background-size", "")):
         fails.append("the strike transitions `width` — that relayouts the row every frame")
-    # Lightning CSS normalises `transform-origin: left` to `0` (and `translateX`
-    # to `translate`) — accept the compiled spellings rather than the authored
-    # ones, the same class as its `::after` → `:after` rewrite.
-    if not re.search(r"transform-origin:(left|0)\b", strike):
+    if "background-position:0" not in strike:
         fails.append(f"the strike does not draw from the left: {strike}")
 drawn = rule(".in.declined.svc-name.strike")
-if drawn is None or "scalex(1)" not in drawn.lower():
-    fails.append("the strike never reaches scaleX(1) on reveal")
+if drawn is None or "background-size:100%2px" not in (drawn or "").replace(" ", ""):
+    fails.append("the strike never reaches full width on reveal")
 
 # ---------- 2. both degradations leave it DRAWN ----------
 for label, cond in [
@@ -76,8 +89,12 @@ for label, cond in [
     if not body:
         fails.append(f"no @media block for {label}")
         continue
-    bodies = re.findall(r"\.declined\.svc-name\.strike\{([^}]*)\}", body)
-    if not any("scalex(1)" in b.lower() for b in bodies):
+    # NOT preceded by `.in` — in flattened form `.declined.svc-name.strike` is a
+    # SUBSTRING of `.in.declined.svc-name.strike`, so an unanchored findall let
+    # the revealed-state rule vouch for the degradation rule and the check could
+    # not fail. The self-test caught it.
+    bodies = re.findall(r"(?<!\.in)\.declined\.svc-name\.strike\{([^}]*)\}", body)
+    if not any("background-size:100%2px" in b.replace(" ", "") for b in bodies):
         fails.append(
             f"{label}: the strike is not pinned to scaleX(1) — the declined rows would "
             f"render with no strike at all"

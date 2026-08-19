@@ -35,11 +35,13 @@ export function Services() {
           ))}
           {notIncluded.map((item, i) => (
             <li key={item} className="declined">
-              {/* `--l` staggers each strike; the empty span IS the strike rule
-                  (an absolutely-positioned bar that scales from the left). */}
+              {/* The strike WRAPS the words rather than sitting beside them as
+                  an empty positioned bar: only an inline box that contains the
+                  text fragments per line, which is what makes the strike follow
+                  a row that wraps (three of these five do at 375px). `--l`
+                  staggers each row's draw. */}
               <span className="svc-name" style={{ "--l": i } as React.CSSProperties}>
-                {item}
-                <span className="strike" aria-hidden="true" />
+                <span className="strike">{item}</span>
               </span>
               <span className="svc-no">we say no</span>
             </li>

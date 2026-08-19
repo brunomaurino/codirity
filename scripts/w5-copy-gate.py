@@ -26,8 +26,8 @@ page = open(PAGE, encoding="utf-8").read()
 facts = json.loads(
     subprocess.run(
         ["npx", "tsx", "-e",
-         "import {included, notIncluded, howItWorks, faq, sections} from './src/config/offer';"
-         "process.stdout.write(JSON.stringify({included, notIncluded, howItWorks, faq, sections}))"],
+         "import {included, notIncluded, howItWorks, faq} from './src/config/offer';"
+         "process.stdout.write(JSON.stringify({included, notIncluded, howItWorks, faq}))"],
         capture_output=True, text=True, check=True,
     ).stdout
 )
@@ -35,7 +35,6 @@ included = facts["included"]
 not_included = facts["notIncluded"]
 how = facts["howItWorks"]
 faq = facts["faq"]
-sections = facts["sections"]
 
 strip = lambda t: html.unescape(re.sub(r"<[^>]+>", " ", t))
 squash = lambda t: re.sub(r"\s+", " ", strip(t)).strip()
@@ -44,12 +43,13 @@ dom = re.sub(r"<script(?![^>]*application/ld\+json).*?</script>", "", page, flag
 fails = []
 
 # ---------- 1. the services list, literally, both directions ----------
-rows = [squash(m) for m in re.findall(r'<span class="svc-name"[^>]*>(.*?)</span>\s*(?:<span class="svc-no")?', page, re.S)]
-# Re-extract cleanly: each .svc-name's own text, with the nested strike stripped.
+# Each `.svc-name`'s own text. The `we say no` tag is a SIBLING and is dropped;
+# the strike is a WRAPPER around the words (that is what makes it fragment per
+# line), so only its TAGS are stripped — deleting its contents would delete the
+# service name itself.
 rows = []
 for m in re.finditer(r'<span class="svc-name"[^>]*>(.*?)</li>', page, re.S):
-    inner = re.sub(r'<span class="strike".*?</span>', "", m.group(1), flags=re.S)
-    inner = re.sub(r'<span class="svc-no".*?</span>', "", inner, flags=re.S)
+    inner = re.sub(r'<span class="svc-no".*?</span>', "", m.group(1), flags=re.S)
     rows.append(squash(inner))
 
 for want in included + not_included:
@@ -66,8 +66,7 @@ if len(rows) != len(included) + len(not_included):
 declined = []
 for m in re.finditer(r'<li class="declined"[^>]*>(.*?)</li>', page, re.S):
     block = m.group(1)
-    inner = re.sub(r'<span class="strike".*?</span>', "", block, flags=re.S)
-    inner = re.sub(r'<span class="svc-no".*?</span>', "", inner, flags=re.S)
+    inner = re.sub(r'<span class="svc-no".*?</span>', "", block, flags=re.S)
     name = squash(inner)
     declined.append(name)
     if 'class="strike"' not in block:
