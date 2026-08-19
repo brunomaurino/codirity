@@ -155,16 +155,10 @@ export interface LinkCta extends Cta {
 }
 
 export interface HeroContent {
-  badge: string;
   /** The page's single <h1>. */
   headline: string;
   subhead: string;
-  /** Short trim of `subhead` for the hero's blob-gradient visual card
-   *  (redesign v3 Bundle V1) — kept as its own field, not re-derived from
-   *  `subhead` at render time, so the two can be edited independently
-   *  without one silently going stale relative to the other. */
-  visualHeadline: string;
-  /** Always a link (currently to #pricing) — see LinkCta. */
+    /** Always a link (currently to #pricing) — see LinkCta. */
   primaryCta: LinkCta;
   /** Secondary CTA opens the Cal.com popup (no href — uses calLink). */
   secondaryCta: Cta;
@@ -224,11 +218,9 @@ export const CAL_LINK = "support-codirity-lz8rjc/30min";
 export const RESPONSE_TIME_CLAIM = "We reply within 24 hours";
 
 export const hero: HeroContent = {
-  badge: "AI & automation, on subscription",
   headline: "Your AI & automation team, on subscription.",
   subhead:
     "Unlimited requests, senior engineering, and AI-accelerated delivery — for one flat monthly rate. Pause or cancel anytime.",
-  visualHeadline: "Unlimited requests. One flat rate.",
   primaryCta: { label: "See pricing", href: "#pricing" },
   // Duration-neutral: the configured Cal event (CAL_LINK) is a 30-minute call, so a
   // "15-min" label would understate the actual booking. Kept short and low-friction.

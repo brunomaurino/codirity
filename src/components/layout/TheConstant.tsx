@@ -1,25 +1,34 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { tiers } from "@/config/offer";
 
 // The constant (HANDOFF-redesign-v4 §1.7): once the hero scrolls out,
-// "$3,995/mo — the number that doesn't move" sits fixed and vertical on the
+// "<price>/mo — the number that doesn't move" sits fixed and vertical on the
 // right margin. Everything on the page moves past it; the price never moves —
-// the flat-rate promise made behavior instead of copy.
+// the flat-rate promise made behavior instead of copy. The figure COMPOSES
+// from tiers[0] (battery finding: the first draft hardcoded it while claiming
+// derivation — the one number the design is named after had no drift guard).
 //
-// Deliberately inert to every input surface: aria-hidden (screen readers get
-// the price from the hero ledger and the terms band, not an ornament),
-// pointer-events none, and never focusable — it cannot trap focus or overlap
-// a focus ring because it does not participate in interaction at all. The
-// figure is the same real tiers[0].price every other surface renders.
+// Inert to every input surface: aria-hidden, pointer-events none, never
+// focusable. Without JS it stays hidden — §1.7 wants it hidden until past the
+// hero, and with no JS the managing classes never apply, so permanent-hidden
+// is the correct degradation (not the old scripting:none opacity:1 force,
+// which showed it chalk-dim over paper at ~1.8:1).
 //
-// Two body classes drive its CSS (globals `.constant`): `past-hero` (visible
-// once #hero has left the viewport) and `on-light` (ink tone while a
-// light-ground section is under the folio's position). Both are IO-driven;
-// under prefers-reduced-motion the CSS transition is inert but the states
-// still apply — the folio simply appears/recolors without animating.
+// Effects re-arm on EVERY route change (battery finding: a root-layout
+// component never unmounts under App Router client navigation, so a
+// once-bound effect left `past-hero` stuck across routes — the folio rendered
+// chalk-dim on /privacy's white ground and never re-found a new #hero).
 export function TheConstant() {
+  const pathname = usePathname();
+
   useEffect(() => {
+    // Reset before re-binding: whatever the previous route left on <body> is
+    // stale by definition.
+    document.body.classList.remove("past-hero", "on-light");
+
     const hero = document.getElementById("hero");
     const heroIO = hero
       ? new IntersectionObserver(([e]) =>
@@ -27,16 +36,24 @@ export function TheConstant() {
         )
       : null;
     if (hero && heroIO) heroIO.observe(hero);
+    // No hero on this route → past-hero stays false → the folio never shows.
+    // That is the intended behavior for secondary pages.
 
-    // Light-ground detection: Section renders data-ground on every section
-    // (light for the paper/white variants). The rootMargin band approximates
-    // the folio's bottom-right position.
+    // on-light: a SET of currently-intersecting light sections, not a
+    // per-batch .some() — IO callbacks after the first carry only CHANGED
+    // entries, so with adjacent light sections a single leave-event used to
+    // wipe the class while another light section was still under the folio
+    // (battery finding: folio rendered chalk-dim over paper for most of the
+    // light run).
+    const lightUnderFolio = new Set<Element>();
     const lightIO = new IntersectionObserver(
-      (entries) =>
-        document.body.classList.toggle(
-          "on-light",
-          entries.some((e) => e.isIntersecting)
-        ),
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) lightUnderFolio.add(e.target);
+          else lightUnderFolio.delete(e.target);
+        });
+        document.body.classList.toggle("on-light", lightUnderFolio.size > 0);
+      },
       { rootMargin: "-75% 0px -18px 0px" }
     );
     document
@@ -48,11 +65,12 @@ export function TheConstant() {
       lightIO.disconnect();
       document.body.classList.remove("past-hero", "on-light");
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <span className="constant" aria-hidden="true">
-      $3,995/mo — the number that doesn&apos;t move
+      {tiers[0].price}
+      {tiers[0].period} — the number that doesn&apos;t move
     </span>
   );
 }

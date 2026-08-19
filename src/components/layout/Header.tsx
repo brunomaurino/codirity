@@ -14,16 +14,28 @@ const navLinks = [
 ];
 
 export function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
+  // overDark: is the DARK hero still under the header band? This replaces the
+  // old `scrollY > 50` driver, which had no relationship to the ground — it
+  // painted chalk-on-white on /privacy (no hero, ~1.1:1, invisible) and a
+  // hard white bar over 90% of the hero's scroll depth (battery BLOCKER).
+  // Default false: pre-hydration every route shows the LIGHT chrome, which is
+  // legible on every ground (a bar over the hero for one frame beats
+  // invisible chrome on light routes); home upgrades to chalk on hydration.
+  const [overDark, setOverDark] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const hero = document.getElementById("hero");
+    // No hero on this route → overDark keeps its initial false (light chrome).
+    if (!hero) return;
+    // Shrink the observation viewport to the header band (~88px): overDark
+    // while any part of the hero is still inside it.
+    const io = new IntersectionObserver(
+      ([e]) => setOverDark(e.isIntersecting),
+      { rootMargin: "0px 0px -88px 0px" }
+    );
+    io.observe(hero);
+    return () => io.disconnect();
   }, []);
 
   // Close mobile menu on resize to desktop
@@ -43,9 +55,11 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-400",
         "px-4 py-5 md:px-8 lg:px-16",
-        // v4 W1: over the DARK hero at scroll-top, over LIGHT sections when
-        // scrolled — the same isScrolled state drives tone and chrome.
-        isScrolled
+        // v4 W1 (battery-corrected): tone tracks the GROUND via the hero
+        // sentinel IO — transparent chalk while the dark hero is under the
+        // header band, the light chrome everywhere else, including routes
+        // that have no hero at all.
+        !overDark
           ? [
               "py-4",
               "bg-white/95 backdrop-blur-xl",
@@ -62,7 +76,7 @@ export function Header() {
           className={cn(
             "flex items-center gap-2 text-2xl font-medium tracking-tight",
             // font-mono retired with the v3 system (W0); tone follows ground.
-            isScrolled ? "text-gray-900" : "text-chalk"
+            !overDark ? "text-gray-900" : "text-chalk"
           )}
         >
           <span>Codirity</span>
@@ -77,7 +91,7 @@ export function Header() {
                 href={link.href}
                 className={cn(
                   "relative text-[0.95rem] font-medium",
-                  isScrolled
+                  !overDark
                     ? "text-gray-600 hover:text-gray-900"
                     : "text-chalk-dim hover:text-chalk",
                   "transition-colors duration-300",
@@ -101,7 +115,7 @@ export function Header() {
             className={cn(
               "btn-pill inline-flex items-center justify-center",
               "px-5 py-2.5 text-sm font-medium",
-              isScrolled
+              !overDark
                 ? "text-gray-700 border border-gray-200 hover:border-brand hover:text-brand hover:bg-brand-pale"
                 : "text-chalk border border-[var(--rule)] hover:border-mint hover:text-mint",
               "transition-all duration-300 cursor-pointer"
@@ -114,7 +128,7 @@ export function Header() {
             className={cn(
               "btn-pill inline-flex items-center gap-2",
               "px-5 py-2.5 text-sm font-medium",
-              isScrolled
+              !overDark
                 ? "bg-brand-fill text-white hover:bg-brand-fill-dark hover:shadow-brand"
                 : "bg-mint text-ground",
               "transition-all duration-300",
@@ -133,9 +147,9 @@ export function Header() {
           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
           {isMobileMenuOpen ? (
-            <X className={cn("w-6 h-6", isScrolled ? "text-gray-800" : "text-chalk")} />
+            <X className={cn("w-6 h-6", !overDark ? "text-gray-800" : "text-chalk")} />
           ) : (
-            <Menu className={cn("w-6 h-6", isScrolled ? "text-gray-800" : "text-chalk")} />
+            <Menu className={cn("w-6 h-6", !overDark ? "text-gray-800" : "text-chalk")} />
           )}
         </button>
       </nav>

@@ -46,14 +46,8 @@ export function useRevealOnScroll({
     // side is inert, so arming immediately just makes content visible.
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // The hero's entrance joins the same system: .in lands on #hero via rAF
-    // (a server-rendered .in would not animate — transitions don't fire on
-    // first paint). Its .line/.fade children inherit the ancestor .in.
-    const hero = document.getElementById("hero");
-    const heroRaf = hero
-      ? requestAnimationFrame(() => hero.classList.add("in"))
-      : 0;
-
+    // The hero's entrance is pure CSS keyframes (.line-rise/.fade-rise) so it
+    // paints before hydration — this hook owns only the SCROLL reveals.
     let v4io: IntersectionObserver | null = null;
     const arm = () => {
       v4io = new IntersectionObserver(
@@ -74,7 +68,6 @@ export function useRevealOnScroll({
     return () => {
       elements.forEach((element) => observer.unobserve(element));
       window.clearTimeout(timer);
-      if (heroRaf) cancelAnimationFrame(heroRaf);
       v4io?.disconnect();
     };
   }, [selector, threshold, rootMargin]);

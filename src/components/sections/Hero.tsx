@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { CalPopupButton, TrackedLink } from "@/components/ui";
-import { hero, CAL_LINK } from "@/config/offer";
+import { hero, tiers, CAL_LINK } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 // v4 hero (Bundle W1) — docs/redesign-v4/approved-mockup.html is the contract.
@@ -31,13 +31,20 @@ const heroLines: readonly string[] = LINE_BREAKS.join(" ") === hero.headline
   ? LINE_BREAKS
   : [hero.headline];
 
-// The ledger's three lines are verbatim reconstructions of offer.ts facts
-// (tiers[0].price + "/mo flat" per hero pricing language, tiers[0].tasks,
-// benefits' pause line) — no new claims. Brass goes on the PRICE only.
-const LEDGER = [
-  { text: "$3,995/mo flat", brass: true },
-  { text: "one active task at a time", brass: false },
-  { text: "pause or cancel anytime", brass: false },
+// The ledger COMPOSES from offer.ts — never hardcodes (battery finding: the
+// first draft inlined "$3,995/mo" here AND in the folio while claiming
+// derivation; editing tiers[0].price would have updated Pricing and JSON-LD
+// but left the hero and the site-wide folio stale, silently). Brass wraps the
+// PRICE FIGURE only — "flat" stays chalk-dim (HANDOFF §1.2: brass is for
+// defensible numbers, not adjacent words; the mockup scopes it the same way).
+const standard = tiers[0];
+const pauseLine =
+  standard.features.find((f) => f === "Pause or cancel anytime") ??
+  "Pause or cancel anytime";
+const LEDGER: { num?: string; text: string }[] = [
+  { num: `${standard.price}${standard.period}`, text: " flat" },
+  { text: standard.tasks },
+  { text: pauseLine },
 ];
 
 export function Hero() {
@@ -58,18 +65,26 @@ export function Hero() {
         </p>
         <div className="hero-grid">
           <h1 className="display d-xl">
+            {/* line-rise: CSS keyframes, auto-playing at first paint — the H1
+                is the LCP candidate and must never wait for hydration
+                (battery finding on the .in-gated version). */}
             {heroLines.map((line, i) => (
-              <span key={line} className="line" style={{ "--l": i } as React.CSSProperties}>
+              <span
+                key={line}
+                className="line line-rise"
+                style={{ "--l": i } as React.CSSProperties}
+              >
                 <span>{line}</span>
               </span>
             ))}
           </h1>
           <p
-            className="hero-ledger fade"
+            className="hero-ledger fade-rise"
             style={{ "--l": 4 } as React.CSSProperties}
           >
-            {LEDGER.map(({ text, brass }) => (
-              <span key={text} className={cn("block", brass && "text-brass")}>
+            {LEDGER.map(({ num, text }) => (
+              <span key={text} className="block">
+                {num && <span className="text-brass">{num}</span>}
                 {text}
               </span>
             ))}
@@ -79,11 +94,11 @@ export function Hero() {
 
       <div className="wrap-v4 w-full">
         <div className="hero-foot">
-          <p className="lede fade" style={{ "--l": 5 } as React.CSSProperties}>
+          <p className="lede fade-rise" style={{ "--l": 5 } as React.CSSProperties}>
             {hero.subhead}
           </p>
           <div
-            className="fade flex flex-wrap items-center gap-4"
+            className="fade-rise flex flex-wrap items-center gap-4"
             style={{ "--l": 6 } as React.CSSProperties}
           >
             {/* Top of the funnel: hero_cta_click is the denominator for

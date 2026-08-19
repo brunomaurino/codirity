@@ -53,10 +53,10 @@ client component in layout; `.constant` CSS added to globals per mockup.
 ## Decisions made unilaterally
 
 - **The mockup's in-hero nav is realized by the SHARED `<Header/>`, restyled dark-aware** — building
-  a second nav inside the hero would double the chrome. The existing `isScrolled` state now drives
-  TONE as well: chalk foregrounds over the dark hero at scroll-top, the existing light chrome once
-  scrolled over light sections. `font-mono` on the brandmark dropped (retired since W0); the dot and
-  nav CTA move to mint.
+  a second nav inside the hero would double the chrome. ~~The existing `isScrolled` state drives
+  TONE as well~~ **superseded by battery BLOCKER #0**: tone now tracks the GROUND via a
+  hero-sentinel IO, not scroll distance (see findings). `font-mono` dropped (retired since W0);
+  dot and nav CTA move to mint.
 - **Both instrumented CTAs stay** (mockup's foot shows one): analytics continuity outranks
   composition, and the mockup's own nav carries the booking CTA anyway.
 - **The Cal button stays UNLABELED** (no `analyticsLocation`): main's hero Cal emitted a bare
@@ -69,9 +69,10 @@ client component in layout; `.constant` CSS added to globals per mockup.
 - **Hand-set headline lines carry a drift fallback**: the three-line split is compared against
   `hero.headline` at module scope — a future copy edit renders one unsplit line instead of stale
   fragments (the same no-duplicate rule the old accent logic followed).
-- **`.in` lands via rAF, never server-rendered** — transitions don't fire on first paint, so an SSR
-  `.in` would kill the entrance. A `@media (scripting: none)` block keeps the page fully visible
-  without JS (the reveal system otherwise hides content until the IO runs).
+- ~~**`.in` lands via rAF for the hero**~~ **superseded by battery MAJOR #6**: the rAF gate
+  blanked the LCP until hydration; the hero entrance is now pure CSS keyframes that paint at first
+  frame (see findings). The `scripting:none` block survives for the below-the-fold `.rv` system
+  only.
 - **Folio tone detection via `Section`'s new `data-ground` attribute** rather than class-sniffing —
   W2–W6 sections inherit it automatically as they migrate.
 
@@ -89,7 +90,35 @@ client component in layout; `.constant` CSS added to globals per mockup.
 
 ## Review findings + resolutions
 
-(Phase 4/5)
+Battery `wf_8719eb7c-d4f` (16 agents, 2+2 rounds, mixed finders, 3 voters): **42 raw → 11 after
+dedup (10 clusters merged) → 11 confirmed (2 BLOCKER, 5 MAJOR, 4 MINOR), 0 refuted, 66 areas
+examined, 0 deferrals.** All 11 applied.
+
+| # | Sev | Where | Resolution |
+|---|---|---|---|
+| 0 | **BLOCKER** 3/3 | Header tone driver | **Fixed.** `scrollY > 50` had no relationship to the ground: /privacy rendered chalk-on-white (~1.1:1, invisible) and 90% of the hero's scroll depth showed a hard white bar over the dark ground. Tone now tracks the GROUND via a hero-sentinel IO (viewport shrunk to the header band); routes without a hero keep the light chrome by default — which is also the legible pre-hydration flash direction on every ground. `isScrolled` is gone entirely. |
+| 1 | MAJOR 3/3 | `TheConstant` lifecycle | **Fixed.** A root-layout component never unmounts under App Router client navigation, so the once-bound effect left `past-hero` stuck across routes and never re-found a new `#hero`. Effects now re-arm on `usePathname()` with a class reset first. |
+| 2 | **BLOCKER** 3/3 | hero-grid breakpoint | **Fixed — and it is the same class of error I credited myself with catching in the mockup, reintroduced one breakpoint over.** 1040 was chosen by arithmetic; the battery MEASURED a −0.59px deficit at exactly 1040 (column 772.09 vs the 7.284em line at 772.69), wrapping until ~1044 and wider with a scrollbar. Breakpoint → **1100** (worst-case margin ≈ +8px with a 15px scrollbar), and this time measured in-browser at 1099/1100 — single-column single-line below, two-column single-line at the boundary. |
+| 3 | MAJOR 3/3 | folio `on-light` | **Fixed.** Per-batch `.some()` over IO entries wipes the class when one section's leave-event arrives while another light section is still under the folio (callbacks after the first carry only CHANGED entries). Now a tracked Set of currently-intersecting targets. |
+| 4 | MAJOR 3/3 | brass scope | **Fixed.** The whole string "$3,995/mo flat" wore brass; §1.2 scopes brass to defensible NUMBERS and the mockup leaves "flat" chalk-dim. The row model now carries `num`/`text` separately — a structural fix, since the old per-row boolean couldn't express the split. |
+| 5 | MAJOR 3/3 | price provenance | **Fixed.** "$3,995/mo" was HARDCODED in the hero ledger and the site-wide folio — while both files' comments claimed derivation, and while the headline had a drift guard the price lacked. The one number the design is named after now composes from `tiers[0].price + period` in both places. |
+| 6 | MAJOR 3/3 | LCP gated on hydration | **Fixed.** The `.in`-gated entrance painted a BLANK hero (H1 = the LCP candidate, ledger, lede, CTAs) until JS hydrated — a regression vs main's pure-CSS animation. The hero entrance is now pure CSS keyframes (`.line-rise`/`.fade-rise`, auto-playing at first paint); the IO system keeps the below-the-fold scroll reveals where hydration timing is invisible. |
+| 7 | MINOR | `Section` comment | **Fixed** — the comment claimed `gradient` maps dark; the code (correctly) maps it light. |
+| 8 | MINOR | `offer.ts` orphans | **Fixed.** `hero.badge` + `hero.visualHeadline` had zero consumers after the visual's deletion but stayed REQUIRED on the interface, reading as live copy. Both removed. |
+| 9 | MINOR | folio no-JS | **Fixed.** `scripting:none` forced the folio visible — permanently chalk-dim over paper (~1.8:1) and visible over the hero §1.7 says it must hide behind. Without JS it now stays hidden (the correct degradation for an ornament whose states are JS-managed). |
+| 10 | MINOR | folio reduced-motion | **Fixed.** `.constant`'s transition wasn't in the kill-list; the comment claiming otherwise was wrong. Added. |
+
+### Post-fix re-verification
+
+tsc ✅ eslint ✅ clean build ✅. **27 final gates ALL PASS** — including: brass span is exactly the
+price; hero AND folio compose from `tiers[0]` (comment-stripped source check); keyframe entrance
+compiled with reduced-motion + no-JS coverage; breakpoint 1100 compiled and measured at
+1099/1100 in-browser; header has no scroll-distance tone driver; analytics delta is exactly the
+removed `hero_visual` emitter. Environment note: the verification browser reports
+`prefers-reduced-motion: reduce` and runs hidden (IOs paused), so the OBSERVED states were the
+reduced-motion static hero (visible, correct) and the header's pre-signal light default (legible,
+correct) — the animated/chalk paths are keyframe- and 4-line-IO-driven respectively and were
+verified at the code + compiled-chunk level. Document: **29,543 B gz, −1,422 vs the W0 baseline.**
 
 ## Pre-battery verification (Phase 6 evidence)
 
@@ -120,10 +149,13 @@ client component in layout; `.constant` CSS added to globals per mockup.
 
 ## Open items NOT addressed in this PR
 
-(Phase 7)
+All in `commitments.md` as W2/W6 awareness — none are deferrals. Operator-owned: the hero Cal
+button's optional analytics label; the Trello template board's stale "75%" (since v3).
 
 ## Durable handles
 
 - marker: $HOME/.claude/autonomous-active/autonomous-task-redesign-v4-w1 (+ .json sidecar)
 - worktree: /Users/brunomaurino/projects/codirity-rv4-w1
 - worktree_entry: path
+- battery_run_id: `wf_8719eb7c-d4f` (2+2 rounds, mixed finder, 3 voters, `customAgents: false`).
+  On session death RESUME via `resumeFromRunId`; read `journal.jsonl` first.

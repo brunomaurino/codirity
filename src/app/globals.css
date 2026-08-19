@@ -671,13 +671,15 @@ body {
     display: grid;
     gap: 28px;
   }
-  /* 1040px, not the mockup's 980: measured with the real font, the longest
-     hand-set line is 7.284em, and the two-column grid costs the H1 column
-     ~260px (padding + ledger + gap). Below vw≈1012 that column is narrower
-     than the line at 10.2vw — the mockup's own "verified at 980" was false,
-     caught by this bundle's line-wrap gate. Single column until the math
-     clears, with margin. */
-  @media (min-width: 1040px) {
+  /* 1100px. History, because this boundary has now bitten THREE times:
+     the mockup claimed 980 (false — the two-column grid costs the H1 column
+     ~260px); this bundle first chose 1040 by arithmetic, and the battery
+     measured a −0.59px deficit AT exactly 1040 (fs 106.08, column 772.09 vs
+     the 7.284em line at 772.69) — wrapping until ~1044, wider with a 15px
+     scrollbar. 1100 clears with real margin: worst case (15px scrollbar)
+     column = 1100−15−96−136−28 = 825px vs line 7.284 × .102 × 1100 ≈ 817px.
+     MEASURED in-browser at 1099/1100/1110/1280 this time, not derived. */
+  @media (min-width: 1100px) {
     .hero-grid {
       grid-template-columns: 1fr auto;
       align-items: end;
@@ -728,20 +730,54 @@ body {
   }
 }
 
-/* No-JS fallback: the reveal system hides content until .in arrives from the
-   IO/rAF. Without scripting, render everything in place — the SSR copy is
-   already there, it must also be VISIBLE. */
+/* HERO entrance: pure CSS keyframes, NOT the IO/.in system — keyframes
+   auto-play at first paint, so the H1 (the LCP candidate), ledger, lede and
+   CTAs are visible before hydration. The battery measured the .in-gated
+   version painting a blank hero until JS ran; main's old hero never had that
+   regression and neither may this one. The IO system stays for SCROLL
+   reveals (below the fold), where hydration timing is invisible. */
+@layer components {
+  .line-rise > span {
+    animation: v4-rise 0.95s var(--ease) both;
+    animation-delay: calc(var(--l, 0) * 110ms);
+  }
+  .fade-rise {
+    animation: v4-fadeup 0.65s var(--ease) both;
+    animation-delay: calc(var(--l, 0) * 90ms);
+  }
+}
+@keyframes v4-rise {
+  from {
+    transform: translateY(115%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes v4-fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* No-JS fallback for the SCROLL reveal system only. The hero needs none (its
+   keyframes are CSS-auto); the folio stays HIDDEN without JS — §1.7 wants it
+   hidden until past the hero, and without JS the body classes that manage
+   that never apply, so permanent-hidden is the correct degradation (battery
+   finding: the old opacity:1 force showed it chalk-dim over paper, ~1.8:1). */
 @media (scripting: none) {
-  .line > span {
+  .rv .line > span {
     transform: none;
   }
   .fade,
   .rv .fade {
     opacity: 1;
     transform: none;
-  }
-  .constant {
-    opacity: 1;
   }
 }
 
@@ -753,10 +789,20 @@ body {
     scroll-behavior: auto;
   }
   .line > span,
+  .line-rise > span,
   .fade,
-  .reveal {
+  .fade-rise,
+  .reveal,
+  .constant {
     animation: none !important;
     transition: none !important;
+  }
+  .line-rise > span {
+    transform: none;
+  }
+  .fade-rise {
+    opacity: 1;
+    transform: none;
   }
   /* Legacy v3 animations still live on the page until their bundles rework
      them (Phase 4/5 review: the original kill-list only covered the NEW
