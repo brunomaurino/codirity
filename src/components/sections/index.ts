@@ -20,8 +20,6 @@ export { Faq } from "./Faq";
 export { About } from "./About";
 
 export { Pricing } from "./Pricing";
-export { PricingCard } from "./PricingCard";
-export type { PricingCardProps } from "./PricingCard";
 
 export { Contact } from "./Contact";
 export { ContactInfo } from "./ContactInfo";
