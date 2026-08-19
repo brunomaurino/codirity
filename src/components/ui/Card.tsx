@@ -16,7 +16,11 @@ const cardVariants = cva(
           "hover:shadow-xl hover:border-brand/30 hover:-translate-y-2",
         ],
         featured: [
-          "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
+          // v4 W0: --blob-forest was deleted with the blob system; the gradient's
+          // to-stop would silently resolve to TRANSPARENT under white text
+          // (Tailwind v4 @property initial-value — Phase 4/5 review). Flat v4
+          // deep surface until this component's own bundle reworks it.
+          "bg-ground-2",
           "text-white",
           "border-0",
         ],

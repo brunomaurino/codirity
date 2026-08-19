@@ -19,8 +19,11 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "flex-start",
           justifyContent: "center",
-          background:
-            "linear-gradient(135deg, #0B4E30 0%, #189656 60%, #1CAE6B 100%)",
+          // v4 W0 (Phase 4/5 review — the launch command's OG check had been
+          // done for theme-color but this file was missed): the retired v3
+          // gradient is replaced by the v4 fixed ground. Flat and still, per
+          // the system — the stillness IS the brand statement.
+          background: "#0A1712",
           padding: "96px",
           fontFamily: "sans-serif",
         }}
@@ -29,7 +32,9 @@ export default function OpengraphImage() {
           <div
             style={{
               fontSize: 96,
-              fontWeight: 800,
+              // 500, matching the site's weight discipline (Apfel has no 800;
+              // this canvas used a synthesized ultra-bold of a retired face).
+              fontWeight: 500,
               color: "#FFFFFF",
               letterSpacing: "-0.03em",
             }}
@@ -41,7 +46,7 @@ export default function OpengraphImage() {
               width: 26,
               height: 26,
               borderRadius: "9999px",
-              background: "#E8A93D",
+              background: "#6EE7A8", // mint — the v4 live-dot color
             }}
           />
         </div>
@@ -50,7 +55,7 @@ export default function OpengraphImage() {
             marginTop: 28,
             fontSize: 44,
             lineHeight: 1.25,
-            color: "#DFF6E9",
+            color: "#A9B8AF", // chalk-dim on ground: 8.9:1
             maxWidth: 900,
             fontWeight: 500,
           }}

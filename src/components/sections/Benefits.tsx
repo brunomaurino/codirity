@@ -65,7 +65,7 @@ export function Benefits() {
                   <div
                     className={cn(
                       "w-12 h-12 rounded-xl mb-5",
-                      "bg-black/20 backdrop-blur-sm",
+                      "bg-black/20 backdrop-blur-sm border border-[var(--rule)]",
                       "flex items-center justify-center",
                       "transition-transform duration-400",
                       "group-hover:scale-110 group-hover:-rotate-5"

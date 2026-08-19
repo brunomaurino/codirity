@@ -57,7 +57,7 @@ export function RecentWork() {
                     className={cn(
                       "btn-pill inline-flex items-center",
                       "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
-                      "bg-black/20"
+                      "bg-black/20 border border-[var(--rule)]"
                     )}
                   >
                     Client
@@ -67,7 +67,7 @@ export function RecentWork() {
                       className={cn(
                         "btn-pill inline-flex items-center",
                         "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
-                        "bg-black/20"
+                        "bg-black/20 border border-[var(--rule)]"
                       )}
                     >
                       pre-launch

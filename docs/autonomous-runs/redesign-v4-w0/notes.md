@@ -104,7 +104,12 @@ script-stripped body check, document gzip delta vs `main` @ `487dd06`.
   being re-pointed to v4 colors: those values are AA-verified against the surfaces that still
   consume them, and re-pointing them under unchanged consumers is how a token flip ships invisible
   text (v3 V0's `--white` incident). Only three tokens moved: `--gray-900`→ink `#0A1712`,
-  `--gray-800`→ground-2, `--ink`→`#0A1712` — strictly darker on light surfaces, contrast improves.
+  `--gray-800`→ground-2, `--ink`→`#0A1712`. ~~strictly darker on light surfaces, contrast
+  improves~~ **Corrected by the battery: WRONG — `#0A1712` is LIGHTER than the old `#0a0a08` in
+  every channel.** As text on light surfaces the delta is negligible (both ≈19:1), but as the ink
+  BAND's background the lightening dropped `text-brand-light` under AA — battery finding #0, fixed
+  by re-tuning `--green-light` to `#45936F` (4.94:1). The unverified directional claim entered the
+  audit trail as fact; struck through rather than deleted.
   New v4 tokens live alongside; W1–W6 migrate consumers; W6 deletes the aliases.
 - **`--font-weight-bold: 500` remap in `@theme` PLUS call-site conversion** (`font-bold`/
   `font-semibold` → `font-medium`, 22 files). Apfel ships 400/500 only; without the remap a stray
@@ -144,7 +149,34 @@ script-stripped body check, document gzip delta vs `main` @ `487dd06`.
 
 ## Review findings + resolutions
 
-(filled in Phase 4/5)
+Battery `wf_205956aa-717` (19 agents, 2 adversarial + 2 QA, mixed opus/sonnet finders, 3 verify
+voters): **40 raw → 15 after semantic dedup (9 clusters merged) → 15 confirmed, 0 refuted, 62
+areas examined.** 0 deferrals, 0 escalations. **All 15 applied inline.**
+
+| # | Sev | Where | Resolution |
+|---|---|---|---|
+| 0 | MAJOR 3/3 | `--gray-900` re-point | **Fixed.** Lightening the ink band to `#0A1712` dropped `text-brand-light` to 4.41:1 on it (mailto link + ink eyebrow) — and this diff had DELETED the v3 comment that warned about exactly this pair. `--green-light` re-tuned to `#45936F` (4.94:1 on the band), with the warning comment restored in v4 form. |
+| 1 | MINOR 6-source | `Card.tsx` + `ServiceCard.tsx` | **Fixed.** Featured gradients still referenced the deleted `--blob-forest`; Tailwind's `@property` initial makes the to-stop TRANSPARENT under white text. Both now `bg-ground-2`. The dead utility also kept compiling because `design-system.md`'s historical sample carries the literal class and Tailwind scans docs — sample neutralized. |
+| 2 | MAJOR 3/3 | `opengraph-image.tsx` | **Fixed.** The launch command required the OG check; theme-color was updated but this file was missed — it still painted the retired v3 gradient at fontWeight 800. Now the v4 fixed ground, mint dot, chalk-dim line, weight 500. |
+| 3 | MAJOR 3/3 | `.lede` | **Fixed.** The mockup defines paper-ground overrides for both `.label` and `.lede`; only `.label-ink` was ported, leaving `.lede` at ~1.76:1 on paper for W5's first consumer. `.lede-ink` added. |
+| 4 | MAJOR 3/3 | `.d-xl` | **Fixed.** My rem+vw "improvement" of the mockup's clamp was an INEQUIVALENT curve — ~32% larger at 375px, overflowing the hero's longest line. Mockup's exact curve restored, with the bare-vw trade-off documented in place (rem floor/cap bound the zoom concern; W1 re-verifies). |
+| 5 | MAJOR 3/3 | reduced-motion | **Fixed.** The kill-list covered only the NEW system (zero consumers) while ~15 live v3 animations kept running. Now `[class*="animate-"]` is killed AND `animate-slide-up`/`fade-in` force `opacity:1` — several call sites pair `opacity-0` with the animation, so killing it alone would have left content permanently invisible. |
+| 6 | MAJOR 2/3 | flat-surface chips | **Fixed.** `bg-black/20` scrims computed ~1.06:1 against the flat interim panel (WCAG 1.4.11 needs 3:1 for component boundaries). Hairline `--rule` borders on the 5 chip sites (HeroVisual ×2, Benefits, RecentWork ×2) until their bundles rework them. |
+| 7 | MAJOR 3/3 | native `<strong>`/`<b>` | **Fixed.** The remap intercepts Tailwind utilities, not Preflight's `b,strong{font-weight:bolder}` — the privacy page's ~18 `<strong>` tags synthesized the exact faux-bold the remap exists to kill. `strong,b{font-weight:500}` in `@layer base`. |
+| 8 | MINOR 3/3 | `@theme` | **Fixed.** None of the v4 tokens were exposed as utilities (a future `text-mint` would silently no-op) and `--color-brass` changed meaning without an audit. All v4 tokens aliased, with a loud brass caveat: numbers-on-dark only, ~2:1 on paper. |
+| 9 | MAJOR 3/3 | `CLAUDE.md` + `design-system.md` | **Fixed.** The declared styling authorities still described the deleted v3 system. CLAUDE.md's design bullets rewritten to v4; design-system.md gets a SUPERSEDED banner pointing at the HANDOFF + mockup, with the v3 body kept as marked historical reference until W6 replaces the file. |
+| 10 | MINOR | this file | **Fixed.** My "strictly darker, contrast improves" claim was directionally WRONG (`#0A1712` is lighter than `#0a0a08` in every channel) and had entered the audit trail unverified — struck through with the correction, not deleted. |
+| 11 | MINOR | `viewport.themeColor` | **Accepted + documented** (the one non-edit resolution): near-black browser chrome above the still-light hero is visibly odd for the W0→W1 interim, correct as the end state. W1 is the next bundle and flips the hero dark; re-pointing to paper now would mean re-flipping in days. Recorded here and in the PR body. |
+| 12 | MINOR | stale comments | **Fixed.** `Section.tsx`/`SectionHeader.tsx`/`ContactInfo.tsx` still cited `#0a0a08`/dark-mode facts from the deleted world. |
+| 13 | MINOR | `blob.ts` + `PricingCard` | **Fixed.** The blob-rotation apparatus is now a no-op that read as intentional; marked as interim no-op (W2–W5 rework, W6 deletes). |
+| 14 | MINOR | `AccentWord` TSDoc + `offer.ts` | **Fixed.** Both described the retired mechanism as load-bearing; now marked pass-through/retired with the removal owner named. |
+
+### Post-fix re-verification
+
+`tsc` ✅ `eslint` ✅ clean `npm run build` ✅. 13 post-fix gates ALL PASS (green-light in chunk +
+≥4.5 on the band, `.lede-ink` compiled, mockup `.d-xl` curve restored, `strong/b` pinned,
+`animate-*` covered with forced visibility, v4 tokens aliased, no `--blob-forest` refs, v3 OG
+palette gone, chip borders present). Document: **30,965 B gz** — still **−653 B vs main**.
 
 ## Pre-battery verification (Phase 6 evidence)
 
@@ -172,7 +204,11 @@ script-stripped body check, document gzip delta vs `main` @ `487dd06`.
 
 ## Open items NOT addressed in this PR
 
-(filled in Phase 7)
+All tracked in `commitments.md` as W1/W6 awareness items — none are deferrals: the themeColor
+interim (closes with W1's hero), the `.d-xl` re-verification against the real hero (W1), and the
+W6 retirement-sweep list this bundle created (aliases, inert `dark:` classes, legacy reveal,
+`blob.ts`/`AccentWord`, design-system.md rewrite). Operator-owned and unchanged: the live Trello
+template board still says "75% back".
 
 ## Durable handles
 
@@ -180,3 +216,6 @@ script-stripped body check, document gzip delta vs `main` @ `487dd06`.
 - worktree: /Users/brunomaurino/projects/codirity-rv4-w0
 - worktree_entry: path
 - cron: (loop's `39880892` covers this run)
+- battery_run_id: `wf_205956aa-717` (2 adversarial + 2 QA, mixed finder, 3 verify voters,
+  `effortTiers: true`, `customAgents: false`). If this session dies mid-battery, RESUME via
+  `resumeFromRunId` — read `journal.jsonl` in the transcript dir first; never re-run from scratch.

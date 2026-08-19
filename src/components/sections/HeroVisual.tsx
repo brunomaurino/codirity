@@ -36,7 +36,7 @@ export function HeroVisual() {
           className={cn(
             "inline-flex w-fit items-center gap-2",
             "px-4 py-1.5 rounded-full",
-            "bg-black/20 backdrop-blur-sm",
+            "bg-black/20 backdrop-blur-sm border border-[var(--rule)]",
             "text-sm font-medium"
           )}
         >
@@ -59,7 +59,7 @@ export function HeroVisual() {
             className={cn(
               "btn-pill inline-flex items-center justify-center gap-2",
               "px-6 py-3 text-sm font-medium",
-              "bg-black/20 hover:bg-black/30",
+              "bg-black/20 hover:bg-black/30 border border-[var(--rule)]",
               "transition-all duration-300"
             )}
           >

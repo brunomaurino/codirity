@@ -36,7 +36,11 @@ export function ServiceCard({
           ? [
               "col-span-1 md:col-span-2 row-span-1 md:row-span-2",
               "flex flex-col justify-between",
-              "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
+              // v4 W0: --blob-forest was deleted with the blob system; the gradient's
+          // to-stop would silently resolve to TRANSPARENT under white text
+          // (Tailwind v4 @property initial-value — Phase 4/5 review). Flat v4
+          // deep surface until this component's own bundle reworks it.
+          "bg-ground-2",
               "text-white border-0",
             ]
           : [

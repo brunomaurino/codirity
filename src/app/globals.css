@@ -38,7 +38,14 @@
      these. ===== */
   --green-dark: #0f6b3d;
   --green-main: #127a44;
-  --green-light: #3f8a68;
+  /* #45936F, not v3's #3f8a68: the --gray-900 re-point to #0A1712 LIGHTENED
+     the ink band, and the old value dropped to 4.41:1 there (under AA for the
+     mailto link + ink-tone eyebrow that sit on it). #45936F measures 4.94:1
+     on #0A1712. Its only live consumers are ON that band (V6) — it is not
+     body text on paper. Found in W0's Phase 4/5 review, which also caught
+     that the v3 comment warning about exactly this pair had been deleted in
+     the same diff. */
+  --green-light: #45936F;
   --green-pale: rgba(18, 122, 68, 0.08);
   --green-glow: rgba(18, 122, 68, 0.12);
   --green-fill-dark: var(--green-dark);
@@ -102,6 +109,21 @@
   --color-brand-fill-dark: var(--green-fill-dark);
   --color-brand-fill: var(--green-fill);
   --color-sage: var(--sage);
+
+  /* v4 tokens as real utilities (text-mint, bg-ground, …) — without these a
+     future bundle's text-mint would be a SILENT no-op (Tailwind v4 drops
+     unknown theme colors rather than erroring; Phase 4/5 review). --brass is
+     the v4 value #C8A24A: a NUMBERS-ON-DARK color (7.6:1 on ground) that is
+     NOT AA as text on paper (~2:1) — never use text-brass on a light
+     surface. */
+  --color-ground: var(--ground);
+  --color-ground-2: var(--ground-2);
+  --color-paper-v4: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-chalk: var(--chalk);
+  --color-chalk-dim: var(--chalk-dim);
+  --color-ink-dim: var(--ink-dim);
+  --color-mint: var(--mint);
   --color-brass: var(--brass);
 
   /* HANDOFF §1's paper/ink vocabulary — exposed as real Tailwind utilities
@@ -176,6 +198,16 @@ body {
    component's own weight utility still wins when present — though with the
    --font-weight-bold remap above, even font-bold now resolves to 500. */
 @layer base {
+  /* Apfel ships 400/500 only. The --font-weight-bold remap intercepts
+     Tailwind's font-bold utility, but Preflight's `b,strong{font-weight:
+     bolder}` still requests 700 and the browser SYNTHESIZES a faux bold —
+     the artifact the remap exists to eliminate (privacy page's ~18 <strong>
+     tags; Phase 4/5 review). 500 is the strongest real face. */
+  strong,
+  b {
+    font-weight: 500;
+  }
+
   h1,
   h2,
   h3,
@@ -513,7 +545,14 @@ body {
     margin: 0;
   }
   .d-xl {
-    font-size: clamp(2.3rem, 1rem + 9.2vw, 8.4rem);
+    /* The mockup's EXACT curve, deliberately bare-vw in the middle term: the
+       size is derived from the hero's longest hand-set line and was verified
+       single-line at 375/980/1280 with the real font. W0's first draft
+       "improved" this to rem+vw and rendered ~32% larger at 375px — an
+       inequivalent curve that overflowed the line (Phase 4/5 review). The
+       floor and cap are rem, which bounds the text-only-zoom concern the
+       rem+vw rule exists for; W1 re-verifies against the real hero. */
+    font-size: clamp(2.3rem, 10.2vw, 8.4rem);
     letter-spacing: -0.018em;
     line-height: 0.95;
   }
@@ -533,6 +572,12 @@ body {
     margin: 0;
   }
   .label-ink {
+    color: var(--ink-dim);
+  }
+  /* Paper-ground sibling of .lede — the mockup's `.light .lede` port. Without
+     it, .lede's chalk-dim measures ~1.76:1 on paper (invisible); W5's paper
+     run is the first consumer (Phase 4/5 review). */
+  .lede-ink {
     color: var(--ink-dim);
   }
   .lede {
@@ -612,6 +657,20 @@ body {
   .reveal {
     animation: none !important;
     transition: none !important;
+  }
+  /* Legacy v3 animations still live on the page until their bundles rework
+     them (Phase 4/5 review: the original kill-list only covered the NEW
+     system, which has no consumers yet, while ~15 running animations were
+     untouched). Entrance animations must ALSO force visibility — several
+     call sites pair `opacity-0` with `animate-slide-up`, so killing the
+     animation alone would leave content permanently invisible. */
+  [class*="animate-"] {
+    animation: none !important;
+  }
+  .animate-slide-up,
+  .animate-fade-in {
+    opacity: 1 !important;
+    transform: none !important;
   }
   .line > span {
     transform: none;

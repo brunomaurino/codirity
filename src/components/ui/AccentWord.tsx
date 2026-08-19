@@ -1,4 +1,8 @@
-/**
+/** ⚠️ v4 W0: PASS-THROUGH. The `.accent` treatment is retired — this
+ * component now renders `text` unmodified (see the body). The description
+ * below documents the RETIRED behavior for the diff's sake only; W6 deletes
+ * this file.
+ *
  * The HANDOFF §1.2 one-word-per-headline emphasis technique: renders `text`
  * with the FIRST WHOLE-WORD occurrence of `word` wrapped in the `.accent`
  * utility (Instrument Serif Italic), everything else plain. Falls back to

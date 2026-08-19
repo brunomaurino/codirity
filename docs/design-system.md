@@ -2,12 +2,28 @@
 
 > Design style guide for building consistent UI components with Shadcn and Tailwind CSS.
 >
-> **Palette: "Monthly Club" (redesign v3, since 2026-08-18).** Values below are
-> the LIGHT-mode tokens actually shipped in `src/app/globals.css` (source of
-> truth — this doc is a readable mirror of it, not the reverse). Dark mode
-> repoints most of these; see `[data-theme="dark"]` in that file for the exact
-> dark values, since several (the greens especially) are NOT simple inversions
-> — they're independently contrast-tuned for their own background.
+> ## ⚠️ SUPERSEDED BY REDESIGN v4 (2026-08-18) — read this first
+>
+> **The authority for all NEW styling decisions is `docs/HANDOFF-redesign-v4.md`
+> §1 plus the approved mockup `docs/redesign-v4/approved-mockup.html`.** The v4
+> system: the brand green IS the ground (`--ground #0A1712`, `--ground-2`,
+> `--paper #EDEDE6`, `--chalk`, `--chalk-dim`, `--ink-dim`); `--mint #6EE7A8`
+> only on live/interactive elements; `--brass #C8A24A` only on defensible
+> numbers ON DARK (≈2:1 on paper — never text on a light surface). **SINGLE
+> THEME** — there is no dark mode: the `[data-theme]` machinery is deleted and
+> the `dark:` variant is neutralized (W0) until its classes are swept (W6).
+> **ONE typeface** — Apfel Grotezk, self-hosted, 400 body / 500 display, and
+> hierarchy comes from SIZE, never weight: no 600/700 exists anywhere
+> (`--font-weight-bold` → 500; native `strong`/`b` pinned to 500). Type scale:
+> `.d-xl/.d-lg/.d-md/.label(.label-ink)/.lede(.lede-ink)`; ground transitions
+> via `.band-dl/.band-ld`; one entrance gesture (`.line` rise + `.fade`) on
+> `--ease`; **prices never animate**.
+>
+> Everything below this banner describes the **v3 "Monthly Club" system**,
+> which W0 deleted or aliased. It is kept as a historical reference for the
+> W1–W6 rework only — the dark-mode tables, the `.accent`/blob/glass sections
+> and the weight guidance no longer describe the shipped code. W6's sweep
+> replaces this file.
 
 ---
 
@@ -187,7 +203,7 @@ default green tint is meant to be overridden on dark/blob surfaces).
 #### Featured Card (Dark)
 
 ```jsx
-<Card className="bg-gradient-to-br from-brand-dark to-[var(--blob-forest)] text-white border-0 rounded-3xl p-8 md:p-10">
+<Card className="bg-gradient-to-br from-brand-dark to-[ var(--blob-forest)] text-white border-0 rounded-3xl p-8 md:p-10">
   <CardContent>
     {/* Content */}
   </CardContent>

@@ -28,8 +28,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Refer to `docs/design-system.md` for all styling decisions. Key points:
 
-- **Brand colors**: "Monthly Club" palette (`brand-dark: #0F6B3D`, `brand: #127A44`, `brand-light: #3F8A68`, paper background `#EBEBE4`, ink `#0A0A08`; supporting `sage #F5F5F0`, rare `brass #8B5A16`; dark mode repoints these — see `src/app/globals.css` `[data-theme="dark"]`)
-- **Fonts**: Figtree (headings/body/everything — one family, weight carries the hierarchy), Instrument Serif Italic (`.accent` utility, one word per headline only)
-- **Shape**: pill buttons, 16-22px card radius (`.card-soft`), blob-gradient utilities (`.blob-1`-`.blob-4`), glassmorphic dark card (`.glass-dark`)
+- **System (redesign v4, "The Number That Doesn't Move")**: the approved mockup at `docs/redesign-v4/approved-mockup.html` is the visual CONTRACT and `docs/HANDOFF-redesign-v4.md` §1 the spec. The brand green is the GROUND, not an accent: `ground #0A1712`, `ground-2 #10241B`, `paper #EDEDE6`, `chalk #F4F7F2`, `chalk-dim #A9B8AF`, `ink-dim #4C5B52`; `mint #6EE7A8` ONLY on live/interactive elements; `brass #C8A24A` ONLY on defensible numbers ON DARK (not AA as text on paper). SINGLE THEME — no dark mode, no `data-theme`; the `dark:` variant is neutralized until W6 sweeps the classes. Legacy `brand-*`/gray tokens survive as interim aliases only.
+- **Fonts**: Apfel Grotezk, self-hosted (`src/fonts/`, OFL) — ONE family; Regular 400 body, Mittel 500 for ALL display. Hierarchy comes from SIZE, never weight: no 600/700 anywhere (`--font-weight-bold` remaps to 500; native `strong`/`b` pinned to 500).
+- **Shape/motion**: pill buttons, 18px `.card-soft`; type scale `.d-xl/.d-lg/.d-md/.label/.lede`; ground transitions via `.band-dl`/`.band-ld` (grounds never hard-cut); one entrance gesture (`.line` masked rise + `.fade`), house curve `--ease`; prices never animate
 - **Components**: Shadcn UI with custom styling (rounded-full buttons, rounded-2xl/rounded-3xl cards)
 - **Icons**: Lucide React
