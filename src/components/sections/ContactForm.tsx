@@ -4,15 +4,24 @@ import { useState, FormEvent } from "react";
 import { Send, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input, Select, Button } from "@/components/ui";
-import { RESPONSE_TIME_CLAIM } from "@/config/offer";
+import { RESPONSE_TIME_CLAIM, included } from "@/config/offer";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
+// COMPOSED from offer.ts, not written here. These were four invented category
+// names — "Process Automation", "System Development", "AI Integration",
+// "Legacy Modernization" — none of which appear anywhere in offer.ts. W6
+// deleted the identical four strings from the footer as a fabrication, and
+// leaving them in the form on the SAME screen would have applied that ruling to
+// one element and not the one beside it (Phase 4/5 review).
+//
+// The value is a stable slug so the API and any saved submissions keep working;
+// only the LABEL changes, and it now traces to `included[]`.
 const serviceOptions = [
-  { value: "automation", label: "Process Automation" },
-  { value: "development", label: "System Development" },
-  { value: "ai", label: "AI Integration" },
-  { value: "modernization", label: "Legacy Modernization" },
+  ...included.map((label) => ({
+    value: label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+    label,
+  })),
   { value: "other", label: "Other / Not Sure" },
 ];
 
@@ -106,7 +115,7 @@ export function ContactForm() {
     <div
       className={cn(
         "relative overflow-hidden",
-        "bg-white dark:bg-gray-800 border border-[var(--border)] rounded-2xl",
+        "bg-white border border-[var(--border)] rounded-2xl",
         "p-8 md:p-10 shadow-lg",
         "before:absolute before:top-0 before:left-0 before:right-0 before:h-1",
         "before:bg-gradient-to-r before:from-brand-dark before:via-brand before:to-brand-light"
@@ -122,10 +131,10 @@ export function ContactForm() {
             this bundle: this sub-copy and the privacy note below both moved off
             `text-gray-500`, which measures 4.47:1 on the white card — under AA
             for 14px text. */}
-        <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+        <h3 className="text-xl font-medium text-gray-900 mb-2">
           Write it out
         </h3>
-        <p className="text-[0.95rem] text-gray-600 dark:text-gray-400">
+        <p className="text-[0.95rem] text-gray-600">
           A paragraph is plenty. {RESPONSE_TIME_CLAIM}.
         </p>
       </div>
@@ -191,7 +200,7 @@ export function ContactForm() {
         <div className="w-full">
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-gray-700 mb-2"
           >
             How Can We Help? *
           </label>
@@ -205,9 +214,9 @@ export function ContactForm() {
             disabled={isSubmitting}
             className={cn(
               "w-full min-h-[130px] resize-y",
-              "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl",
-              "px-4 py-3 text-sm text-gray-900 dark:text-white",
-              "placeholder:text-gray-400 dark:placeholder:text-gray-500",
+              "bg-white border border-gray-200 rounded-xl",
+              "px-4 py-3 text-sm text-gray-900",
+              "placeholder:text-ink-dim",
               "transition-all duration-300",
               "focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand",
               "disabled:opacity-60 disabled:cursor-not-allowed"
@@ -233,7 +242,7 @@ export function ContactForm() {
         </div>
 
         {/* Privacy Note */}
-        <p className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600 dark:text-gray-400">
+        <p className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
           <Lock className="w-4 h-4 stroke-brand" />
           Your information is secure and will never be shared.
         </p>

@@ -159,7 +159,7 @@ export function Header() {
         className={cn(
           "lg:hidden",
           "fixed inset-x-0 top-[72px]",
-          "bg-white dark:bg-gray-900 border-b border-[var(--border)]",
+          "bg-white border-b border-[var(--border)]",
           "shadow-lg",
           "transition-all duration-300 ease-[var(--transition-smooth)]",
           isMobileMenuOpen
@@ -176,9 +176,9 @@ export function Header() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
                     "block py-3 px-4 rounded-xl",
-                    "text-gray-700 dark:text-gray-300 text-lg font-medium",
+                    "text-gray-700 text-lg font-medium",
                     "transition-colors duration-200",
-                    "hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                    "hover:bg-gray-50 hover:text-gray-900"
                   )}
                 >
                   {link.label}
@@ -186,14 +186,14 @@ export function Header() {
               </li>
             ))}
           </ul>
-          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+          <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col gap-3">
             <CalPopupButton
               calLink={CAL_LINK}
               onOpen={() => setIsMobileMenuOpen(false)}
               className={cn(
                 "flex items-center justify-center",
                 "w-full px-6 py-4 rounded-full",
-                "text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
+                "text-gray-700 border border-gray-200",
                 "font-medium text-base",
                 "transition-all duration-300 cursor-pointer"
               )}

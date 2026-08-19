@@ -1,28 +1,31 @@
-import { Section, Container } from "@/components/layout";
 import { ContactInfo } from "./ContactInfo";
 import { ContactForm } from "./ContactForm";
 
-// The close (HANDOFF-redesign-v3.md §1 rule 4): the whole site is light-on-warm-
-// neutral except this band and the footer directly beneath it, which flip to
-// near-black. It is the ONE deliberate palette contrast beat on the site — the
-// `ink` variant exists for this section and should not be used a second time.
+// The close (Bundle W6, v4 treatment) — a bare <section> carrying the dark
+// ground, continuous with the ownership quote above it and the footer below, so
+// the three read as one closing band rather than three stacked slabs.
 //
-// `padding` drops from `hero` (min-h-screen) to the default: the band reads as a
-// closing beat that runs into the footer, and a full extra viewport of black
-// separated the two into a void rather than one continuous band.
+// The FORM STAYS. The approved mockup's close is headline + address + trust
+// line with no form, but the form is a live conversion surface with its own
+// instrumented events and an API route behind it — removing a working
+// conversion path is not a visual matter, and the mockup is a direction
+// artifact, not a funnel decision. The mockup's treatment is applied AROUND it.
+
 export function Contact() {
   return (
-    <Section id="contact" variant="ink">
-      <Container size="narrow">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-16 items-start">
-          <div className="reveal">
-            <ContactInfo />
-          </div>
-          <div className="reveal">
+    <section
+      id="contact"
+      data-ground="dark"
+      className="relative bg-ground text-chalk py-16 md:py-24 lg:py-28"
+    >
+      <div className="wrap-v4">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+          <ContactInfo />
+          <div className="rv fade" style={{ "--l": 3 } as React.CSSProperties}>
             <ContactForm />
           </div>
         </div>
-      </Container>
-    </Section>
+      </div>
+    </section>
   );
 }

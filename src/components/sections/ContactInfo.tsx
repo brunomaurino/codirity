@@ -1,103 +1,80 @@
-import { ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { AccentWord, CalPopupButton, SectionHeader, TrackedLink } from "@/components/ui";
+import { CalPopupButton, TrackedLink } from "@/components/ui";
 import { sections, CAL_LINK, CONTACT_EMAIL, RESPONSE_TIME_CLAIM } from "@/config/offer";
+import { cn } from "@/lib/utils";
 
-// The left half of the final CTA — rendered on the site's ONE near-black band
-// (HANDOFF-redesign-v3.md §1 rule 4). Everything here is a permanently-dark
-// surface, so foregrounds are pinned light in BOTH themes rather than carrying
-// `dark:` pairs: the band is the fixed #0A1712 ground (v4 is single-theme), and a
-// `text-gray-900 dark:text-white` pattern would render near-black on near-black
-// in light mode (the same class of failure V0's battery caught on `--white`).
+// The close (Bundle W6, v4 treatment) — the left half of the final band, on the
+// dark ground that runs from the ownership quote straight into the footer.
 //
-// The pre-redesign copy this replaces ("Let's Build Something Great Together",
-// "Ready to transform your business with AI-powered solutions?", "Prefer a Live
-// Conversation?") predated the §4 voice gate and never went through it; the new
-// copy lives in `offer.ts` under `sections.contact` per this project's
-// source-of-truth convention.
+// ANALYTICS ARE LOAD-BEARING and unchanged: `email_click` with
+// `location: "contact_section"`, and `call_booked` with
+// `analyticsLocation="contact_close"` — the label that distinguishes this
+// booking from the FAQ's Cal CTA, which fired an identical unparameterized event
+// until v3's review. A restyle must never quietly renumber the funnel.
+//
+// The response-time promise is IMPORTED, not retyped: it is a real commitment,
+// and V6's battery caught it stated twice in one viewport with two different
+// figures. One string, one home.
 
-// Facts already live on the site before this bundle — restated compactly here,
-// not invented. The response-time promise is imported rather than retyped: it is
-// a real commitment, and V6's review battery caught it stated twice in one
-// viewport with two different figures (here vs. the form's "answer within a
-// day"). One string, one home.
-const FACTS = [
-  "Remote-first, worldwide",
-  RESPONSE_TIME_CLAIM,
-];
+// The headline's lines live in offer.ts as `sections.contact.titleLines`, and
+// scripts/w6-close-gate.py asserts they rejoin to `sections.contact.title`
+// exactly. The first draft hardcoded them HERE behind a comment claiming that
+// gate existed — it did not, and the text had already drifted from the config
+// by a trailing period (Phase 4/5 review). A claimed invariant with no gate
+// behind it is worse than no claim.
 
 export function ContactInfo() {
   return (
-    <div className="lg:sticky lg:top-[120px]">
-      <SectionHeader
-        tone="ink"
-        align="left"
-        maxWidth="full"
-        label={sections.contact.label}
-        title={
-          // `text-white` is load-bearing, not decoration: `.accent` declares its
-          // own `color: var(--green-dark)`, which overrides the colour this span
-          // would otherwise inherit from the h2 — #0f6b3d on the near-black band is
-          // ~3.01:1 in light mode. Found in Phase 4/5 review.
-          <AccentWord text={sections.contact.title} word="week" className="text-white" />
-        }
-        description={sections.contact.description}
-      />
+    <div>
+      <h2 className="display d-lg rv" style={{ maxWidth: "14ch" }}>
+        {sections.contact.titleLines.map((line, i) => (
+          <span key={line} className="line" style={{ "--l": i } as React.CSSProperties}>
+            <span>{line}</span>
+          </span>
+        ))}
+      </h2>
 
-      {/* Email — the plain-text address, per §6.R6's "form + Cal button + the
-          email address in plain text" close. */}
-      <p className="mt-10 text-lg">
+      <div className="rv fade" style={{ "--l": 2 } as React.CSSProperties}>
+        <p className="lede" style={{ marginTop: "28px" }}>
+          {sections.contact.description}
+        </p>
+
+        {/* The address in plain text, as its own loud control — §6.R6's close is
+            "form + Cal button + the email address in plain text". */}
         <TrackedLink
           href={`mailto:${CONTACT_EMAIL}`}
           event="email_click"
           eventParams={{ location: "contact_section" }}
-          className={cn(
-            "font-medium text-brand-light underline underline-offset-4",
-            "decoration-brand-light/40 transition-colors hover:text-white hover:decoration-white"
-          )}
+          className="close-cta"
         >
           {CONTACT_EMAIL}
+          <span aria-hidden="true">↗</span>
         </TrackedLink>
-      </p>
 
-      <ul className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-6">
-        {FACTS.map((fact) => (
-          <li key={fact} className="flex items-center gap-2 text-sm text-gray-300">
-            <span
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-light"
-              aria-hidden="true"
-            />
-            {fact}
-          </li>
-        ))}
-      </ul>
+        <p className="trust" style={{ marginTop: "36px" }}>
+          <span className="bar" aria-hidden="true" />
+          {RESPONSE_TIME_CLAIM} · Remote-first, worldwide
+        </p>
 
-      {/* Cal booking — same CAL_LINK and same popup as before, restyled for the
-          band: a white pill on near-black is the highest-contrast control
-          available here.
-
-          Label is "Book a call", not "Book a call instead": on mobile this column
-          stacks ABOVE the form, so "instead" pointed at something the reader had
-          not seen yet. The lead-in line supplies the contrast the word was doing,
-          and works in either stacking order. `analyticsLocation` distinguishes
-          this booking from the FAQ's Cal CTA one section up — both previously
-          fired an identical unparameterized `call_booked`. Both found in Phase
-          4/5 review. */}
-      <p className="mt-10 text-sm text-gray-300">Rather talk it through?</p>
-      <CalPopupButton
-        calLink={CAL_LINK}
-        analyticsLocation="contact_close"
-        className={cn(
-          "mt-3 inline-flex items-center gap-3",
-          "rounded-full px-8 py-4",
-          "bg-white text-base font-medium text-gray-900",
-          "transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100",
-          "cursor-pointer"
-        )}
-      >
-        Book a call
-        <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
-      </CalPopupButton>
+        {/* Cal booking — same CAL_LINK, same popup, same analyticsLocation.
+            Secondary to the address above it, so it is an outline control
+            rather than a second filled one: two filled pills in one block read
+            as two primary actions. */}
+        <p className="lede" style={{ marginTop: "36px", marginBottom: "12px" }}>
+          Rather talk it through?
+        </p>
+        <CalPopupButton
+          calLink={CAL_LINK}
+          analyticsLocation="contact_close"
+          className={cn(
+            "inline-flex items-center justify-center rounded-full",
+            "border border-[var(--chalk-dim)] px-7 py-3.5 text-[15px] font-medium",
+            "text-chalk transition-transform duration-300 hover:-translate-y-0.5",
+            "cursor-pointer"
+          )}
+        >
+          Book a call
+        </CalPopupButton>
+      </div>
     </div>
   );
 }

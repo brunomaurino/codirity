@@ -34,7 +34,7 @@ export interface SectionHeaderProps
   description?: string;
   /** Surface this header sits on.
    *  - `default`: the light/dark page ground — title is `text-gray-900
-   *    dark:text-white`, which is correct there and ONLY there.
+   *    the dark-variant text pair, which is correct there and ONLY there.
    *  - `ink`: the near-black band (`<Section variant="ink">`, HANDOFF §1
    *    rule 4). Required on that surface: the default title color resolves
    *    to the band's own near-black ground (#0A1712 since W0) —
@@ -80,7 +80,7 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         <h2
           className={cn(
             "text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight",
-            tone === "ink" ? "text-white" : "text-gray-900 dark:text-white"
+            tone === "ink" ? "text-white" : "text-gray-900"
           )}
         >
           {title}
@@ -91,7 +91,7 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
               "mt-4 text-lg leading-relaxed",
               tone === "ink"
                 ? "text-gray-300"
-                : "text-gray-600 dark:text-gray-400"
+                : "text-gray-600"
             )}
           >
             {description}

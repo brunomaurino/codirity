@@ -11,7 +11,7 @@ const cardVariants = cva(
     variants: {
       variant: {
         default: [
-          "bg-white dark:bg-gray-800",
+          "bg-white",
           "border border-[var(--border)]",
           "hover:shadow-xl hover:border-brand/30 hover:-translate-y-2",
         ],
@@ -25,12 +25,12 @@ const cardVariants = cva(
           "border-0",
         ],
         accent: [
-          "bg-white dark:bg-gray-800",
+          "bg-white",
           "border border-[var(--border)]",
           "overflow-hidden",
         ],
         flat: [
-          "bg-white dark:bg-gray-800",
+          "bg-white",
           "border border-[var(--border)]",
         ],
       },
@@ -124,7 +124,7 @@ const CardTitle = forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-xl font-medium tracking-tight text-gray-900 dark:text-white",
+      "text-xl font-medium tracking-tight text-gray-900",
       className
     )}
     {...props}
@@ -138,7 +138,7 @@ const CardDescription = forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-gray-600 dark:text-gray-400 leading-relaxed", className)}
+    className={cn("text-gray-600 leading-relaxed", className)}
     {...props}
   />
 ));

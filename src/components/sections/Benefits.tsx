@@ -10,7 +10,6 @@ import {
 import { Section, Container } from "@/components/layout";
 import { SectionHeader, AccentWord } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { BLOB_CLASSES } from "@/lib/blob";
 import { benefits, sections } from "@/config/offer";
 
 // Maps the lucide icon-name strings in offer.benefits to components, so offer.ts
@@ -43,9 +42,8 @@ export function Benefits() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {benefits.map((benefit, index) => {
+          {benefits.map((benefit) => {
             const Icon = ICONS[benefit.icon] ?? Zap;
-            const blobClass = BLOB_CLASSES[index % BLOB_CLASSES.length];
             return (
               // `reveal` lives on this OUTER wrapper, not the element carrying
               // `transition-transform` below (found in Phase 4/5 review): both
@@ -56,7 +54,7 @@ export function Benefits() {
               <div key={benefit.title} className="reveal">
                 <div
                   className={cn(
-                    blobClass,
+                    "panel-deep",
                     "card-soft group",
                     "p-6 md:p-8",
                     "transition-transform duration-400 hover:-translate-y-1"

@@ -248,7 +248,9 @@ export interface SectionsContent {
   recentWork: Pick<SectionCopy, "title">;
   terms: SectionCopy;
   faq: Pick<SectionCopy, "title">;
-  contact: SectionCopy;
+  /** `label` is unrendered by the v4 close (the display headline replaces the
+   *  eyebrow) but kept: it is the section's name in the nav vocabulary. */
+  contact: SectionCopy & { titleLines: string[] };
 }
 
 export interface Offer {
@@ -350,7 +352,15 @@ export const sections: SectionsContent = {
   // §4 voice gate and never went through it.
   contact: {
     label: "Start here",
-    title: "Tell us what's eating your week",
+    title: "Tell us what's eating your week.",
+    /** The title hand-set into the close's display lines. GATED: joining these
+     *  with single spaces must equal `title` exactly (`scripts/w6-close-gate.py`)
+     *  — the same invariant W4 put on the case-study headlines. W6's first draft
+     *  hardcoded the lines in the component behind a comment claiming a gate
+     *  existed; it did not, and the text had already drifted by a trailing
+     *  period (Phase 4/5 review). The period is kept: it is the mockup's, and a
+     *  full stop is right for a closing statement. */
+    titleLines: ["Tell us what's", "eating your week."],
     description:
       "Send it over and we'll tell you whether it's a task, a build, or something we'd talk you out of. If you'd rather just start, pick a plan above.",
   },
@@ -533,6 +543,13 @@ export const howItWorks: HowItWorksStep[] = [
  *  to the array it indexes, and the component asserts it rather than
  *  disappearing. */
 export const FOUNDER_FAQ_INDEX = 0;
+
+/** The index of the entry the ownership block promotes to a display-size quote
+ *  (W6). Same discipline as FOUNDER_FAQ_INDEX and for the same reason: a
+ *  magic-string `.find()` silently renders NOTHING when the wording changes.
+ *  This is the site's honest substitute for an awards wall — the strongest
+ *  claim available is that the client keeps everything. */
+export const OWNERSHIP_FAQ_INDEX = 7;
 
 export const faq: FaqItem[] = [
   {

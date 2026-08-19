@@ -44,7 +44,7 @@ export function ServiceCard({
               "text-white border-0",
             ]
           : [
-              "bg-white dark:bg-gray-800 border border-[var(--border)]",
+              "bg-white border border-[var(--border)]",
               "hover:-translate-y-2 hover:shadow-xl hover:border-brand/30",
               "before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px]",
               "before:bg-gradient-to-r before:from-brand before:to-brand-light",
@@ -76,7 +76,7 @@ export function ServiceCard({
             "font-medium mb-3 tracking-tight",
             featured
               ? "text-2xl md:text-3xl text-white"
-              : "text-xl text-gray-900 dark:text-white"
+              : "text-xl text-gray-900"
           )}
         >
           {title}
@@ -86,7 +86,7 @@ export function ServiceCard({
             "leading-relaxed",
             featured
               ? "text-lg text-white/85 max-w-[420px]"
-              : "text-gray-600 dark:text-gray-400"
+              : "text-gray-600"
           )}
         >
           {description}
@@ -120,7 +120,7 @@ export function ServiceCard({
                   "bg-white/10 border border-white/15"
                 )}
               >
-                <div className="font-serif text-2xl md:text-3xl font-medium text-brand-light mb-1">
+                <div className="text-2xl md:text-3xl font-medium text-brand-light mb-1">
                   {stat.value}
                 </div>
                 <div className="text-sm text-white/70">{stat.label}</div>

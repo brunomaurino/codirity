@@ -59,13 +59,12 @@ export function Section({
         // only consumer is the v3 Benefits survivor, which W6 reworks or
         // retires; until then it at least sits on the right ground.
         variant === "default" && "bg-paper-v4",
-        variant === "gray" && "bg-gray-50 dark:bg-gray-800",
+        variant === "gray" && "bg-gray-50",
         // v4 tokens directly: the legacy pair resolved the ground correctly
         // but painted pure white instead of --chalk (Phase 4/5 review).
         variant === "ink" && "bg-ground text-chalk",
         variant === "gradient" && [
           "bg-[linear-gradient(180deg,_rgba(50,_205,_50,_0.06)_0%,_rgba(89,_243,_89,_0.1)_50%,_rgba(50,_205,_50,_0.06)_100%)]",
-          "dark:bg-[linear-gradient(180deg,_rgba(50,_205,_50,_0.1)_0%,_rgba(89,_243,_89,_0.15)_50%,_rgba(50,_205,_50,_0.1)_100%)]",
         ],
         className
       )}
