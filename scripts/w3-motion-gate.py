@@ -10,15 +10,29 @@
 #      conversion band that rendered blank without JS, and a 320vh scene whose
 #      quantizer never runs is the same defect wearing a different hat.
 #
-# Usage: python3 scripts/w3-motion-gate.py [path/to/compiled.css]
+# Usage:
+#   python3 scripts/w3-motion-gate.py [path/to/compiled.css ...]
+#   python3 scripts/w3-motion-gate.py --source <Queue.tsx> [compiled.css ...]
+#
+# `--source` exists so the self-test can point the gate at COPIES instead of
+# mutating the tracked working tree (Phase 4/5 review).
 import glob
 import re
 import sys
 
 fails = []
 
-# ---------- 1 + 2: the component source ----------
+argv = sys.argv[1:]
 SRC = "src/components/sections/Queue.tsx"
+QSRC = "src/lib/queueStep.ts"
+while argv and argv[0] in ("--source", "--qsource"):
+    if argv[0] == "--source":
+        SRC = argv[1]
+    else:
+        QSRC = argv[1]
+    argv = argv[2:]
+
+# ---------- 1 + 2: the component source ----------
 src = open(SRC, encoding="utf-8").read()
 # Strip comments first: the file DISCUSSES scroll-jacking at length, and a
 # comment-blind grep would fail on its own documentation.
@@ -50,16 +64,31 @@ for name, rest in listeners:
     if "passive:true" not in rest.replace(" ", ""):
         fails.append(f"the `{name}` listener is not registered {{ passive: true }}")
 
-# The handler must write a ROUNDED integer, never the raw progress ratio.
-if not re.search(r"Math\.round\(", code):
-    fails.append("no Math.round — the step must be quantized, not scroll-proportional")
-# `progress` (the continuous 0..1 value) must never reach the DOM.
-for sink in [r"setScrollStep\(\s*progress", r"setProperty\([^)]*progress", r"style[^=]*=\s*[^;]*progress"]:
-    if re.search(sink, code):
-        fails.append(f"the continuous scroll ratio reaches the DOM (/{sink}/) — that is 1:1 linking")
+# The quantizer must go through the pure `stepForScroll`, which is where the
+# rounding lives and where scripts/w3-quantizer-test.ts asserts the contract.
+# The component must NEVER compute a step inline again.
+if "stepForScroll(" not in code:
+    fails.append("Queue.tsx no longer delegates to stepForScroll — the quantizer contract is untested")
+if re.search(r"-\s*r\.top\s*/", code) or re.search(r"\bprogress\b", code):
+    fails.append("Queue.tsx computes a scroll ratio inline again — that math belongs in stepForScroll")
+
+try:
+    qcode = re.sub(r"//[^\n]*", "", re.sub(r"/\*.*?\*/", "", open(QSRC, encoding="utf-8").read(), flags=re.S))
+except FileNotFoundError:
+    qcode = ""
+    fails.append(f"{QSRC} is missing — the quantizer has no testable home")
+if qcode:
+    if "Math.round(" not in qcode:
+        fails.append(f"{QSRC}: no Math.round — the step must be quantized, not scroll-proportional")
+    if "Math.min(1" not in qcode or "Math.max(0" not in qcode:
+        fails.append(f"{QSRC}: progress is not clamped to [0,1] — the step would run past the chips")
+    if not re.search(r"travel\s*<=\s*0", qcode):
+        fails.append(f"{QSRC}: no travel<=0 guard — a collapsed scene would divide by zero or snap to 0")
+    if not re.search(r"return\s+Math\.round", qcode):
+        fails.append(f"{QSRC}: the returned value is not the rounded step")
 
 # ---------- 3 + 4: the compiled CSS ----------
-chunks = sys.argv[1:] or glob.glob(".next/static/chunks/*.css")
+chunks = argv or glob.glob(".next/static/chunks/*.css")
 if not chunks:
     fails.append("no compiled CSS chunk — run `npm run build` first")
     css = ""

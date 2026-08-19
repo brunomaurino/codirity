@@ -15,7 +15,11 @@
 > **ONE typeface** — Apfel Grotezk, self-hosted, 400 body / 500 display, and
 > hierarchy comes from SIZE, never weight: no 600/700 exists anywhere
 > (`--font-weight-bold` → 500; native `strong`/`b` pinned to 500). Type scale:
-> `.d-xl/.d-lg/.d-md/.label(.label-ink)/.lede(.lede-ink)`; ground transitions
+> `.d-xl/.d-lg/.d-md/.label(.label-ink)/.lede(.lede-ink)` — the `.d-*` classes
+> set **font-size ONLY**, so display headings must be written `class="display
+> d-md"`: `.display` is what carries the leading and tracking, and a `.d-*`
+> alone falls back to body line-height (W3 shipped exactly that bug, and this
+> line read as if `.d-md` were complete). Ground transitions
 > via `.band-dl/.band-ld`; one entrance gesture (`.line` rise + `.fade`) on
 > `--ease`; **prices never animate**.
 >

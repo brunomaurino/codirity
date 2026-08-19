@@ -150,15 +150,91 @@ than implied:
 
 ## Review findings + resolutions
 
-(Phase 4/5)
+Battery `wf_28e15a7c-9f1` ran clean: **16/16 agents, 0 errors, 0 empty results**. 29 raw findings →
+13 clusters → **12 confirmed, 1 refuted, 0 deferrals, 0 escalations**. All 12 applied.
+
+It also independently confirmed the two fixes made proactively while it ran (the composed `--slot`
+and the resize re-quantization) and recorded them as already-fixed rather than reporting them.
+
+### MAJOR
+
+| At | Finding | Resolution |
+|---|---|---|
+| `Queue.tsx:100` (3/3) | The h2 rendered `d-md rv`; the mockup has **`display d-md rv`**. `.d-md` sets font-size ONLY, so the heading fell back to body's `line-height: 1.55` — a ~65% taller block, enough to overflow the clipped 100svh stage on a short viewport | Added `display`. Measured after: line-height **54.1px** (0.94) not 89px, tracking −0.012em |
+| `globals.css` (3/3) | `.is-shipped{opacity:.35}` **compounded** with `small{opacity:.7}` → ~2.2:1 and 1.7:1 on `--ground`, far under AA — and the reduced-motion tableau pins chip 0 in that state permanently | The recede is now an explicit colour (`--chalk-faint`), not opacity, and `small` no longer multiplies. Measured: **5.28:1**. A deliberate, measured deviation from the mockup — §1.3's AA commitment outranks a literal opacity |
+| `scripts/` (3/3) | The bundle's own "steps 0→3 fire" criterion had **no committed gate** — only an ad-hoc harness that proved it once and was deleted. Also not re-runnable: a headless pane reports reduced-motion, so the listener never attaches | Quantizer math extracted to a pure `src/lib/queueStep.ts`; `scripts/w3-quantizer-test.ts` (via `tsx`) asserts steps 0→3, discreteness, monotonicity, clamping, the `travel<=0` guard, the round boundaries and chip-count independence — **no browser required** |
+| `w3-motion-gate-selftest.py` (3/3) | Mutated the **tracked source** and the built chunk in place with no `try/finally`; an interruption would leave an injected mutation in the working tree, one of which does not typecheck | Rewritten to mutate **copies in a temp dir** under `try/finally`. The working tree is never written to. `--source`/`--qsource` added to the gate so it can be pointed at copies |
+| `w3-copy-gate.py` (3/3) | The honesty gate shipped with **no self-test** — violating §0's own rule | Five copy-gate mutations added (note drift, a chip reading as real client work, an EXTRA chip, headline drift, wrong SSR state). All caught |
+| `globals.css:965` (2/3) | `.queue-stage` is a row flex and `.wrap-v4` has `margin-inline:auto`, so the wrap **shrink-wrapped to min-content** instead of filling — the page gutter stopped matching every other section. Exactly the trap the mockup patches for its hero (`.hero > .wrap{width:100%}`), never ported | `.queue-stage > .wrap-v4 { width: 100% }`. Measured after: wrap left edge **76px**, identical to the hero's and the terms band's |
+
+### MINOR
+
+- **`current` desync** — the effect-local counter reset to 0 on re-run while `scrollStep` survived, so toggling the OS reduced-motion preference off mid-session could strand a stale step. Now a `useRef` that outlives the effect.
+- **Live-region scope** — `aria-live` on the bare digit announced a context-free "2". Moved to the whole line with `aria-atomic`; verified announcing **"Shipped 1"**.
+- **`role="list"`** — Safari/VoiceOver strips list semantics from any list styled `list-style: none`, dropping exactly the ordering this section argues.
+- **Comment drift** — the header claimed every transition uses the house curve; only `.q-track` does (`.q-task` uses plain `ease`, verbatim from the mockup). Comment corrected to the real split rather than the CSS changed.
+- **`offer.ts` doc drift** — "The first is the active one" is true only at step 0; and `states` is keyed by name, so its "order" meant nothing.
+- **`design-system.md` + `CLAUDE.md`** — the type-scale banner listed `.d-*` as if complete, which is plausibly what produced the missing `.display` above. Both now state that `.d-*` sets font-size only.
+
+### Refuted (not applied)
+
+- `useReducedMotion.ts:20` (**1/3**) — that `getServerSnapshot() === false` gives a no-JS reduced-motion reader the step-0 tableau rather than step-1. Adjudicated not real: with no JS there is no hydration at all, the CSS still collapses the scene, and step 0 is internally coherent (one active, three queued, counter 0). Recorded rather than silently dropped.
+
+## Post-fix verification
+
+- `tsc` ✅ · `eslint` ✅ · clean build ✅
+- `scripts/w3-quantizer-test.ts` ✅ — steps 0→3 in order, every offset lands on an integer in
+  `[0,3]`, monotonic across 400 samples, clamped above and below the scene, `null` on all three
+  no-travel shapes, the `Math.round` boundaries documented, and chip-count independence.
+- Motion gate ✅ · copy gate ✅ · **self-test: 15/15 mutations caught, both unmutated runs pass —
+  `GATES ARMED`**, and it now leaves the working tree untouched (verified with `git status`).
+- **Contrast measured in-browser on the live production page**, compositing each element's full
+  opacity chain over the real ground: shipped chip **5.28:1** (was ~2.2 and ~1.7), active 16.98,
+  queued 8.88 / 4.92, note 4.92, brass counter 7.62 — **nothing under AA**.
+- **DOM after the fixes:** h2 is `display d-md rv` at line-height 54.1px; the wrap's left edge is
+  76px, identical to the hero's and the terms band's; `role="list"` present; the live region is the
+  whole `Shipped 1` line with `aria-atomic`.
+- Fits at 375×568 through 1440×900 — the stage contains its content at every viewport, chips stay
+  280px, no horizontal document overflow.
+- **Perf: document 28,273 B gz — +306 B over W2 (27,967)** for the entire scene.
 
 ## Areas examined and rejected
 
-(battery)
+The battery recorded **68 areas examined**. The ones worth carrying forward:
+
+- **rAF latch / listener lifecycle** — ruled out a wedged quantizer: `ticking` is cleared at the TOP
+  of the rAF callback, *before* the `travel <= 0` early return, so a short scene, a detached node or
+  a fast scroll-past cannot permanently latch it. Both listeners are removed on cleanup.
+- **React custom-property serialization** — ruled out a `--step: 3px` bug (React omits the px suffix
+  for custom properties) and a `useSyncExternalStore` subscribe/getSnapshot loop (both are
+  module-level constants returning a boolean, so `Object.is` settles immediately).
+- **Focus and the sticky stage** — the scene contains no focusable elements, so `overflow: clip`
+  cannot strand focus; `clip` rather than `hidden` is also what keeps the sticky stage from clipping
+  against its own scroll container.
+- **Ground continuity** — Queue carries `data-ground="dark"` and follows Pricing, which is also
+  dark, so no `.band` is owed between them and no new hard cut is introduced (§1.5).
+- **Shorthand/longhand trap** — the mockup's `margin:30px 0 0` and `padding:clamp(…) 0` shorthands
+  were deliberately rewritten as longhands so `.wrap-v4`'s horizontal padding survives composition.
+- **`offer.ts` consumer contract** — `queue` is a new required field on the exported `Offer`
+  interface, but `offer` is its only construction site and every consumer imports named bindings, so
+  nothing breaks structurally.
+- **Review-target volatility** — the branch went from one commit to three *during* the review. The
+  battery restated every finding against the final committed state and recorded the two mid-flight
+  fixes as already-applied rather than reporting them.
 
 ## Open items NOT addressed in this PR
 
-(Phase 7)
+- **Page section ORDER still follows v3.** The mockup runs hero → terms → queue near the top; this
+  page still has the v3 sequence with terms eighth. W3 preserved the mockup's terms→queue adjacency
+  rather than reordering, because the reorder is W4–W6's scope and moving the queue into the paper
+  run would demand two new gradient bands.
+- **Operator-owned, still open:** the live Trello `[TEMPLATE] Codirity Client Board` still promises
+  **"75% back"** where the codebase says 7 days / 50%. Carried since v3; only a manual Trello edit
+  closes it.
+- **`dark:` classes and `.glass-dark`** remain for W6's sweep (unchanged by this bundle).
+- **The repo still has no test runner.** `w3-quantizer-test.ts` runs via the already-installed
+  `tsx`, which is the first committed executable test in the repo but is invoked by hand, not by CI.
+  Wiring an `npm test` script and a CI job is a repo-level decision, not this bundle's.
 
 ## Durable handles
 

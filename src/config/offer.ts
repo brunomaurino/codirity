@@ -203,9 +203,12 @@ export interface QueueContent {
   label: string;
   /** Hand-set headline lines, rendered one per masked line-rise. */
   headline: string[];
-  /** Illustrative chip labels, in queue order. The first is the active one. */
+  /** Illustrative chip labels, in queue order — index 0 is the FRONT of the
+   *  queue. Which chip is active depends on the scroll step, so index 0 is the
+   *  active one only at step 0; from step 1 on it is the shipped one. */
   tasks: string[];
-  /** Status words for the three chip states, in queued/active/shipped order. */
+  /** Status words for the three chip states. Looked up by name, so the order
+   *  of these keys carries no meaning. */
   states: { queued: string; active: string; shipped: string };
   /** Label preceding the brass counter. */
   shippedLabel: string;

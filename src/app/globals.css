@@ -23,6 +23,11 @@
   --paper-2: #E2E2D9;
   --chalk: #F4F7F2;
   --chalk-dim: #A9B8AF;
+  /* The recessive tier below --chalk-dim, for content that has been superseded
+     but must still be READ (the queue's shipped chips). Chosen as an explicit
+     colour rather than an opacity so it cannot compound with another opacity
+     into unreadability — and measured against --ground, not derived. */
+  --chalk-faint: #7E8D85;
   --ink: #0A1712;
   --ink-dim: #4C5B52;
   --mint: #6EE7A8;
@@ -972,6 +977,15 @@ body {
        sticky stage scroll-clip against its own container. */
     overflow: clip;
   }
+  /* The stage is a ROW flex container and `.wrap-v4` carries `margin-inline:
+     auto`, so the wrap shrink-wraps to its min-content (~1264px, driven by the
+     track) instead of filling the stage — the page gutter would then stop
+     matching every other section's. This is the same trap the mockup documents
+     and patches for its hero (`.hero > .wrap { width: 100% }`); that patch was
+     never ported to the queue stage (Phase 4/5 review). */
+  .queue-stage > .wrap-v4 {
+    width: 100%;
+  }
   .queue {
     /* One slot = one chip + one gap. COMPOSED, not the mockup's literal 296px:
        the track's translation and the chip's width are the same measurement, so
@@ -1010,8 +1024,20 @@ body {
     border-color: var(--mint);
     color: var(--chalk);
   }
+  /* The mockup fades the shipped chip with `opacity: .35`. Opacity composites
+     the TEXT toward the ground, and it COMPOUNDED with the status word's own
+     `opacity: .7` — measured at roughly 2.2:1 and 1.7:1 against --ground, far
+     under AA, and the reduced-motion tableau pins chip 0 in that state
+     permanently (Phase 4/5 review). Since the chip still says "shipped" in
+     words, that text has to be readable.
+     So the recede is expressed as an explicit COLOUR instead: same visual
+     intent (dimmer than a queued chip, clearly behind the active one), and the
+     mint strike-through still carries the state. This is a deliberate,
+     measured deviation from the mockup on an accessibility matter — §1.3's
+     "comfortably over AA" commitment wins over a literal opacity value. */
   .q-task.is-shipped {
-    opacity: 0.35;
+    color: var(--chalk-faint);
+    border-color: var(--rule);
     text-decoration: line-through;
     text-decoration-color: var(--mint);
   }
@@ -1022,6 +1048,11 @@ body {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     opacity: 0.7;
+  }
+  /* Stop the second multiplication: the status word is the one string that
+     must stay legible on a shipped chip. */
+  .q-task.is-shipped small {
+    opacity: 1;
   }
   .q-shipped {
     margin-top: 30px;
