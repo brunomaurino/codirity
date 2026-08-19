@@ -37,9 +37,9 @@ export function ProcessStep({
           review): the blob utilities' scrim is tuned for full-opacity
           white text against every hotspot; reduced-alpha text dropped
           below WCAG AA at the blob's brightest points. */}
-      <div className="font-semibold text-2xl">{number}</div>
+      <div className="font-medium text-2xl">{number}</div>
       <div>
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        <h3 className="text-xl font-medium mb-2">{title}</h3>
         <p className="text-[0.95rem] leading-relaxed">{description}</p>
       </div>
     </div>

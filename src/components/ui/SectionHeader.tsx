@@ -32,14 +32,12 @@ export interface SectionHeaderProps
   title: React.ReactNode;
   /** Description text below the title */
   description?: string;
-  /** Use gradient text for the title */
-  gradientTitle?: boolean;
   /** Surface this header sits on.
    *  - `default`: the light/dark page ground — title is `text-gray-900
    *    dark:text-white`, which is correct there and ONLY there.
    *  - `ink`: the near-black band (`<Section variant="ink">`, HANDOFF §1
    *    rule 4). Required on that surface: the default title color resolves
-   *    to `#0a0a08` in LIGHT mode, which is the band's own background —
+   *    to the band's own near-black ground (#0A1712 since W0) —
    *    near-black on near-black, invisible. `ink` pins the title to true
    *    white and the description to a light neutral in BOTH themes, since
    *    the band is permanently dark regardless of site theme. */
@@ -55,7 +53,6 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       label,
       title,
       description,
-      gradientTitle,
       tone = "default",
       ...props
     },
@@ -70,9 +67,10 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         {label && (
           <span
             className={cn(
-              "inline-block font-sans text-[13px] font-semibold uppercase tracking-[0.12em] mb-4",
+              "inline-block font-sans text-[13px] font-medium uppercase tracking-[0.12em] mb-4",
               // On the ink band the brand green measures under AA against
-              // #0a0a08; brand-light is the tuned-for-dark-ground value.
+              // the ink band; brand-light is tuned for that dark ground (re-tuned to
+              // #45936F in v4 W0 when the band lightened to #0A1712).
               tone === "ink" ? "text-brand-light" : "text-brand"
             )}
           >
@@ -81,9 +79,8 @@ const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
         )}
         <h2
           className={cn(
-            "text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight",
-            tone === "ink" ? "text-white" : "text-gray-900 dark:text-white",
-            gradientTitle && "gradient-text"
+            "text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight",
+            tone === "ink" ? "text-white" : "text-gray-900 dark:text-white"
           )}
         >
           {title}

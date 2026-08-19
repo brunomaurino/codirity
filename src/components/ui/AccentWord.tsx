@@ -1,4 +1,8 @@
-/**
+/** ⚠️ v4 W0: PASS-THROUGH. The `.accent` treatment is retired — this
+ * component now renders `text` unmodified (see the body). The description
+ * below documents the RETIRED behavior for the diff's sake only; W6 deletes
+ * this file.
+ *
  * The HANDOFF §1.2 one-word-per-headline emphasis technique: renders `text`
  * with the FIRST WHOLE-WORD occurrence of `word` wrapped in the `.accent`
  * utility (Instrument Serif Italic), everything else plain. Falls back to
@@ -58,13 +62,14 @@ export function AccentWord({
     searchFrom = candidate + 1;
   }
 
-  if (index === -1) return <>{text}</>;
-
-  return (
-    <>
-      {text.slice(0, index)}
-      <span className={className ? `accent ${className}` : "accent"}>{word}</span>
-      {text.slice(index + word.length)}
-    </>
-  );
+  // v4 (Bundle W0): the `.accent` italic-word treatment is RETIRED with the
+  // Instrument Serif face (HANDOFF-redesign-v4.md §1.1) — hierarchy and
+  // emphasis now come from size and composition, never a font swap. This
+  // component is kept as a pass-through so its ~6 call sites don't all churn
+  // in the foundation bundle; each section's own W-bundle (W2–W5) removes its
+  // call site, and W6's sweep deletes this file. The word-boundary search
+  // above is deliberately left intact so the diff shows WHAT was disabled.
+  void index;
+  void className;
+  return <>{text}</>;
 }

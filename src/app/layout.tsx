@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Figtree, Instrument_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import { Header, Footer } from "@/components/layout";
-import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/Toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
@@ -9,29 +8,22 @@ import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
-// Monthly Club (redesign v3): ONE family for everything — headlines, body, nav,
-// labels — the same one-family discipline designjoy.co's own site uses (verified
-// live, 2026-08-18: their whole site is Figtree at different weights). Replaces
-// Outfit (body) AND Fraunces (La Firma's heading serif, retired) AND Space Mono
-// (retired as a system voice entirely).
-const figtree = Figtree({
-  variable: "--font-figtree",
-  subsets: ["latin"],
-  // 800 dropped (Phase 4/5 review): grepped src/ for font-extrabold/
-  // font-black and found zero consumers, so that static face was pure
-  // unused payload against this bundle's own perf-delta gate.
-  weight: ["400", "500", "600", "700"],
-});
-
-// The one-word-per-headline expressive-emphasis accent (`.accent` in globals.css)
-// — mirrors designjoy.co's own licensed custom hand-lettered face doing the same
-// job on words like "everyone" / "you'll never go back", using a real Google Font
-// instead of claiming to be their proprietary type.
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  subsets: ["latin"],
-  weight: "400",
-  style: "italic",
+// Redesign v4 ("The Number That Doesn't Move"): ONE family for everything —
+// Apfel Grotezk (Collletttivo, OFL 1.1; license at src/fonts/APFEL-LICENSE.txt),
+// self-hosted, the same one-family discipline the outcrowd.io reference applies
+// with ITC Avant Garde. Regular (400) carries body text; Mittel (500) carries
+// ALL display type — hierarchy comes from SIZE, never weight, which is why no
+// 700 face ships at all (a stray `font-bold` utility would synthesize a faux
+// bold; the --font-weight-bold remap in globals.css renders it 500 instead).
+// Replaces Figtree AND Instrument Serif (the v3 `.accent` italic is retired
+// with its utility — see HANDOFF-redesign-v4.md §1.1).
+const apfel = localFont({
+  src: [
+    { path: "../fonts/ApfelGrotezk-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/ApfelGrotezk-Mittel.woff2", weight: "500", style: "normal" },
+  ],
+  variable: "--font-apfel",
+  display: "swap",
 });
 
 // Subscription-forward copy (Bundle D): the live body now leads with the subscription
@@ -67,13 +59,15 @@ export const metadata: Metadata = {
   },
 };
 
-// Blocking, pre-paint theme initialization. Runs before the body paints and sets
-// the [data-theme] attribute on <html>, mirroring ThemeProvider's resolution
-// (localStorage key "codirity-theme"; unstored -> "light"; "system" ->
-// prefers-color-scheme). This prevents the flash of incorrect theme that the
-// former ThemeProvider mount-gate guarded against, without nulling the server tree.
-// <html> carries suppressHydrationWarning so the script-set attribute does not warn.
-const themeInitScript = `(function(){try{var t=localStorage.getItem('codirity-theme');var m=(t==='light'||t==='dark'||t==='system')?t:'light';var r=m==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):m;document.documentElement.setAttribute('data-theme',r);}catch(e){}})();`;
+// v4 is SINGLE-THEME (HANDOFF-redesign-v4.md §1.3): the grounds are fixed
+// regardless of OS preference, like the reference. The v3 theme machinery —
+// ThemeProvider, ThemeToggle, the pre-paint theme-init script, the
+// [data-theme] attribute — is removed, which also permanently retires the
+// SSR-empty-body mount-gate quirk that machinery once carried. The browser
+// UI chrome color is pinned to the fixed ground.
+export const viewport = {
+  themeColor: "#0A1712",
+};
 
 export default function RootLayout({
   children,
@@ -81,29 +75,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
-      <body
-        className={`${figtree.variable} ${instrumentSerif.variable} font-sans antialiased`}
-      >
-        <ThemeProvider>
-          {/* Background Pattern */}
-          <div className="bg-pattern" />
+    <html lang="en">
+      <body className={`${apfel.variable} font-sans antialiased`}>
+        {/* Header */}
+        <Header />
 
-          {/* Header */}
-          <Header />
+        {/* Main Content */}
+        <main>{children}</main>
 
-          {/* Main Content */}
-          <main>{children}</main>
+        {/* Footer */}
+        <Footer />
 
-          {/* Footer */}
-          <Footer />
-
-          {/* Toast Notifications */}
-          <Toaster />
-        </ThemeProvider>
+        {/* Toast Notifications */}
+        <Toaster />
 
         {/* Organization structured data (server-rendered for crawlers) */}
         <OrganizationJsonLd />

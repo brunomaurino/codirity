@@ -45,7 +45,7 @@ export function PricingCard({
 }: PricingCardProps) {
   const buttonStyles = cn(
     "inline-flex items-center justify-center gap-2 w-full",
-    "px-8 py-4 text-base font-semibold rounded-full",
+    "px-8 py-4 text-base font-medium rounded-full",
     "transition-all duration-300",
     features.length === 0 && "mt-2",
     featured
@@ -93,7 +93,7 @@ export function PricingCard({
       {/* Plan Name */}
       <div
         className={cn(
-          "inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6",
+          "inline-block px-4 py-1.5 rounded-full text-sm font-medium mb-6",
           featured ? "bg-white/15 text-white" : "bg-brand-pale text-brand-dark"
         )}
       >
@@ -104,7 +104,7 @@ export function PricingCard({
       <div className="mb-4">
         <span
           className={cn(
-            "font-serif text-5xl md:text-6xl font-bold tracking-tight",
+            "font-serif text-5xl md:text-6xl font-medium tracking-tight",
             featured ? "text-white" : "text-gray-900 dark:text-white"
           )}
         >
@@ -126,7 +126,7 @@ export function PricingCard({
       {tasks && (
         <p
           className={cn(
-            "mb-6 text-sm font-semibold",
+            "mb-6 text-sm font-medium",
             featured ? "text-white/90" : "text-brand-dark dark:text-brand"
           )}
         >

@@ -52,12 +52,12 @@ export function RecentWork() {
                 )}
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-xl font-bold">{entry.name}</h3>
+                  <h3 className="text-xl font-medium">{entry.name}</h3>
                   <span
                     className={cn(
                       "btn-pill inline-flex items-center",
-                      "px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em]",
-                      "bg-black/20"
+                      "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
+                      "bg-black/20 border border-[var(--rule)]"
                     )}
                   >
                     Client
@@ -66,8 +66,8 @@ export function RecentWork() {
                     <span
                       className={cn(
                         "btn-pill inline-flex items-center",
-                        "px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em]",
-                        "bg-black/20"
+                        "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
+                        "bg-black/20 border border-[var(--rule)]"
                       )}
                     >
                       pre-launch

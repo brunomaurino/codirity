@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
             <span className="text-sm font-medium">Back to Home</span>
           </Link>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-gray-900 dark:text-white tracking-tight mb-6">
             Privacy Policy
           </h1>
           {/* Section 14 commits us to updating THIS date when the policy changes,
@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
           <div className="space-y-12 text-gray-600 dark:text-gray-400">
             {/* Section 1 - Introduction */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 1. Introduction
               </h2>
               <div className="space-y-4">
@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 2 - Definitions */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 2. Definitions
               </h2>
               <div className="space-y-4">
@@ -103,7 +103,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 3 - Information Collection and Use */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 3. Information Collection and Use
               </h2>
               <p>
@@ -113,12 +113,12 @@ export default function PrivacyPolicy() {
 
             {/* Section 4 - Types of Data Collected */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 4. Types of Data Collected
               </h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
                     Personal Data
                   </h3>
                   <p className="mb-4">
@@ -137,7 +137,7 @@ export default function PrivacyPolicy() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
                     Usage Data
                   </h3>
                   <p className="mb-4">
@@ -152,7 +152,7 @@ export default function PrivacyPolicy() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
                     Tracking Cookies Data
                   </h3>
                   <p className="mb-4">
@@ -177,7 +177,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 5 - Use of Data */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 5. Use of Data
               </h2>
               <p className="mb-4">Codirity uses the collected data for various purposes:</p>
@@ -200,7 +200,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 6 - Retention of Data */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 6. Retention of Data
               </h2>
               <div className="space-y-4">
@@ -215,7 +215,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 7 - Transfer of Data */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 7. Transfer of Data
               </h2>
               <div className="space-y-4">
@@ -236,13 +236,13 @@ export default function PrivacyPolicy() {
 
             {/* Section 8 - Disclosure of Data */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 8. Disclosure of Data
               </h2>
               <p className="mb-4">We may disclose personal information that we collect, or you provide:</p>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                     Disclosure for Law Enforcement
                   </h3>
                   <p>
@@ -250,7 +250,7 @@ export default function PrivacyPolicy() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                     Business Transaction
                   </h3>
                   <p>
@@ -258,7 +258,7 @@ export default function PrivacyPolicy() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                     Other cases. We may disclose your information also:
                   </h3>
                   <ol className="list-decimal pl-6 space-y-2 mt-2">
@@ -275,7 +275,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 9 - Security of Data */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 9. Security of Data
               </h2>
               <p>
@@ -285,7 +285,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 10 - Service Providers */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 10. Service Providers
               </h2>
               <p>
@@ -298,14 +298,14 @@ export default function PrivacyPolicy() {
 
             {/* Section 11 - Analytics */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 11. Analytics
               </h2>
               <p className="mb-4">
                 We may use third-party Service Providers to monitor and analyze the use of our Service.
               </p>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 space-y-4">
-                <p className="font-semibold text-gray-900 dark:text-white">Google Analytics</p>
+                <p className="font-medium text-gray-900 dark:text-white">Google Analytics</p>
                 <p>
                   Google Analytics is a web analytics service offered by Google that tracks and reports website traffic. Google uses the data collected to track and monitor the use of our Service. This data is shared with other Google services. Google may use the collected data to contextualise and personalise the ads of its own advertising network.
                 </p>
@@ -317,7 +317,7 @@ export default function PrivacyPolicy() {
                 </p>
               </div>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 space-y-4 mt-4">
-                <p className="font-semibold text-gray-900 dark:text-white">Vercel Web Analytics</p>
+                <p className="font-medium text-gray-900 dark:text-white">Vercel Web Analytics</p>
                 <p>
                   Vercel Web Analytics is a privacy-friendly analytics service provided by Vercel Inc., the platform that hosts this website. It reports aggregate traffic to our Service — page views, referring sites, approximate location (country, region, city), device type, operating system, and browser.
                 </p>
@@ -335,7 +335,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 12 - Links to Other Sites */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 12. Links to Other Sites
               </h2>
               <p className="mb-4">
@@ -350,7 +350,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 13 - Children's Privacy */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 13. Children&apos;s Privacy
               </h2>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 space-y-4">
@@ -365,7 +365,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 14 - Changes to This Privacy Policy */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 14. Changes to This Privacy Policy
               </h2>
               <div className="space-y-4">
@@ -383,7 +383,7 @@ export default function PrivacyPolicy() {
 
             {/* Section 15 - Contact Us */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white mb-4">
                 15. Contact Us
               </h2>
               <p className="mb-4">

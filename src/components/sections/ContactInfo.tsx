@@ -6,7 +6,7 @@ import { sections, CAL_LINK, CONTACT_EMAIL, RESPONSE_TIME_CLAIM } from "@/config
 // The left half of the final CTA — rendered on the site's ONE near-black band
 // (HANDOFF-redesign-v3.md §1 rule 4). Everything here is a permanently-dark
 // surface, so foregrounds are pinned light in BOTH themes rather than carrying
-// `dark:` pairs: the band is #0a0a08 in light mode and #171713 in dark, and a
+// `dark:` pairs: the band is the fixed #0A1712 ground (v4 is single-theme), and a
 // `text-gray-900 dark:text-white` pattern would render near-black on near-black
 // in light mode (the same class of failure V0's battery caught on `--white`).
 //
@@ -37,7 +37,7 @@ export function ContactInfo() {
         title={
           // `text-white` is load-bearing, not decoration: `.accent` declares its
           // own `color: var(--green-dark)`, which overrides the colour this span
-          // would otherwise inherit from the h2 — #0f6b3d on the #0a0a08 band is
+          // would otherwise inherit from the h2 — #0f6b3d on the near-black band is
           // ~3.01:1 in light mode. Found in Phase 4/5 review.
           <AccentWord text={sections.contact.title} word="week" className="text-white" />
         }
@@ -52,7 +52,7 @@ export function ContactInfo() {
           event="email_click"
           eventParams={{ location: "contact_section" }}
           className={cn(
-            "font-semibold text-brand-light underline underline-offset-4",
+            "font-medium text-brand-light underline underline-offset-4",
             "decoration-brand-light/40 transition-colors hover:text-white hover:decoration-white"
           )}
         >
@@ -90,7 +90,7 @@ export function ContactInfo() {
         className={cn(
           "mt-3 inline-flex items-center gap-3",
           "rounded-full px-8 py-4",
-          "bg-white text-base font-semibold text-gray-900",
+          "bg-white text-base font-medium text-gray-900",
           "transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100",
           "cursor-pointer"
         )}

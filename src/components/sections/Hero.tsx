@@ -6,30 +6,10 @@ import { HeroVisual } from "./HeroVisual";
 import { hero, CAL_LINK } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
-// The HANDOFF §1.2 one-word-per-headline emphasis technique applies to
-// exactly one word. Split hero.headline (the single source of truth,
-// offer.ts) around it at render time rather than hardcoding the headline
-// text in JSX — so a future copy change in offer.ts can't silently drift
-// out of sync with a duplicated string here. Falls back to the plain
-// (un-accented) headline if the word is ever removed from the copy.
-//
-// Uses indexOf/slice, not split() (found in Phase 4/5 review: split() plus
-// branching on the TAIL's truthiness silently dropped the accent word
-// whenever the headline ended exactly on it — an empty tail was
-// indistinguishable from "word not found" — and silently discarded
-// everything after a second occurrence, since split() returns 3+ parts if
-// the word repeats). indexOf/slice always reconstructs the full string and
-// the presence check (`hasAccentWord`) is independent of whether the tail
-// happens to be empty.
-const ACCENT_WORD = "subscription";
-const accentIndex = hero.headline.indexOf(ACCENT_WORD);
-const hasAccentWord = accentIndex !== -1;
-const headlineLead = hasAccentWord
-  ? hero.headline.slice(0, accentIndex)
-  : hero.headline;
-const headlineTail = hasAccentWord
-  ? hero.headline.slice(accentIndex + ACCENT_WORD.length)
-  : "";
+// v4 (Bundle W0): the `.accent` italic-word treatment is retired
+// (HANDOFF-redesign-v4.md §1.1) — the headline renders as plain text in the
+// one Apfel family. W1 rebuilds this hero to the approved mockup; this
+// bundle only removes the retired treatment without restructuring.
 
 export function Hero() {
   return (
@@ -67,20 +47,12 @@ export function Hero() {
             <h1
               className={cn(
                 "text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem]",
-                "font-semibold leading-[1.1]",
+                "font-medium leading-[1.1]",
                 "text-gray-900 dark:text-white mb-6",
                 "opacity-0 animate-slide-up animation-delay-300"
               )}
             >
-              {hasAccentWord ? (
-                <>
-                  {headlineLead}
-                  <span className="accent">{ACCENT_WORD}</span>
-                  {headlineTail}
-                </>
-              ) : (
-                headlineLead
-              )}
+              {hero.headline}
             </h1>
 
             <p
@@ -113,7 +85,7 @@ export function Hero() {
                 eventParams={{ location: "hero_primary" }}
                 className={cn(
                   "inline-flex items-center justify-center gap-2",
-                  "px-8 py-4 text-base font-semibold rounded-full",
+                  "px-8 py-4 text-base font-medium rounded-full",
                   "bg-brand-fill text-white",
                   "hover:bg-brand-fill-dark hover:-translate-y-0.5 hover:shadow-brand",
                   "transition-all duration-300"
@@ -126,7 +98,7 @@ export function Hero() {
                 calLink={CAL_LINK}
                 className={cn(
                   "inline-flex items-center justify-center gap-2",
-                  "px-8 py-4 text-base font-semibold rounded-full",
+                  "px-8 py-4 text-base font-medium rounded-full",
                   "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
                   "hover:border-brand hover:text-brand dark:hover:text-brand hover:bg-brand-pale",
                   "transition-all duration-300 cursor-pointer"

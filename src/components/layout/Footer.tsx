@@ -51,7 +51,7 @@ export function Footer() {
             <div className="md:col-span-2 lg:col-span-1">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 font-mono text-2xl font-bold text-white tracking-tight mb-6"
+                className="inline-flex items-center gap-2 font-mono text-2xl font-medium text-white tracking-tight mb-6"
               >
                 <span>{BRAND}</span>
                 <span className="w-2.5 h-2.5 bg-brand rounded-full animate-pulse-dot" />
@@ -87,7 +87,7 @@ export function Footer() {
 
             {/* Services Column */}
             <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-[0.15em] mb-6">
+              <h4 className="text-xs font-medium text-white uppercase tracking-[0.15em] mb-6">
                 Services
               </h4>
               <ul className="space-y-4">
@@ -110,7 +110,7 @@ export function Footer() {
 
             {/* Company Column */}
             <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-[0.15em] mb-6">
+              <h4 className="text-xs font-medium text-white uppercase tracking-[0.15em] mb-6">
                 Company
               </h4>
               <ul className="space-y-4">

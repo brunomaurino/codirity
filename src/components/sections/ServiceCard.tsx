@@ -36,7 +36,11 @@ export function ServiceCard({
           ? [
               "col-span-1 md:col-span-2 row-span-1 md:row-span-2",
               "flex flex-col justify-between",
-              "bg-gradient-to-br from-brand-fill-dark to-[var(--blob-forest)]",
+              // v4 W0: --blob-forest was deleted with the blob system; the gradient's
+          // to-stop would silently resolve to TRANSPARENT under white text
+          // (Tailwind v4 @property initial-value — Phase 4/5 review). Flat v4
+          // deep surface until this component's own bundle reworks it.
+          "bg-ground-2",
               "text-white border-0",
             ]
           : [
@@ -69,7 +73,7 @@ export function ServiceCard({
       <div>
         <h3
           className={cn(
-            "font-bold mb-3 tracking-tight",
+            "font-medium mb-3 tracking-tight",
             featured
               ? "text-2xl md:text-3xl text-white"
               : "text-xl text-gray-900 dark:text-white"
@@ -94,7 +98,7 @@ export function ServiceCard({
         href={linkHref}
         className={cn(
           "inline-flex items-center gap-2 mt-6",
-          "font-semibold text-[0.95rem]",
+          "font-medium text-[0.95rem]",
           "transition-[gap] duration-300",
           "hover:gap-3",
           featured ? "text-brand-light" : "text-brand"
@@ -116,7 +120,7 @@ export function ServiceCard({
                   "bg-white/10 border border-white/15"
                 )}
               >
-                <div className="font-serif text-2xl md:text-3xl font-bold text-brand-light mb-1">
+                <div className="font-serif text-2xl md:text-3xl font-medium text-brand-light mb-1">
                   {stat.value}
                 </div>
                 <div className="text-sm text-white/70">{stat.label}</div>

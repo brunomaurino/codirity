@@ -29,7 +29,7 @@ export function Services() {
               pick up the same fix via Badge's own variant, rather than
               this bundle fixing only its own copy of the styling. */}
           <div className="reveal">
-            <h3 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-brand mb-6 text-center">
+            <h3 className="text-[13px] font-medium uppercase tracking-[0.12em] text-brand mb-6 text-center">
               {scopeLabels.included}
             </h3>
             <ul className="flex flex-wrap justify-center gap-3 list-none">
@@ -49,7 +49,7 @@ export function Services() {
               brief's explicit "still honest, still visible" requirement
               for this exact list. */}
           <div className="reveal">
-            <h3 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-gray-600 dark:text-gray-400 mb-6 text-center">
+            <h3 className="text-[13px] font-medium uppercase tracking-[0.12em] text-gray-600 dark:text-gray-400 mb-6 text-center">
               {scopeLabels.notIncluded}
             </h3>
             <ul className="max-w-xl mx-auto space-y-3">

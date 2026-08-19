@@ -32,7 +32,7 @@ export function About() {
               automation as their competitive advantage. That&apos;s what we&apos;re here
               to help you do.
             </p>
-            <p className="text-brand font-semibold text-lg">
+            <p className="text-brand font-medium text-lg">
               Let&apos;s modernize your business together.
             </p>
           </div>

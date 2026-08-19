@@ -13,7 +13,7 @@ interface SectionProps {
    *   ONE of these on the site — the final CTA, which sits directly above the
    *   footer so the two read as a single closing band. Do not add a second
    *   `ink` section elsewhere; the beat only works because it is unique.
-   *   Uses the same `gray-900` token pair the footer already uses (#0a0a08
+   *   Uses the same `gray-900` token pair the footer already uses (#0A1712 (v4 ground, via the re-pointed gray-900 token)
    *   light / #171713 dark) so the CTA and footer are the same black, and
    *   `text-white` — true white in BOTH themes, the correct foreground for a
    *   permanently-dark surface (see the `--white` note in globals.css).

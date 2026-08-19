@@ -103,7 +103,9 @@ export interface CaseStudy {
    *  exists for either study, the headline is the concrete TECHNICAL fact
    *  itself, never a fabricated percentage. */
   headline: string;
-  /** The word inside `headline` that takes the `.accent` italic treatment. */
+  /** The word inside `headline` the retired `.accent` treatment emphasized.
+   *  v4 W0: renders as plain text (AccentWord is a pass-through); W4's case-
+   *  study rework removes the field. */
   headlineAccent: string;
   /** Longer context paragraph — the situation the work happened in. */
   background: string;

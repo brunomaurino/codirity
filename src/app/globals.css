@@ -1,93 +1,61 @@
 @import "tailwindcss";
 
-/* Dark mode selector for Tailwind */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* v4 is SINGLE-THEME (HANDOFF-redesign-v4.md §1.3). The dark variant is
+   neutralized — this selector can never match — so every surviving `dark:`
+   class in components compiles to dead weight instead of re-theming the
+   fixed grounds under OS dark mode. W6's retirement sweep deletes the
+   classes; W0 kills the mechanism. */
+@custom-variant dark (&:where(.__theme-retired-v4 *));
 
 /* ========================================
    CSS Custom Properties (Design Tokens)
    ======================================== */
 
 :root {
-  /* Brand Colors — "Monthly Club" (HANDOFF-redesign-v3 §1): warm neutral +
-     ONE confident accent, modeled directly on designjoy.co's own system
-     (colors read off their live getComputedStyle, 2026-08-18). The green
-     family stays green for brand continuity — Designjoy's own accent is
-     hot pink; ours is Codirity's green pushed brighter/more confident than
-     any prior iteration. --green-dark/--green-light are kept as distinct
-     tokens (not collapsed to one value) so existing hover/gradient pairs
-     that reference them keep working — La Firma's "grows up" language no
-     longer applies, this is a genuinely new palette, not an evolution of
-     the old one.
-     --green-main is #127A44, not the pitch artifact's literal #189656 —
-     deepened just enough to clear 4.5:1 (WCAG AA, normal text) against the
-     paper background (#189656 measured 3.17:1, AA-large only, and
-     `text-brand` is used on small text like SectionHeader's eyebrow labels,
-     not just large/bold UI). The visual difference is subtle; the approved
-     direction's identity survives, the contrast failure doesn't.
-     --green-light is #3F8A68, not the pitch artifact's literal #4FD98C —
-     that value measured 1.80:1 for the white icon strokes on ContactInfo's
-     brand→brand-light gradient tiles (WCAG 1.4.11 needs 3:1 for non-text UI
-     graphics); #3F8A68 clears 4.16:1. Found + fixed in Phase 4/5 review.
-     NOTE (V6): those gradient icon tiles no longer exist — V6's black-band
-     close replaced them — so the ORIGINAL justification above is historical.
-     The token's binding constraint is now a different and tighter one: it is
-     the accent/link colour ON the near-black band (`Section variant="ink"`,
-     `SectionHeader tone="ink"`), where it measures 4.76:1 in light mode against
-     #0a0a08 — only 0.26 over the AA floor for normal text. Darkening this token
-     will break that band; check ContactInfo's eyebrow + email link before
-     touching it. (Dark mode repoints it to #7ce3b2, 11.54:1 — comfortable.) */
+  /* ===== v4 tokens — "The Number That Doesn't Move" (HANDOFF-redesign-v4
+     §1.2, values verbatim from docs/redesign-v4/approved-mockup.html). The
+     brand green is the GROUND, not an accent: --ground is the green at ~5%
+     lightness. Mint goes ONLY on live/interactive elements; brass ONLY on
+     defensible numbers. One easing curve for the whole site. ===== */
+  --ground: #0A1712;
+  --ground-2: #10241B;
+  --paper: #EDEDE6;
+  --paper-2: #E2E2D9;
+  --chalk: #F4F7F2;
+  --chalk-dim: #A9B8AF;
+  --ink: #0A1712;
+  --ink-dim: #4C5B52;
+  --mint: #6EE7A8;
+  --brass: #C8A24A;
+  --rule: rgba(244, 247, 242, 0.14);
+  --rule-ink: rgba(10, 23, 18, 0.16);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ===== INTERIM legacy aliases (deleted in W6's retirement sweep). Every
+     not-yet-reworked v3 section still consumes these names; their VALUES stay
+     at the v3 AA-verified numbers so nothing ships illegible while W1–W5
+     rework one section at a time. New v4 code uses the tokens above, never
+     these. ===== */
   --green-dark: #0f6b3d;
   --green-main: #127a44;
-  --green-light: #3f8a68;
+  /* #45936F, not v3's #3f8a68: the --gray-900 re-point to #0A1712 LIGHTENED
+     the ink band, and the old value dropped to 4.41:1 there (under AA for the
+     mailto link + ink-tone eyebrow that sit on it). #45936F measures 4.94:1
+     on #0A1712. Its only live consumers are ON that band (V6) — it is not
+     body text on paper. Found in W0's Phase 4/5 review, which also caught
+     that the v3 comment warning about exactly this pair had been deleted in
+     the same diff. */
+  --green-light: #45936F;
   --green-pale: rgba(18, 122, 68, 0.08);
   --green-glow: rgba(18, 122, 68, 0.12);
-
-  /* --green-fill-dark/--green-fill: a SEPARATE pair for solid brand-green
-     FILLS that carry white text on top (buttons, badges, the featured-card
-     gradients, ::selection) — as opposed to --green-main/--green-dark
-     above, which are read as TEXT color (text-brand, .accent) on top of
-     paper/the page background. In light mode these two jobs don't conflict
-     (paper is bright, so a single moderately-dark green satisfies "white
-     text on it" AND "it as text on paper" at once) — added in Phase 4/5
-     review for structural consistency even though light mode doesn't need
-     the split, so every "-fill" consumer resolves correctly in both
-     themes without a theme-conditional class. See the dark-mode override
-     below for why this split is NOT optional there. */
   --green-fill-dark: var(--green-dark);
   --green-fill: var(--green-main);
+  --sage: var(--paper-2);
 
-  /* Supporting brand tones. --sage retired as a surface color (the old
-     "soft sage card" register belonged to La Firma) — repointed to a warm
-     paper-raised tint. Neither --sage nor --brass has any component
-     consumer today (grepped: zero bg-sage/text-sage/bg-brass/text-brass
-     usages in src/ — the founding-offer banner at Pricing.tsx uses green
-     tokens, not brass; corrected here after the Phase 4/5 review flagged
-     the prior comment's founding-banner claim as inaccurate). --brass's
-     only live consumer is `.blob-2` below. Its VALUE is still deepened to
-     a gold that would clear AA if ever used as text (#8B5A16, not the
-     pitch artifact's lighter #E8A93D — that value measured 1.72:1 on
-     paper; #8B5A16 clears 4.5:1), since V5 may give it a real UI role. */
-  --sage: #f5f5f0;
-  --brass: #8b5a16;
-
-  /* Blob-gradient ingredient colors (HANDOFF §1.3) — used ONLY inside the
-     .blob-* utilities below, never exposed as general UI/text colors. */
-  --blob-gold: #fce38a;
-  --blob-mint: #7ce3b2;
-  --blob-amber: #ffd873;
-  --blob-forest: #0b4e30;
-
-  /* Neutral Colors — warm, with a faint green bias (chosen, not the AI-
-     cliché warm cream — see HANDOFF §1.1). ink/paper below are the two
-     tokens that actually carry the new register; the gray ramp is
-     repointed onto the same warm-neutral hue family so anything still
-     using gray-* (not yet migrated to paper/ink by a later bundle) reads
-     as part of the same palette instead of clashing. */
   --white: #ffffff;
-  --off-white: #ebebe4;
+  --off-white: var(--paper);
   --paper-raised: #f5f5f0;
-  --ink: #0a0a08;
-  --ink-soft: #5c5c54;
+  --ink-soft: var(--ink-dim);
   --gray-50: #f5f5f0;
   --gray-100: #ebebe4;
   --gray-200: #ddddd3;
@@ -96,109 +64,33 @@
   --gray-500: #78786a;
   --gray-600: #5c5c54;
   --gray-700: #3c3c36;
-  --gray-800: #1c1c18;
-  --gray-900: #0a0a08;
+  --gray-800: #10241B;
+  --gray-900: #0A1712;
   --black: #000000;
 
   /* Borders */
-  --border: rgba(10, 10, 8, 0.12);
-  /* rgb(18,122,68) = --green-main #127a44 — was rgba(24,150,86,...), the
-     rejected #189656, left over from before that value was deepened for
-     contrast (see the --green-main comment above). Found + fixed in
-     Phase 4/5 review alongside the same leak in CalPopupButton.tsx. */
+  --border: var(--rule-ink);
   --border-hover: rgba(18, 122, 68, 0.35);
 
   /* Shadows — warm ink, soft (no glow) */
-  --shadow-xs: 0 1px 2px rgba(10, 10, 8, 0.05);
-  --shadow-sm: 0 2px 8px rgba(10, 10, 8, 0.06);
-  --shadow-md: 0 4px 16px rgba(10, 10, 8, 0.07);
-  --shadow-lg: 0 12px 32px rgba(10, 10, 8, 0.09);
-  --shadow-xl: 0 24px 48px rgba(10, 10, 8, 0.1);
+  --shadow-xs: 0 1px 2px rgba(10, 23, 18, 0.05);
+  --shadow-sm: 0 2px 8px rgba(10, 23, 18, 0.06);
+  --shadow-md: 0 4px 16px rgba(10, 23, 18, 0.07);
+  --shadow-lg: 0 12px 32px rgba(10, 23, 18, 0.09);
+  --shadow-xl: 0 24px 48px rgba(10, 23, 18, 0.1);
   --shadow-green: 0 8px 24px rgba(18, 122, 68, 0.18);
 
-  /* Transitions */
-  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Transitions — legacy alias; new code uses --ease */
+  --transition-smooth: var(--ease);
 
-  /* Background/Foreground — paper page, ink text */
-  --background: var(--off-white);
+  /* Background/Foreground — paper page, ink text (sections repaint their own
+     grounds; the page-level dark→paper choreography arrives with W1–W6) */
+  --background: var(--paper);
   --foreground: var(--ink);
 }
 
 /* Dark Mode Variables */
-[data-theme="dark"] {
-  --background: #1c1c18;
-  --foreground: #f2f2ec;
 
-  /* Brand in the dark: --green-dark/--green-main stay BRIGHT — they're read
-     as TEXT color (text-brand small labels, .accent one-word emphasis)
-     directly on the near-black page background, which needs a light green
-     to clear AA (#1caf6b measures 6.02:1, #4fd98c measures 9.47:1 as text
-     on #1c1c18 — both comfortable). This is deliberately NOT the same value
-     used as a solid fill under white text — see --green-fill-dark/
-     --green-fill below. A single dark-mode green genuinely cannot satisfy
-     both roles: white-on-color needs a color luminance below ~0.183, while
-     color-as-text-on-#1c1c18 needs luminance above ~0.226 to clear 4.5:1 —
-     disjoint ranges, not a tuning problem. Found in Phase 4/5 review, which
-     flagged this bundle's first pass (which had darkened THESE tokens to
-     #125e3a/#2f7a52 for the fill role, breaking the text role as an
-     unintended side effect — self-caught while writing up this fix; see
-     notes.md "Review findings + resolutions"). */
-  --green-dark: #1caf6b;
-  --green-main: #4fd98c;
-  --green-light: #7ce3b2;
-  --green-pale: rgba(79, 217, 140, 0.12);
-  --green-glow: rgba(79, 217, 140, 0.14);
-
-  /* The fill pair: tuned so WHITE TEXT ON TOP clears AA (#125e3a: 7.81:1,
-     #2f7a52: 5.22:1) — the actual fix for the Phase 4/5 BLOCKER (bg-brand
-     text-white / featured-card gradients / ::selection measuring as low as
-     1.80:1 in this bundle's first pass). Every consumer that paints white
-     text on a solid brand-green background uses these, NOT --green-main/
-     --green-dark above. */
-  --green-fill-dark: #125e3a;
-  --green-fill: #2f7a52;
-  --sage: #242420;
-  --brass: #f0bd63;
-
-  /* --white is deliberately NOT redefined here (unlike --off-white/
-     --paper-raised below). --color-white aliases directly onto Tailwind's
-     `white` keyword (see @theme inline), which the codebase uses for TWO
-     different jobs: card-surface backgrounds (always paired with an explicit
-     dark-mode gray-800 or gray-900 override — never actually reads this
-     token in dark mode) AND foreground text/icon color on permanently-colored
-     surfaces (`text-white` buttons, the footer's `bg-gray-900 text-white`,
-     `dark:text-white` headings) — those have NO dark: fallback because they
-     need to stay true white regardless of site theme. Redefining --white to
-     a dark card tone here left every one of those unreadable: near-black
-     text on a near-black or brand-green background. Caught visually via a
-     live dark-mode screenshot of the hero (text was invisible) — see
-     notes.md "Self-caught bug" for the full writeup. */
-  --off-white: #1c1c18;
-  --paper-raised: #242420;
-  --ink: #f2f2ec;
-  --ink-soft: #a8a89c;
-
-  /* The gray ramp is NOT inverted here — components already carry explicit
-     dark: pairs like `bg-white dark:bg-gray-800`; inverting the ramp would
-     make dark:bg-gray-900 resolve to near-white, painting light panels
-     over the dark page. Only the LOW grays are re-tuned so dark surfaces
-     sit on the new warm-neutral dark ground rather than a cold gray. */
-  --gray-800: #242420;
-  --gray-900: #171713;
-
-  /* Dark mode borders */
-  --border: rgba(242, 242, 236, 0.12);
-  /* rgb(47,122,82) = the corrected dark --green-main #2f7a52 (see above). */
-  --border-hover: rgba(47, 122, 82, 0.4);
-
-  /* Dark mode shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.6);
-  --shadow-green: 0 8px 24px rgba(47, 122, 82, 0.22);
-}
 
 /* ========================================
    Tailwind Theme Configuration
@@ -217,6 +109,21 @@
   --color-brand-fill-dark: var(--green-fill-dark);
   --color-brand-fill: var(--green-fill);
   --color-sage: var(--sage);
+
+  /* v4 tokens as real utilities (text-mint, bg-ground, …) — without these a
+     future bundle's text-mint would be a SILENT no-op (Tailwind v4 drops
+     unknown theme colors rather than erroring; Phase 4/5 review). --brass is
+     the v4 value #C8A24A: a NUMBERS-ON-DARK color (7.6:1 on ground) that is
+     NOT AA as text on paper (~2:1) — never use text-brass on a light
+     surface. */
+  --color-ground: var(--ground);
+  --color-ground-2: var(--ground-2);
+  --color-paper-v4: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-chalk: var(--chalk);
+  --color-chalk-dim: var(--chalk-dim);
+  --color-ink-dim: var(--ink-dim);
+  --color-mint: var(--mint);
   --color-brass: var(--brass);
 
   /* HANDOFF §1's paper/ink vocabulary — exposed as real Tailwind utilities
@@ -229,10 +136,8 @@
   --color-ink-soft: var(--ink-soft);
   --color-paper-raised: var(--paper-raised);
 
-  /* --white is pure #ffffff in BOTH themes (see the --white comment in the
-     [data-theme="dark"] block above for why it is not repointed to a warm
-     paper tone: bg-white/text-white share this one Tailwind keyword for
-     two different jobs, and the foreground job needs true white always). */
+  /* --white stays pure #ffffff: bg-white/text-white share this one Tailwind
+     keyword for two different jobs, and the foreground job needs true white. */
   --color-white: var(--white);
 
   --color-gray-50: var(--gray-50);
@@ -246,30 +151,22 @@
   --color-gray-800: var(--gray-800);
   --color-gray-900: var(--gray-900);
 
-  /* Fonts — Monthly Club (HANDOFF-redesign-v3 §1.2): ONE family for
-     everything, the same one-family discipline designjoy.co itself uses.
-     --font-serif is repointed to Figtree too (not removed) so any
-     not-yet-migrated component using font-serif still renders coherently
-     instead of falling back to a system serif; the real replacement for
-     Fraunces's old "every heading" role is the NEW `.accent` utility below
-     (Instrument Serif Italic, one word per headline — a different, much
-     narrower job than font-serif's old blanket one). --font-mono is
-     repointed to Figtree as well — Space Mono is retired as a system voice
-     entirely per §1.2; nothing in this codebase needs a monospace face
-     after this bundle (the logo wordmark's old mono treatment moves to
-     Figtree with the rest of the nav in V1). */
-  --font-sans: var(--font-figtree), system-ui, sans-serif;
-  --font-serif: var(--font-figtree), system-ui, sans-serif;
-  --font-mono: var(--font-figtree), system-ui, sans-serif;
-  /* --font-accent registers a Tailwind `font-accent` utility (font-family
-     ONLY). Do not reach for it when the HANDOFF's one-word-per-headline
-     emphasis technique is wanted — that is the hand-authored `.accent`
-     class below (italic + weight 400 + color), a different, more specific
-     thing that happens to share a name. `font-accent` alone renders
-     upright Instrument Serif with no italic/color, silently skipping the
-     emphasis treatment. Flagged in Phase 4/5 review as a future mix-up
-     risk since no component consumes either yet. */
-  --font-accent: var(--font-instrument-serif), Georgia, serif;
+  /* Fonts — v4 (HANDOFF-redesign-v4 §1.1): ONE family, Apfel Grotezk,
+     for every role — the same one-family discipline the outcrowd.io
+     reference applies with ITC Avant Garde. serif/mono repointed rather
+     than removed so any not-yet-migrated font-serif/font-mono call site
+     renders coherently until W6 sweeps it. --font-accent is DELETED with
+     the `.accent` treatment it served. */
+  --font-sans: var(--font-apfel), system-ui, sans-serif;
+  --font-serif: var(--font-apfel), system-ui, sans-serif;
+  --font-mono: var(--font-apfel), system-ui, sans-serif;
+
+  /* Weight discipline (§1.1): hierarchy comes from SIZE, never weight.
+     Apfel ships 400/500 only — a stray font-bold would SYNTHESIZE a faux
+     700. This remap makes every font-bold utility render 500 as a safety
+     net UNDER the call-site conversion done in this same bundle. */
+  --font-weight-bold: 500;
+  --font-weight-semibold: 500;
 
   /* Shadows */
   --shadow-xs: var(--shadow-xs);
@@ -286,69 +183,47 @@
 
 html {
   background: var(--background);
-  transition: background-color 0.3s ease;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-family: var(--font-apfel), system-ui, sans-serif;
   line-height: 1.55;
   overflow-x: hidden;
 }
 
-/* Monthly Club: ONE family speaks everywhere — weight does the hierarchy
-   work, not a font swap (HANDOFF-redesign-v3 §1.2). Retires La Firma's
-   "every heading speaks in the serif" rule; the new expressive-emphasis job
-   (formerly Fraunces's) moves to the much narrower `.accent` utility below,
-   applied to single words, not whole headings.
-
-   Wrapped in `@layer base` (found missing in Phase 4/5 review): Tailwind v4
-   emits font-bold/font-semibold/etc. inside `@layer utilities`, and a bare,
-   unlayered rule beats EVERY layered rule regardless of specificity — so
-   this was silently overriding every heading's weight utility site-wide
-   (~25 headings, confirmed against the compiled build output). `@layer
-   base` sits below `@layer utilities` in Tailwind's layer order, so a
-   component's own font-bold/font-semibold now wins as intended, and this
-   rule only supplies the default when no weight utility is present. */
+/* v4: ONE family (Apfel) speaks everywhere; SIZE does the hierarchy work,
+   never weight (HANDOFF-redesign-v4 §1.1). Kept in @layer base so a
+   component's own weight utility still wins when present — though with the
+   --font-weight-bold remap above, even font-bold now resolves to 500. */
 @layer base {
+  /* Apfel ships 400/500 only. The --font-weight-bold remap intercepts
+     Tailwind's font-bold utility, but Preflight's `b,strong{font-weight:
+     bolder}` still requests 700 and the browser SYNTHESIZES a faux bold —
+     the artifact the remap exists to eliminate (privacy page's ~18 <strong>
+     tags; Phase 4/5 review). 500 is the strongest real face. */
+  strong,
+  b {
+    font-weight: 500;
+  }
+
   h1,
   h2,
   h3,
   h4 {
-    /* var(--font-figtree) directly (not --font-sans): @theme inline values
+    /* var(--font-apfel) directly (not --font-sans): @theme inline values
        are inlined into utilities and never emitted as runtime CSS
        variables, so the theme token can't be referenced from a plain
        element rule. */
-    font-family: var(--font-figtree), system-ui, sans-serif;
+    font-family: var(--font-apfel), system-ui, sans-serif;
     font-weight: 500;
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
 }
 
-/* The one-word-per-headline emphasis technique (HANDOFF §1.2) — mirrors
-   designjoy.co's own custom-font emphasis word ("everyone," "you'll never
-   go back") with a real Google Font doing the same expressive job, never
-   claiming to be their licensed face. Apply to exactly one word inside a
-   heading; never a whole heading, never body copy.
 
-   Wrapped in `@layer components` (same unlayered-cascade bug as h1-h4
-   above, found in the same review pass): the default `color` below is a
-   sensible default for the common case (accent word on paper), but V1/V2/V8
-   are briefed to also place `.accent` on dark/blob surfaces, where a call
-   site needs to pair it with an explicit text-color utility (e.g. `accent
-   text-white`) to override the tint. `@layer components` sits below
-   `@layer utilities`, so any `text-*` utility applied alongside `.accent`
-   now wins that override; unlayered, it could not be overridden at all. */
-@layer components {
-  .accent {
-    font-family: var(--font-instrument-serif), Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-    color: var(--green-dark);
-  }
-}
 
 ::selection {
   /* --green-fill, not --green-main: this is a solid fill under white text,
@@ -599,50 +474,6 @@ body {
 }
 
 /* ========================================
-   Background Pattern
-   ======================================== */
-
-.bg-pattern {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    rgba(0, 0, 0, 0.03) 1px,
-    transparent 0
-  );
-  background-size: 32px 32px;
-}
-
-[data-theme="dark"] .bg-pattern {
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    rgba(255, 255, 255, 0.05) 1px,
-    transparent 0
-  );
-}
-
-/* ========================================
-   Gradient Text
-   ======================================== */
-
-.gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--green-dark) 0%,
-    var(--green-main) 50%,
-    var(--green-light) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ========================================
    Custom Scrollbar
    ======================================== */
 
@@ -663,98 +494,30 @@ body {
   background: var(--gray-400);
 }
 
-/* Warm dark scrollbar — rides the same tokens as the rest of the dark palette
-   (the old block hardcoded the removed cold-gray ramp values). */
-[data-theme="dark"]::-webkit-scrollbar-track {
-  background: var(--gray-900);
-}
-
-[data-theme="dark"]::-webkit-scrollbar-thumb {
-  background: var(--gray-300);
-  border-radius: 4px;
-}
-
-[data-theme="dark"]::-webkit-scrollbar-thumb:hover {
-  background: var(--gray-400);
-}
-
 /* ========================================
-   Blob-gradient utilities (Monthly Club, HANDOFF-redesign-v3 §1.3)
+   v4 interim deep panel (W0)
    ======================================== */
 
-/* Four DISTINCT color combinations — reusing one gradient parameterized by a
-   single hue swap across multiple cards is a defect per the HANDOFF's own
-   explicit call-out, not a shortcut. Each is layered radial/conic gradients,
-   CSS only, no images.
-
-   A uniform rgba(0,0,0,0.5) scrim sits as the TOPMOST background layer
-   (CSS multi-background layers paint first-listed on top) on all four,
-   added in Phase 4/5 review: without it, each blob's brightest ingredient
-   color (e.g. .blob-1's gold hotspot) measured as low as ~1.2:1 against the
-   white text, nowhere near AA — the original "dark enough at their base to
-   carry white text" claim was asserted, not verified, since nothing
-   consumed these utilities yet to check visually. At 50% black, every
-   ingredient color's brightest stop still clears 4.5:1 against white text
-   (worst case, --blob-gold: 4.84:1) while the underlying hue story stays
-   visible enough to keep the four combinations distinct. .blob-4 moves to
-   the same white text as the other three for the same reason — its
-   previous dark text was a one-off that contradicted this block's own
-   "text inside a blob is white/near-white" contract two lines below itself.
-
-   Wrapped in `@layer components` (same missing-layer bug as h1-h4/.accent
-   above): lets a future call site's own `text-*` utility override these
-   defaults if a specific placement needs to. */
+/* The v3 blob-gradient and glassmorphic treatments are RETIRED (HANDOFF-v4
+   §1.3) — but five not-yet-reworked sections still reference these class
+   NAMES (Process, Benefits, RecentWork, CaseStudies, PricingCard), and their
+   children assume a dark surface with light text. So the names survive this
+   one plan-phase as aliases to a single quiet v4 surface — ground-2 under
+   chalk — keeping every section legible until its own bundle (W2–W5)
+   reworks it. W6's retirement sweep deletes these aliases and the last
+   consumer with them. New v4 code uses .panel-deep or the tokens directly.
+   NEVER reintroduce the gradients. */
 @layer components {
-  .blob-1 {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      radial-gradient(120% 100% at 15% 10%, var(--blob-gold) 0%, transparent 45%),
-      radial-gradient(120% 120% at 90% 15%, var(--blob-mint) 0%, transparent 50%),
-      radial-gradient(140% 120% at 60% 100%, var(--green-dark) 0%, transparent 60%),
-      linear-gradient(155deg, var(--green-main), var(--blob-forest) 70%);
-    color: #f4fbf6;
+  .panel-deep,
+  .blob-1,
+  .blob-2,
+  .blob-3,
+  .blob-4,
+  .glass-dark {
+    background: var(--ground-2);
+    color: var(--chalk);
   }
 
-  .blob-2 {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      radial-gradient(120% 100% at 10% 100%, var(--blob-mint) 0%, transparent 55%),
-      radial-gradient(120% 100% at 90% 0%, var(--brass) 0%, transparent 55%),
-      linear-gradient(160deg, var(--blob-forest), #123b29);
-    color: #f4fbf6;
-  }
-
-  .blob-3 {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      radial-gradient(120% 100% at 90% 10%, var(--blob-amber) 0%, transparent 55%),
-      radial-gradient(120% 100% at 10% 90%, var(--green-main) 0%, transparent 55%),
-      linear-gradient(160deg, #123b29, var(--blob-forest));
-    color: #f4fbf6;
-  }
-
-  .blob-4 {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      conic-gradient(
-        from 200deg at 30% 30%,
-        var(--blob-gold),
-        var(--blob-mint),
-        var(--green-main),
-        var(--blob-gold)
-      );
-    color: #f4fbf6;
-  }
-}
-
-/* ========================================
-   Shape system (Monthly Club, HANDOFF-redesign-v3 §1.3)
-   ======================================== */
-
-/* Wrapped in `@layer components` alongside the blob utilities above, for
-   the same reason: unlayered, none of these could be overridden by a
-   Tailwind utility applied at the call site. */
-@layer components {
   .btn-pill {
     border-radius: 9999px;
   }
@@ -762,25 +525,159 @@ body {
   .card-soft {
     border-radius: 18px;
   }
+}
 
-  /* Glassmorphic dark card — V5's pricing card is the first real consumer.
-     -webkit-backdrop-filter declared BEFORE the unprefixed backdrop-filter
-     (found in Phase 4/5 review): the Tailwind v4/Lightning CSS build was
-     dropping whichever of the two identical-value declarations came
-     SECOND, and with the unprefixed one listed second it was the one
-     getting dropped — leaving only the webkit-prefixed alias in the
-     compiled CSS, which Chrome and Firefox don't honor, so the blur
-     silently failed to render outside Safari. Swapping the order keeps
-     the standard property (needed by Chrome/Firefox) as the survivor. */
-  .glass-dark {
-    background: rgba(10, 10, 8, 0.88);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(244, 251, 246, 0.08);
-    color: #f4fbf6;
+/* ========================================
+   v4 type scale (HANDOFF-redesign-v4 §1.4)
+   ======================================== */
+
+/* Hierarchy comes from SIZE at weight 500 — never from weight. .d-xl is
+   derived from the hero's longest hand-set line (see the mockup); all clamps
+   are rem + vw, never bare vw (WCAG 1.4.4). Tracking is capped for a
+   geometric face. */
+@layer components {
+  .display {
+    font-family: var(--font-apfel), system-ui, sans-serif;
+    font-weight: 500;
+    line-height: 0.94;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+    margin: 0;
   }
+  .d-xl {
+    /* The mockup's EXACT curve, deliberately bare-vw in the middle term: the
+       size is derived from the hero's longest hand-set line and was verified
+       single-line at 375/980/1280 with the real font. W0's first draft
+       "improved" this to rem+vw and rendered ~32% larger at 375px — an
+       inequivalent curve that overflowed the line (Phase 4/5 review). The
+       floor and cap are rem, which bounds the text-only-zoom concern the
+       rem+vw rule exists for; W1 re-verifies against the real hero. */
+    font-size: clamp(2.3rem, 10.2vw, 8.4rem);
+    letter-spacing: -0.018em;
+    line-height: 0.95;
+  }
+  .d-lg {
+    font-size: clamp(2.5rem, 1.25rem + 6.9vw, 7.75rem);
+    letter-spacing: -0.018em;
+  }
+  .d-md {
+    font-size: clamp(1.75rem, 1.1rem + 2.85vw, 3.6rem);
+  }
+  .label {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin: 0;
+  }
+  .label-ink {
+    color: var(--ink-dim);
+  }
+  /* Paper-ground sibling of .lede — the mockup's `.light .lede` port. Without
+     it, .lede's chalk-dim measures ~1.76:1 on paper (invisible); W5's paper
+     run is the first consumer (Phase 4/5 review). */
+  .lede-ink {
+    color: var(--ink-dim);
+  }
+  .lede {
+    font-size: clamp(1.125rem, 1rem + 0.55vw, 1.5rem);
+    line-height: 1.5;
+    max-width: 36ch;
+    color: var(--chalk-dim);
+    margin: 0;
+    text-wrap: pretty;
+  }
+}
 
-  [data-theme="dark"] .glass-dark {
-    background: rgba(36, 36, 32, 0.9);
+/* ========================================
+   v4 ground bands (§1.5 — grounds never hard-cut)
+   ======================================== */
+
+@layer components {
+  .band {
+    height: clamp(160px, 30vh, 320px);
+  }
+  .band-dl {
+    background: linear-gradient(180deg, var(--ground) 0%, #39443c 55%, var(--paper) 100%);
+  }
+  .band-ld {
+    background: linear-gradient(180deg, var(--paper) 0%, #39443c 45%, var(--ground) 100%);
+  }
+}
+
+/* ========================================
+   v4 reveal system (§1.6 — ONE entrance gesture)
+   ======================================== */
+
+/* The masked line-rise is the site's single entrance gesture, repeated at
+   every scale; .fade is its quieter sibling for non-display elements. Armed
+   by RevealProvider (IntersectionObserver, 450ms delay so the first
+   section's reveal never competes with the hero's own entrance). The
+   padding/margin pair keeps descenders out of the mask's clip at
+   line-height .95. */
+@layer components {
+  .line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .line > span {
+    display: block;
+    transform: translateY(115%);
+    transition: transform 0.95s var(--ease) calc(var(--l, 0) * 110ms);
+  }
+  .in .line > span {
+    transform: translateY(0);
+  }
+  .fade {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.65s ease calc(var(--l, 0) * 90ms),
+      transform 0.65s var(--ease) calc(var(--l, 0) * 90ms);
+  }
+  .in .fade,
+  .in.fade {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Scoped reduced-motion (§1.6): kill the entrance/scroll systems, keep
+   sub-300ms state feedback (hover/focus) — the preference targets movement,
+   not all change. Never a universal *{transition:none}. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .line > span,
+  .fade,
+  .reveal {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* Legacy v3 animations still live on the page until their bundles rework
+     them (Phase 4/5 review: the original kill-list only covered the NEW
+     system, which has no consumers yet, while ~15 running animations were
+     untouched). Entrance animations must ALSO force visibility — several
+     call sites pair `opacity-0` with `animate-slide-up`, so killing the
+     animation alone would leave content permanently invisible. */
+  [class*="animate-"] {
+    animation: none !important;
+  }
+  .animate-slide-up,
+  .animate-fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .line > span {
+    transform: none;
+  }
+  .fade,
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

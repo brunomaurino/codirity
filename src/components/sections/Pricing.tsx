@@ -59,9 +59,9 @@ export function Pricing() {
               )}
             >
               <Sparkles className="h-5 w-5 text-brand shrink-0" strokeWidth={2} />
-              <span className="font-semibold">Founding offer</span>
+              <span className="font-medium">Founding offer</span>
               <span>
-                <span className="font-serif font-bold">{foundingRate.price}</span>{" "}
+                <span className="font-serif font-medium">{foundingRate.price}</span>{" "}
                 — {foundingRate.label}
               </span>
               <span className="text-sm opacity-80">
@@ -109,7 +109,7 @@ export function Pricing() {
             >
               <Icon className="h-5 w-5 text-brand shrink-0" strokeWidth={2} />
               <div>
-                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
                   {label}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -122,7 +122,7 @@ export function Pricing() {
 
         {/* Guarantee cluster */}
         <div className="max-w-2xl mx-auto mt-10 text-center reveal">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             {guarantee.title}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">

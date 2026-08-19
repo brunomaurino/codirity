@@ -42,11 +42,11 @@ export function CaseStudies() {
             >
               {/* Header — name, relationship, stack */}
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{study.name}</h3>
+                <h3 className="text-2xl font-medium text-gray-900 dark:text-white">{study.name}</h3>
                 <span
                   className={cn(
                     "btn-pill inline-flex items-center",
-                    "px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em]",
+                    "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
                     // bg-brand-fill, never bare bg-brand: this is a solid fill
                     // under white text, which is the role the *-fill token pair
                     // exists for (V0's dual-role-token finding).
@@ -71,7 +71,7 @@ export function CaseStudies() {
                   "card-soft mt-6 p-6 sm:p-8"
                 )}
               >
-                <p className="text-xl sm:text-2xl font-bold leading-snug">
+                <p className="text-xl sm:text-2xl font-medium leading-snug">
                   <AccentWord text={study.headline} word={study.headlineAccent} className="text-white" />
                 </p>
               </div>
@@ -84,7 +84,7 @@ export function CaseStudies() {
                   squeezes both (the ungated-grid trap from V5). */}
               <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
                 <div>
-                  <h4 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-brand">
+                  <h4 className="text-[13px] font-medium uppercase tracking-[0.12em] text-brand">
                     What shipped
                   </h4>
                   <ul className="mt-4 flex flex-col gap-3">
@@ -101,7 +101,7 @@ export function CaseStudies() {
                 </div>
 
                 <div className="text-gray-900 dark:text-white">
-                  <h4 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-brand">
+                  <h4 className="text-[13px] font-medium uppercase tracking-[0.12em] text-brand">
                     How it fits together
                   </h4>
                   {/* Horizontally scrollable rather than shrink-to-fit. The
@@ -134,7 +134,7 @@ export function CaseStudies() {
                     key={tag}
                     className={cn(
                       "btn-pill inline-flex items-center",
-                      "px-3 py-1 text-xs font-semibold",
+                      "px-3 py-1 text-xs font-medium",
                       "bg-gray-50 dark:bg-gray-900",
                       "border border-[var(--border)]",
                       "text-gray-600 dark:text-gray-400"

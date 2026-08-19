@@ -65,7 +65,7 @@ export function Benefits() {
                   <div
                     className={cn(
                       "w-12 h-12 rounded-xl mb-5",
-                      "bg-black/20 backdrop-blur-sm",
+                      "bg-black/20 backdrop-blur-sm border border-[var(--rule)]",
                       "flex items-center justify-center",
                       "transition-transform duration-400",
                       "group-hover:scale-110 group-hover:-rotate-5"
@@ -73,7 +73,7 @@ export function Benefits() {
                   >
                     <Icon className="h-5 w-5" strokeWidth={2} />
                   </div>
-                  <h3 className="text-lg font-bold mb-2">{benefit.title}</h3>
+                  <h3 className="text-lg font-medium mb-2">{benefit.title}</h3>
                   {/* Full-opacity text (not opacity-85, found in Phase 4/5
                       review): the blob utilities' 50%-black scrim is tuned
                       for FULL-opacity white text to clear WCAG AA against
