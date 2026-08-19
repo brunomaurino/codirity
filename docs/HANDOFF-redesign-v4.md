@@ -84,6 +84,16 @@ matches the mockup.
 - **A self-test must mutate COPIES, never the tracked working tree** — W3's first draft restored by
   a bare second write with no `try/finally`, so an interruption would strand an injected mutation
   (one of which did not typecheck) in the repo.
+- **A "cleanup" whose diff is an order of magnitude larger than the change it describes is not a
+  refactor — it is a hiding place.** W6's sweep changed ~1,700 lines to delete ~95 classes because
+  its regex also normalised whitespace, and in that noise it fused trailing `//` comments with the
+  code beneath them (silently commenting out live class arrays) and ate a space inside a JSX
+  literal. tsc, eslint and the build all stayed green. Sweep line by line, never touch comment
+  lines, normalise nothing.
+- **Tailwind v4 scans the WHOLE project and generates utilities from class names QUOTED IN PROSE** —
+  `docs/`, a `notes.md`, even a code comment. W6's sweep "finished" with ~70 dead utilities still
+  shipping for exactly this reason. `@source not "../../docs"` is the fix; keep the neutralizing
+  `@custom-variant dark` as a second layer, because a `dark:` can still enter from a comment.
 - **NEVER use a dark-ground text token on paper (or vice versa).** W5 shipped `.lede`
   (`--chalk-dim`) onto the paper run at **1.76:1** as a BLOCKER — while a `.lede-ink` utility sat
   unused in the repo for exactly that case. Bind the paper variant to the GROUND
@@ -185,7 +195,27 @@ matches the mockup.
 | **W3** | The queue scene — signature pinned motion, illustrative chips, reduced-motion static tableau | W0 | [x] complete | #32 | `c66faaf` |
 | **W4** | Case studies + clients strip in the v4 treatment (eDairyMarket stat block + shipped list; Meshio state machine; 3-client strip) | W0 | [x] complete | #34 | `f019a4c` |
 | **W5** | What we build (list + strike-through "we say no") + How it works + founder block + FAQ restyle | W0 | [x] complete | #36 | `a232495` |
-| **W6** | Ownership quote + close + footer voice/format pass + dead-style retirement sweep + final perf/a11y gate | W0–W5 | [ ] not started | | |
+| **W6** | Ownership quote + close + footer voice/format pass + dead-style retirement sweep + final perf/a11y gate | W0–W5 | [x] complete | #38 | `6147807` |
+
+**PLAN COMPLETE — 2026-08-19.** All seven bundles shipped, one PR each.
+
+| | |
+|---|---|
+| Review | 6 batteries · **95 confirmed findings, all applied, 0 deferrals, 0 escalations** |
+| Document | **30,928 → 20,125 B gz — 35% smaller** while replacing the entire visual system |
+| Contrast | 73 distinct text styles measured against their own composited grounds — **nothing under AA** |
+| Fabrications | 0 — the fact gate runs in both directions and its self-test replays v3's two real ones |
+
+**Still open (operator-owned, not deferrals):**
+1. **No CI runs any gate.** `scripts/w2-*` … `w6-*` are the only mechanical coverage these sections
+   have, and every one is invoked by hand. Named in three bundles' commitments; the highest-leverage
+   change left on this repo.
+2. **The live Trello `[TEMPLATE] Codirity Client Board` still promises "75% back."** The codebase
+   says 7 days / 50% everywhere. Carried since v3 V5 — the only surface a customer can read the
+   wrong number on, and only a manual edit closes it.
+3. **`Benefits` and `ContactForm` are still v3.** The plan never scheduled a bundle for either. Both
+   work and measure AA, but the form is a white card with the v3 green gradient accent bar beside
+   the mint close CTA — two action greens visible together.
 
 ## §3 — Per-bundle launch commands
 
