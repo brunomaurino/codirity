@@ -645,6 +645,142 @@ body {
   }
 }
 
+/* ========================================
+   v4 hero + folio (Bundle W1 — mockup port)
+   ======================================== */
+
+@layer components {
+  /* .wrap-v4: the mockup's page gutter. NOT the legacy Container — that
+     carries v3 padding assumptions; sections migrate here as each is
+     reworked. Longhand paddings only (§0 shorthand trap). */
+  .wrap-v4 {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  @media (min-width: 900px) {
+    .wrap-v4 {
+      padding-left: 48px;
+      padding-right: 48px;
+    }
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: 28px;
+  }
+  /* 1100px. History, because this boundary has now bitten THREE times:
+     the mockup claimed 980 (false — the two-column grid costs the H1 column
+     ~260px); this bundle first chose 1040 by arithmetic, and the battery
+     measured a −0.59px deficit AT exactly 1040 (fs 106.08, column 772.09 vs
+     the 7.284em line at 772.69) — wrapping until ~1044, wider with a 15px
+     scrollbar. 1100 clears with real margin: worst case (15px scrollbar)
+     column = 1100−15−96−136−28 = 825px vs line 7.284 × .102 × 1100 ≈ 817px.
+     MEASURED in-browser at 1099/1100/1110/1280 this time, not derived. */
+  @media (min-width: 1100px) {
+    .hero-grid {
+      grid-template-columns: 1fr auto;
+      align-items: end;
+    }
+  }
+  /* The micro/macro move: a 13px ledger on the baseline of a 134px claim.
+     The numbers are the hero's credibility object — above the fold. */
+  .hero-ledger {
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--chalk-dim);
+    text-align: right;
+    white-space: nowrap;
+    margin: 0;
+  }
+  .hero-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px 56px;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 40px;
+  }
+
+  /* The constant (§1.7): the flat-rate promise made behavior. aria-hidden,
+     pointer-events none, out of the tab order — a page ornament that never
+     traps focus. Tone flips over light grounds via body.on-light (IO-driven,
+     see TheConstant.tsx). */
+  .constant {
+    position: fixed;
+    right: clamp(10px, 2vw, 28px);
+    bottom: 32px;
+    z-index: 20;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--chalk-dim);
+    writing-mode: vertical-rl;
+    opacity: 0;
+    transition: opacity 0.5s ease, color 0.4s ease;
+    pointer-events: none;
+  }
+  body.past-hero .constant {
+    opacity: 1;
+  }
+  body.on-light .constant {
+    color: var(--ink-dim);
+  }
+}
+
+/* HERO entrance: pure CSS keyframes, NOT the IO/.in system — keyframes
+   auto-play at first paint, so the H1 (the LCP candidate), ledger, lede and
+   CTAs are visible before hydration. The battery measured the .in-gated
+   version painting a blank hero until JS ran; main's old hero never had that
+   regression and neither may this one. The IO system stays for SCROLL
+   reveals (below the fold), where hydration timing is invisible. */
+@layer components {
+  .line-rise > span {
+    animation: v4-rise 0.95s var(--ease) both;
+    animation-delay: calc(var(--l, 0) * 110ms);
+  }
+  .fade-rise {
+    animation: v4-fadeup 0.65s var(--ease) both;
+    animation-delay: calc(var(--l, 0) * 90ms);
+  }
+}
+@keyframes v4-rise {
+  from {
+    transform: translateY(115%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes v4-fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* No-JS fallback for the SCROLL reveal system only. The hero needs none (its
+   keyframes are CSS-auto); the folio stays HIDDEN without JS — §1.7 wants it
+   hidden until past the hero, and without JS the body classes that manage
+   that never apply, so permanent-hidden is the correct degradation (battery
+   finding: the old opacity:1 force showed it chalk-dim over paper, ~1.8:1). */
+@media (scripting: none) {
+  .rv .line > span {
+    transform: none;
+  }
+  .fade,
+  .rv .fade {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Scoped reduced-motion (§1.6): kill the entrance/scroll systems, keep
    sub-300ms state feedback (hover/focus) — the preference targets movement,
    not all change. Never a universal *{transition:none}. */
@@ -653,10 +789,20 @@ body {
     scroll-behavior: auto;
   }
   .line > span,
+  .line-rise > span,
   .fade,
-  .reveal {
+  .fade-rise,
+  .reveal,
+  .constant {
     animation: none !important;
     transition: none !important;
+  }
+  .line-rise > span {
+    transform: none;
+  }
+  .fade-rise {
+    opacity: 1;
+    transform: none;
   }
   /* Legacy v3 animations still live on the page until their bundles rework
      them (Phase 4/5 review: the original kill-list only covered the NEW

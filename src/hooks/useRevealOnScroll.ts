@@ -45,6 +45,9 @@ export function useRevealOnScroll({
     // approved mockup's first draft). Under prefers-reduced-motion the CSS
     // side is inert, so arming immediately just makes content visible.
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // The hero's entrance is pure CSS keyframes (.line-rise/.fade-rise) so it
+    // paints before hydration — this hook owns only the SCROLL reveals.
     let v4io: IntersectionObserver | null = null;
     const arm = () => {
       v4io = new IntersectionObserver(
