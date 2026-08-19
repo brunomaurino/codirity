@@ -34,6 +34,13 @@
   --brass: #C8A24A;
   --rule: rgba(244, 247, 242, 0.14);
   --rule-ink: rgba(10, 23, 18, 0.16);
+  /* The paper-ground twin of --chalk-faint: de-emphasised but still READ.
+     The mockup declines rows with `opacity: .42`, which composites to roughly
+     2.7:1 on paper — under AA even at the large-text threshold, and these rows
+     are real content (the list of what we say no to is part of the offer, not
+     decoration). An explicit colour instead, so it also cannot compound with
+     another opacity. Measured, not derived. */
+  --ink-faint: #606863;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ===== INTERIM legacy aliases (deleted in W6's retirement sweep). Every
@@ -824,6 +831,14 @@ body {
     clip-path: none;
     transform: none;
   }
+  /* The declined rows' strike draws off `.rv` → `.in`, which never fires
+     without JS — so the "we say no" list would render as ordinary rows with no
+     strike at all, i.e. the refusal silently downgraded to a plain list. The
+     words "we say no" still ship (the refusal is never conveyed by styling
+     alone), but the strike belongs there too. */
+  .declined .svc-name .strike {
+    transform: scaleX(1);
+  }
 }
 
 /* ========================================
@@ -1311,6 +1326,162 @@ body {
   }
 }
 
+/* ========================================
+   v4 paper run — services, steps, founder, FAQ (Bundle W5 — mockup port)
+   ======================================== */
+
+@layer components {
+  /* The paper ground. `-webkit-font-smoothing: auto` is deliberate: the dark
+     sections use antialiased, and carrying that onto paper renders dark-on-light
+     text noticeably thin. */
+  .paper {
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: auto;
+  }
+  .paper .label {
+    color: var(--ink-dim);
+  }
+
+  /* What we build — one full-width ruled list. The accepted and the declined
+     live in the SAME list because that is the argument: the things we say no to
+     are part of the offer, not a footnote. */
+  .svc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule-ink);
+  }
+  .svc-list li {
+    border-bottom: 1px solid var(--rule-ink);
+    padding-top: clamp(14px, 2.2vw, 22px);
+    padding-bottom: clamp(14px, 2.2vw, 22px);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .svc-name {
+    display: inline-block;
+    font-weight: 500;
+    font-size: clamp(1.4rem, 3.2vw, 2.5rem);
+    letter-spacing: -0.012em;
+    line-height: 1.05;
+    position: relative;
+    /* TRANSFORM, never padding: a padding hover changes the row's box, which
+       reflows the rule and shoves every sibling row down the list. */
+    transition: transform 0.3s var(--ease);
+  }
+  .svc-list li:hover .svc-name {
+    transform: translateX(14px);
+  }
+  .svc-no {
+    font-size: 13px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .svc-list li.declined .svc-name {
+    color: var(--ink-faint);
+  }
+  /* The strike draws itself once the list is in view — the "we say no" made
+     literal. scaleX from the left, never an animated width (which would relayout
+     on every frame). */
+  .declined .svc-name .strike {
+    position: absolute;
+    left: 0;
+    top: 0.52em;
+    width: 100%;
+    height: 2px;
+    background: var(--ink);
+    opacity: 0.55;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.7s var(--ease) calc(var(--l, 0) * 140ms + 0.35s);
+  }
+  .in .declined .svc-name .strike {
+    transform: scaleX(1);
+  }
+
+  /* How it works — 01/02/03 is legitimate here because it IS a sequence. */
+  .steps {
+    display: grid;
+    gap: 28px;
+    border-top: 1px solid var(--rule-ink);
+  }
+  @media (min-width: 860px) {
+    .steps {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+    }
+  }
+  .step {
+    padding-top: 22px;
+  }
+  .step h3 {
+    font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+  .step p {
+    margin: 0;
+    font-size: 15.5px;
+    color: var(--ink-dim);
+    max-width: 34ch;
+  }
+
+  /* The founder block — TEXT ONLY (§1.8). No photo, no avatar: the claim is
+     what the person has built, not what they look like. */
+  .founder blockquote {
+    margin: 0;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 1rem + 2.4vw, 2.6rem);
+    line-height: 1.25;
+    letter-spacing: -0.012em;
+    max-width: 26ch;
+    text-wrap: balance;
+  }
+
+  /* FAQ — native details/summary. The answer ships in the server HTML either
+     way, so the FAQPage JSON-LD parity invariant holds with far less machinery
+     than a JS disclosure, and it works with no JS at all. */
+  .faq details {
+    border-bottom: 1px solid var(--rule-ink);
+  }
+  .faq summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-weight: 500;
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq summary::after {
+    content: "+";
+    font-weight: 400;
+    color: var(--ink-dim);
+    transition: transform 0.3s var(--ease);
+  }
+  .faq details[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .faq details p {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--ink-dim);
+    max-width: 62ch;
+  }
+}
+
 /* Scoped reduced-motion (§1.6): kill the entrance/scroll systems, keep
    sub-300ms state feedback (hover/focus) — the preference targets movement,
    not all change. Never a universal *{transition:none}. */
@@ -1328,9 +1499,17 @@ body {
   .term > *,
   .q-track,
   .q-task,
-  .stat-big {
+  .stat-big,
+  .declined .svc-name .strike,
+  .svc-name {
     animation: none !important;
     transition: none !important;
+  }
+  /* Drawn, not mid-draw: killing the transition alone would freeze the strike
+     at scaleX(0) — the same "kill the motion, strand the content" defect as a
+     clipped stat or a blank conversion band. */
+  .declined .svc-name .strike {
+    transform: scaleX(1);
   }
   /* Both wipe implementations must land on the FINISHED state. Killing the
      animation alone would strand the number at `clip-path: inset(100% 0 0 0)`

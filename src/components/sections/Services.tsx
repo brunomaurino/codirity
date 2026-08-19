@@ -1,77 +1,51 @@
-import { X } from "lucide-react";
-import { Section, Container } from "@/components/layout";
-import { SectionHeader, AccentWord, Badge } from "@/components/ui";
-import { included, notIncluded, scopeLabels, sections } from "@/config/offer";
+import { included, notIncluded, sections } from "@/config/offer";
 
-// No literal mockup for this section in the pitch artifact — extrapolated
-// from Designjoy's own "Apps, websites, logos & more" pill-cloud block
-// (HANDOFF-redesign-v3 §1), rendering the real `included` scope items as
-// wrapped pill tags instead of a vertical checklist. `notIncluded` stays a
-// plain list, deliberately NOT pill-styled: the honesty discipline here is
-// that what's OUT of scope should read as a plain, sober fact, not
-// decorated like a feature highlight.
+// What we build (Bundle W5, v4 treatment) — one full-width ruled list on paper.
+//
+// The accepted and the DECLINED live in the SAME list, because that is the
+// argument: what we say no to is part of the offer, not a footnote. Each
+// declined row draws its own strike once the list enters view, and carries the
+// words "we say no" — the refusal stated, not implied by styling alone.
+//
+// STRINGS ARE VERBATIM from offer.ts and rendered by mapping the arrays whole.
+// v3 shipped a paraphrase here AND silently dropped one item, which is why
+// scripts/w5-copy-gate.py diffs both arrays literally and in both directions —
+// a reworded item and a missing one both fail.
+
 export function Services() {
   return (
-    <Section id="services" variant="gray" className="reveal">
-      <Container>
-        <SectionHeader
-          label={sections.whatWeBuild.label}
-          title={<AccentWord text={sections.whatWeBuild.title} word="automation" />}
-          description={sections.whatWeBuild.description}
-          className="mb-16"
-        />
+    <section id="services" data-ground="light" className="paper relative py-16 md:py-24 lg:py-28">
+      <div className="wrap-v4">
+        {/* The mockup's display heading here is the section's LABEL ("What we
+            build"), not its `title` — the v4 treatment drops the explanatory
+            title and description and lets the list itself do the explaining.
+            `display` carries the leading and tracking; `.d-lg` is font-size
+            only. */}
+        <h2 className="display d-lg rv" style={{ marginBottom: "clamp(36px, 5vw, 72px)" }}>
+          <span className="line">
+            <span>{sections.whatWeBuild.label}</span>
+          </span>
+        </h2>
 
-        <div className="max-w-4xl mx-auto space-y-12">
-          {/* Included — pill cloud. Reuses <Badge> (found in Phase 4/5
-              review) instead of hand-rolled classes that had silently
-              diverged from it — every Badge/pill consumer picks up a fix via
-              Badge's own variant rather than each copy of the styling.
-              (The Pricing.tsx and PricingCard.tsx consumers this originally
-              named are gone: v4's W2 rebuilt the first as the terms band and
-              deleted the second.) */}
-          <div className="reveal">
-            <h3 className="text-[13px] font-medium uppercase tracking-[0.12em] text-brand mb-6 text-center">
-              {scopeLabels.included}
-            </h3>
-            <ul className="flex flex-wrap justify-center gap-3 list-none">
-              {included.map((item) => (
-                <li key={item}>
-                  <Badge size="lg">{item}</Badge>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Not included — plain list, deliberately not pill-styled.
-              text-gray-600 (not -500, found in Phase 4/5 review): -500 on
-              this section's bg-gray-50 measured 4.09:1 in light mode,
-              under WCAG AA (docs/design-system.md's own documented "Body
-              text on paper: gray-600 minimum" rule) — undermining the
-              brief's explicit "still honest, still visible" requirement
-              for this exact list. */}
-          <div className="reveal">
-            <h3 className="text-[13px] font-medium uppercase tracking-[0.12em] text-gray-600 dark:text-gray-400 mb-6 text-center">
-              {scopeLabels.notIncluded}
-            </h3>
-            <ul className="max-w-xl mx-auto space-y-3">
-              {notIncluded.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 justify-center text-center"
-                >
-                  <X
-                    className="h-4 w-4 mt-1 shrink-0 text-gray-400 dark:text-gray-500"
-                    strokeWidth={2.5}
-                  />
-                  <span className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </Container>
-    </Section>
+        <ul className="svc-list rv">
+          {included.map((item) => (
+            <li key={item}>
+              <span className="svc-name">{item}</span>
+            </li>
+          ))}
+          {notIncluded.map((item, i) => (
+            <li key={item} className="declined">
+              {/* `--l` staggers each strike; the empty span IS the strike rule
+                  (an absolutely-positioned bar that scales from the left). */}
+              <span className="svc-name" style={{ "--l": i } as React.CSSProperties}>
+                {item}
+                <span className="strike" aria-hidden="true" />
+              </span>
+              <span className="svc-no">we say no</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
   );
 }

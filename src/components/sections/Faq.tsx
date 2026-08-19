@@ -1,104 +1,74 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { Section, Container } from "@/components/layout";
-import { SectionHeader, CalPopupButton, AccentWord } from "@/components/ui";
 import { faq, sections, CAL_LINK } from "@/config/offer";
+import { CalPopupButton } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
-// FAQ accordion (S7) — a leaf client component. Data comes from offer.faq, the SAME
-// array that feeds the FAQPage JSON-LD (single source, no duplicated strings).
-// Every answer is always rendered in the DOM and only visually collapsed (CSS grid
-// rows), so the crawlable content matches the FAQPage structured data exactly and the
-// questions + answers appear in the server HTML.
+// FAQ (Bundle W5, v4 treatment) — the ruled details/summary accordion on paper.
+//
+// TWO INVARIANTS survive the rework, and they are the reason this component
+// exists rather than being inlined:
+//
+//   1. PARITY. Data comes from `offer.faq`, the SAME array that feeds the
+//      FAQPage JSON-LD, so the crawlable copy and the structured data can never
+//      disagree. Native <details> keeps every answer in the SERVER HTML whether
+//      open or closed — the invariant the v3 component protected with a CSS
+//      grid-rows collapse and a pile of ARIA wiring.
+//   2. `faq_opened` still fires once per OPEN, carrying the question.
+//
+// Moving to native <details> deletes the disclosure state, the aria-expanded /
+// aria-controls plumbing and the chevron, and makes the accordion work with no
+// JS at all — while keeping both invariants. `onToggle` fires for keyboard,
+// pointer and programmatic opens alike, so the analytics surface widened rather
+// than narrowed.
+
 export function Faq() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
   return (
-    <Section id="faq" variant="gray" className="reveal">
-      <Container size="narrow">
-        <SectionHeader
-          label={sections.faq.label}
-          title={<AccentWord text={sections.faq.title} word="answered" />}
-          description={sections.faq.description}
-          className="mb-12"
-        />
+    <section id="faq" data-ground="light" className="paper relative pb-16 md:pb-24 lg:pb-28">
+      <div className="wrap-v4">
+        <h2 className="label rv fade" style={{ marginBottom: "clamp(24px, 3vw, 40px)" }}>
+          {sections.faq.title}
+        </h2>
 
-        <div className="mx-auto flex max-w-3xl flex-col gap-3">
-          {faq.map((item, index) => {
-            const isOpen = openIndex === index;
-            const answerId = `faq-answer-${index}`;
-            return (
-              <div
-                key={item.question}
-                className="reveal card-soft overflow-hidden border border-[var(--border)] bg-white dark:bg-gray-800"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isOpen) track("faq_opened", { question: item.question });
-                    setOpenIndex(isOpen ? null : index);
-                  }}
-                  aria-expanded={isOpen}
-                  aria-controls={answerId}
-                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
-                >
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {item.question}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      "h-5 w-5 shrink-0 text-brand transition-transform duration-300",
-                      isOpen && "rotate-180"
-                    )}
-                    aria-hidden="true"
-                  />
-                </button>
-                {/* Answer stays in the DOM (crawlable + matches JSON-LD); collapsed via CSS. */}
-                <div
-                  id={answerId}
-                  aria-hidden={!isOpen}
-                  className={cn(
-                    "grid transition-all duration-300 ease-out",
-                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                  )}
-                >
-                  <div className="overflow-hidden">
-                    <p className="px-6 pb-5 leading-relaxed text-gray-600 dark:text-gray-400">
-                      {item.answer}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="faq rv fade" style={{ "--l": 1 } as React.CSSProperties}>
+          {faq.map((item) => (
+            <details
+              key={item.question}
+              onToggle={(e) => {
+                // Only the OPEN edge is an event; `toggle` fires on close too.
+                if ((e.currentTarget as HTMLDetailsElement).open) {
+                  track("faq_opened", { question: item.question });
+                }
+              }}
+            >
+              <summary>{item.question}</summary>
+              <p>{item.answer}</p>
+            </details>
+          ))}
         </div>
 
-        {/* S8 — Book a call, framed as optional */}
-        <div className="reveal mt-12 text-center">
-          <p className="mb-4 text-gray-600 dark:text-gray-400">
+        {/* Book a call, framed as optional. `analyticsLocation` keeps this
+            booking distinguishable from the closing band's Cal CTA — the two
+            fired an identical unparameterized `call_booked` until v3's review. */}
+        <div className="rv fade" style={{ marginTop: "clamp(32px, 5vw, 56px)" }}>
+          <p className="lede" style={{ marginBottom: "14px" }}>
             Prefer to talk first?
           </p>
           <CalPopupButton
             calLink={CAL_LINK}
-            // Labelled so this booking is distinguishable from the closing
-            // band's Cal CTA one section below — they fired an identical
-            // unparameterized `call_booked` until now (Phase 4/5 review).
             analyticsLocation="faq"
             className={cn(
-              "inline-flex items-center justify-center gap-2",
-              "rounded-full px-8 py-4 text-base font-medium",
-              "bg-brand-fill text-white",
-              "transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-fill-dark hover:shadow-brand",
+              "inline-flex items-center justify-center rounded-full",
+              "border border-[var(--rule-ink)] px-7 py-3.5 text-[15px] font-medium",
+              "text-ink transition-transform duration-300 hover:-translate-y-0.5",
               "cursor-pointer"
             )}
           >
             Book a call
           </CalPopupButton>
         </div>
-      </Container>
-    </Section>
+      </div>
+    </section>
   );
 }

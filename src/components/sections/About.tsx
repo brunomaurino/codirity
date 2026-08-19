@@ -1,43 +1,42 @@
-import { Section, Container } from "@/components/layout";
-import { SectionHeader } from "@/components/ui";
-import { cn } from "@/lib/utils";
+import { faq } from "@/config/offer";
+
+// The founder block (Bundle W5, v4 treatment) — the "Who does the work?" FAQ
+// answer promoted to a display-size quote on paper.
+//
+// TEXT ONLY. No photo, no avatar (§1.8): the claim is what the person has
+// built, not what they look like, and a stock-looking headshot on a one-person
+// shop reads as the opposite of the credibility it is reaching for.
+//
+// The quote COMPOSES from `faq[0]` rather than repeating its string, so the
+// promoted quote and the accordion entry can never drift apart. The repetition
+// itself is deliberate and specified — unlike W4's Meshio case, where a
+// restatement sat three lines from the thing it restated, these two renderings
+// are sections apart and the second is the searchable/expandable form.
+
+const WHO_DOES_THE_WORK = faq.find((f) => f.question === "Who does the work?");
 
 export function About() {
+  if (!WHO_DOES_THE_WORK) return null;
   return (
-    <Section id="about" variant="default" className="reveal">
-      <Container size="narrow">
-        <SectionHeader
-          label="About Us"
-          title="Two Brothers. One Mission."
-          className="mb-12"
-        />
-
-        <div className="max-w-3xl mx-auto">
-          <div
-            className={cn(
-              "bg-white dark:bg-gray-800 rounded-2xl p-8 md:p-12",
-              "border border-[var(--border)]",
-              "shadow-sm"
-            )}
-          >
-            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-              We&apos;re two brothers who&apos;ve spent years building technology at
-              companies like Globant, Ualá, and Kelity. We started Codirity
-              because we saw too many businesses stuck with outdated processes
-              and systems that hold them back.
-            </p>
-            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-              We believe AI isn&apos;t just the future—it&apos;s the present. Every
-              company, regardless of size, should be leveraging intelligent
-              automation as their competitive advantage. That&apos;s what we&apos;re here
-              to help you do.
-            </p>
-            <p className="text-brand font-medium text-lg">
-              Let&apos;s modernize your business together.
-            </p>
-          </div>
-        </div>
-      </Container>
-    </Section>
+    <section
+      id="about"
+      data-ground="light"
+      className="paper founder relative pb-16 md:pb-24 lg:pb-28"
+    >
+      <div className="wrap-v4 rv">
+        {/* The question VERBATIM, question mark included. The mockup's eyebrow
+            drops it, but stripping a character off a data value in the
+            component is the case-munging W4's review flagged — and an eyebrow
+            that reads "WHO DOES THE WORK?" is no worse for it. */}
+        <h2 className="label fade" style={{ marginBottom: "clamp(24px, 3vw, 40px)" }}>
+          {WHO_DOES_THE_WORK.question}
+        </h2>
+        <figure style={{ margin: 0 }}>
+          <blockquote className="fade" style={{ "--l": 1 } as React.CSSProperties}>
+            {WHO_DOES_THE_WORK.answer}
+          </blockquote>
+        </figure>
+      </div>
+    </section>
   );
 }
