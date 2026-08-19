@@ -1,616 +1,161 @@
-# Codirity Design System
+# Codirity Design System — v4, "The Number That Doesn't Move"
 
-> Design style guide for building consistent UI components with Shadcn and Tailwind CSS.
->
-> ## ⚠️ SUPERSEDED BY REDESIGN v4 (2026-08-18) — read this first
->
-> **The authority for all NEW styling decisions is `docs/HANDOFF-redesign-v4.md`
-> §1 plus the approved mockup `docs/redesign-v4/approved-mockup.html`.** The v4
-> system: the brand green IS the ground (`--ground #0A1712`, `--ground-2`,
-> `--paper #EDEDE6`, `--chalk`, `--chalk-dim`, `--ink-dim`); `--mint #6EE7A8`
-> only on live/interactive elements; `--brass #C8A24A` only on defensible
-> numbers ON DARK (≈2:1 on paper — never text on a light surface). **SINGLE
-> THEME** — there is no dark mode: the `[data-theme]` machinery is deleted and
-> the `dark:` variant is neutralized (W0) until its classes are swept (W6).
-> **ONE typeface** — Apfel Grotezk, self-hosted, 400 body / 500 display, and
-> hierarchy comes from SIZE, never weight: no 600/700 exists anywhere
-> (`--font-weight-bold` → 500; native `strong`/`b` pinned to 500). Type scale:
-> `.d-xl/.d-lg/.d-md/.label(.label-ink)/.lede(.lede-ink)` — the `.d-*` classes
-> set **font-size ONLY**, so display headings must be written `class="display
-> d-md"`: `.display` is what carries the leading and tracking, and a `.d-*`
-> alone falls back to body line-height (W3 shipped exactly that bug, and this
-> line read as if `.d-md` were complete). Ground transitions
-> via `.band-dl/.band-ld`; one entrance gesture (`.line` rise + `.fade`) on
-> `--ease`; **prices never animate**.
->
-> Everything below this banner describes the **v3 "Monthly Club" system**,
-> which W0 deleted or aliased. It is kept as a historical reference for the
-> W1–W6 rework only — the dark-mode tables, the `.accent`/blob/glass sections
-> and the weight guidance no longer describe the shipped code. W6's sweep
-> replaces this file.
+> This file was rewritten by **redesign-v4 Bundle W6**, the plan's retirement
+> sweep. Everything it previously documented — the v3 "Monthly Club" system,
+> Figtree and Instrument Serif, `.accent`, the blob/glass catalogue, the
+> dark-mode pairing tables, the 700-weight type scale — describes code that no
+> longer exists. It was kept as a rework reference through W1–W5 and its own
+> banner promised this replacement; leaving it would have left `CLAUDE.md`
+> routing every styling decision at a document describing deleted code.
+
+**The authority is this file, plus `docs/HANDOFF-redesign-v4.md` §1 and the
+approved mockup at `docs/redesign-v4/approved-mockup.html`.** Where the mockup
+and this file disagree on a VISUAL matter, the mockup wins. Where either
+disagrees with `src/config/offer.ts` on a FACTUAL matter, `offer.ts` wins.
 
 ---
 
-## Brand Colors
-
-### Primary Palette
-
-```css
-/* Green - Primary Brand Color (light mode) */
---green-dark: #0F6B3D      /* Dark green for text, dark backgrounds, .accent */
---green-main: #127A44      /* Primary actions, CTAs, accents */
---green-light: #3F8A68     /* Highlights, gradients, hover states */
-
-/* Neutrals — warm, faint-green-biased (not a stark white/gray ramp) */
---paper: #EBEBE4           /* page background */
---ink: #0A0A08             /* primary text */
---sage: #F5F5F0            /* raised-surface tint */
---brass: #8B5A16           /* rare accent — currently only .blob-2 consumes it */
-```
-
-### Tailwind Config
-
-Colors are wired via CSS custom properties in `src/app/globals.css`'s
-`@theme inline` block, not a `tailwind.config.js` — Tailwind v4 reads
-`--color-*` tokens directly from CSS. The token → utility mapping:
-
-```css
---color-brand-dark: var(--green-dark);   /* bg-brand-dark, text-brand-dark, border-brand-dark */
---color-brand: var(--green-main);        /* bg-brand, text-brand, border-brand */
---color-brand-light: var(--green-light); /* bg-brand-light, text-brand-light */
---color-ink: var(--ink);                 /* text-ink */
---color-paper-raised: var(--paper-raised); /* bg-paper-raised */
-```
-
-Tailwind's own `gray-50…900` keywords are ALSO repointed (see `--gray-*` in
-`globals.css`) onto the same warm-neutral hue family, so `bg-gray-50` etc.
-already read as part of this palette without a class rename.
-
-### Usage Guidelines
-
-| Use Case | Color | Tailwind Class |
-|----------|-------|----------------|
-| Primary buttons | `#127A44` | `bg-brand` |
-| Button hover | `#0F6B3D` | `hover:bg-brand-dark` |
-| Links | `#127A44` | `text-brand` |
-| Success states | `#127A44` | `text-brand` |
-| Accent borders | `#127A44` | `border-brand` |
-| Subtle backgrounds | `rgba(18,122,68,0.08)` | `bg-brand-pale` |
-| Focus rings | `#127A44` | `ring-brand` |
-
----
-
-## Typography
-
-### Font Family
-
-One family for everything — weight carries the hierarchy, not a font swap
-(mirrors designjoy.co's own one-family discipline). Wired via `next/font/google`
-in `src/app/layout.tsx`, not a Tailwind config block:
-
-```css
---font-sans: var(--font-figtree), system-ui, sans-serif;
---font-serif: var(--font-figtree), system-ui, sans-serif;  /* repointed, not deleted */
---font-mono: var(--font-figtree), system-ui, sans-serif;   /* repointed, not deleted */
---font-accent: var(--font-instrument-serif), Georgia, serif;
-```
-
-**Primary Font:** Figtree (headings, body, nav, labels — everything)
-**Expressive accent:** Instrument Serif Italic, via the `.accent` utility
-(`@layer components` in `globals.css`) — NOT the auto-generated `font-accent`
-utility, which only sets the family with no italic/color. Apply `.accent` to
-exactly ONE word inside a heading, never a whole heading or body copy; pair it
-with an explicit `text-*` utility when the surface isn't paper (`.accent`'s
-default green tint is meant to be overridden on dark/blob surfaces).
-
-### Type Scale
-
-| Element | Size | Weight | Tracking | Class |
-|---------|------|--------|----------|-------|
-| H1 | 3.5rem - 4.5rem | 800 | -2.5px | `text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tighter` |
-| H2 | 2.25rem - 3rem | 700 | -1.5px | `text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight` |
-| H3 | 1.25rem - 1.5rem | 700 | -0.5px | `text-xl md:text-2xl font-bold` |
-| Body | 1rem - 1.1rem | 400 | normal | `text-base md:text-lg` |
-| Small | 0.875rem | 500 | normal | `text-sm font-medium` |
-| Label | 0.75rem | 700 | 3px | `text-xs font-bold uppercase tracking-widest` |
-| Mono/Metrics | varies | 700 | normal | `font-mono font-bold` |
-
-### Text Colors
-
-```jsx
-// Primary text
-<p className="text-gray-900 dark:text-white">
-
-// Secondary text
-<p className="text-gray-600 dark:text-gray-400">
-
-// Muted text
-<p className="text-gray-500 dark:text-gray-500">
-
-// Brand accent text
-<p className="text-brand">
-```
-
----
-
-## Spacing & Layout
-
-### Container
-
-```jsx
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-```
-
-### Section Padding
-
-```jsx
-// Standard section
-<section className="py-16 md:py-24 lg:py-28 px-4 md:px-8">
-
-// Compact section
-<section className="py-12 md:py-16 px-4 md:px-8">
-```
-
-### Common Spacing
-
-| Purpose | Value | Class |
-|---------|-------|-------|
-| Card padding | 24-40px | `p-6 md:p-10` |
-| Element gap | 16-24px | `gap-4 md:gap-6` |
-| Section gap | 64-80px | `space-y-16 md:space-y-20` |
-| Grid gap | 24px | `gap-6` |
-
----
-
-## Components
-
-### Buttons
-
-#### Primary Button
-
-```jsx
-<Button className="bg-brand hover:bg-brand-dark text-white font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand/20">
-  Contact Us
-  <ArrowRight className="ml-2 h-5 w-5" />
-</Button>
-```
-
-#### Secondary Button
-
-```jsx
-<Button variant="outline" className="border-gray-200 hover:border-brand hover:text-brand hover:bg-brand/[0.08] font-medium px-6 py-3 rounded-full transition-all duration-300">
-  Learn More
-</Button>
-```
-
-#### Ghost Button
-
-```jsx
-<Button variant="ghost" className="text-brand hover:bg-brand/[0.08] font-semibold">
-  View Details
-  <ArrowRight className="ml-1 h-4 w-4" />
-</Button>
-```
-
-### Cards
-
-#### Standard Card
-
-```jsx
-<Card className="bg-white border border-gray-200/60 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-xl hover:border-brand/30 hover:-translate-y-2 transition-all duration-400">
-  <CardContent>
-    {/* Content */}
-  </CardContent>
-</Card>
-```
-
-#### Featured Card (Dark)
-
-```jsx
-<Card className="bg-gradient-to-br from-brand-dark to-[ var(--blob-forest)] text-white border-0 rounded-3xl p-8 md:p-10">
-  <CardContent>
-    {/* Content */}
-  </CardContent>
-</Card>
-```
-
-#### Card with Top Accent
-
-```jsx
-<Card className="bg-white border border-gray-200/60 rounded-3xl overflow-hidden">
-  <div className="h-1 bg-gradient-to-r from-brand-dark via-brand to-brand-light" />
-  <CardContent className="p-6 md:p-8">
-    {/* Content */}
-  </CardContent>
-</Card>
-```
-
-### Inputs
-
-```jsx
-<Input
-  className="bg-gray-50 border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/20 focus:bg-white transition-all duration-300"
-  placeholder="Enter your email"
-/>
-```
-
-### Select
-
-```jsx
-<Select>
-  <SelectTrigger className="bg-gray-50 border-gray-200 rounded-xl px-4 py-3 focus:border-brand focus:ring-2 focus:ring-brand/20">
-    <SelectValue placeholder="Select option" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="option1">Option 1</SelectItem>
-  </SelectContent>
-</Select>
-```
-
-### Badges
-
-```jsx
-// Brand badge
-<Badge className="bg-brand/[0.08] text-brand-dark border border-brand/20 rounded-full px-4 py-1.5 font-semibold text-sm">
-  <span className="w-2 h-2 bg-brand rounded-full mr-2 animate-pulse" />
-  New Feature
-</Badge>
-
-// Neutral badge
-<Badge variant="secondary" className="bg-gray-100 text-gray-600 rounded-full">
-  Coming Soon
-</Badge>
-```
-
-### Icons
-
-Use **Lucide React** icons with these standard sizes:
-
-```jsx
-// Small (inline with text)
-<Icon className="h-4 w-4" />
-
-// Medium (buttons, list items)
-<Icon className="h-5 w-5" />
-
-// Large (feature icons)
-<Icon className="h-6 w-6" />
-
-// Feature card icons
-<div className="w-14 h-14 bg-gradient-to-br from-brand/[0.08] to-brand/[0.12] rounded-2xl flex items-center justify-center">
-  <Icon className="h-7 w-7 text-brand" />
-</div>
-```
-
----
-
-## Effects & Animations
-
-### Shadows
-
-Defined as `--shadow-*` CSS custom properties in `globals.css` (light + dark
-variants), not a `tailwind.config.js` block:
-
-```css
---shadow-xs: 0 1px 2px rgba(10, 10, 8, 0.05);
---shadow-sm: 0 2px 8px rgba(10, 10, 8, 0.06);
---shadow-md: 0 4px 16px rgba(10, 10, 8, 0.07);
---shadow-lg: 0 12px 32px rgba(10, 10, 8, 0.09);
---shadow-xl: 0 24px 48px rgba(10, 10, 8, 0.1);
---shadow-green: 0 8px 24px rgba(18, 122, 68, 0.18);  /* rgb of --green-main #127a44 */
-```
-
-### Transitions
-
-```jsx
-// Standard transition
-className="transition-all duration-300"
-
-// Smooth easing
-className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-
-// Hover lift effect
-className="hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
-```
-
-### Focus States
-
-```jsx
-// Input focus
-className="focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-
-// Button focus
-className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-```
-
-### Animations
-
-```css
-/* Pulse dot */
-@keyframes pulse-dot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
-}
-
-/* Float */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-/* Slide up (for reveals) */
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-```
-
----
-
-## Shape System
-
-Utility classes in `globals.css` (`@layer components`), not yet wired into any
-component markup as of V0 (V1+ apply them where the section brief calls for
-them):
-
-```jsx
-// Pill button
-className="btn-pill"  // border-radius: 9999px — same as rounded-full
-
-// Soft card radius (16-22px band)
-className="card-soft"  // 18px
-
-// Blob-gradient background — 4 distinct combinations, CSS only, no images.
-// Each carries a built-in dark scrim so white text stays legible anywhere
-// inside it; use white/near-white text on all four.
-className="blob-1"  // gold + mint + green-dark, radial stack
-className="blob-2"  // mint + brass, radial stack
-className="blob-3"  // amber + green-main, radial stack (reversed base)
-className="blob-4"  // gold → mint → green conic sweep
-
-// Glassmorphic dark card (reserved for the pricing card)
-className="glass-dark"  // backdrop-filter: blur(6px) + translucent near-black bg
-```
-
----
-
-## Layout Patterns
-
-### Bento Grid
-
-```jsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {/* Featured card spans 2 columns and 2 rows */}
-  <Card className="md:col-span-2 md:row-span-2">
-    {/* Content */}
-  </Card>
-  <Card>{/* Content */}</Card>
-  <Card>{/* Content */}</Card>
-</div>
-```
-
-### Two Column with Sticky Sidebar
-
-```jsx
-<div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-16 items-start">
-  <div className="lg:sticky lg:top-32">
-    {/* Sidebar content */}
-  </div>
-  <div>
-    {/* Main content */}
-  </div>
-</div>
-```
-
-### Process Grid (blob-card pattern, redesign v3 Bundle V2)
-
-Replaces the earlier numbered-circle + connecting-line pattern below — each
-step is now a full `.blob-*` card, not a circle floating on a plain
-background, so there's no line to connect (the cards themselves carry the
-visual weight and each gets its own distinct blob per HANDOFF §1.3):
-
-```jsx
-<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-  {steps.map((step, i) => (
-    <div key={step.number} className="reveal">
-      <ProcessStep
-        number={step.number}
-        title={step.title}
-        description={step.description}
-        blobClass={STEP_BLOBS[i % STEP_BLOBS.length]}
-      />
-    </div>
-  ))}
-</div>
-```
-
-`ProcessStep` itself: `.blob-N card-soft h-full min-h-[280px] p-8 md:p-10`,
-full-opacity white text throughout (a blob's dark scrim is tuned for
-full-opacity text — reduced-alpha text on top of it can drop below WCAG AA).
-`md:grid-cols-3` (not `sm:`) — 3 equal columns plus this padding at the
-640-767px band squeezed text too narrow; deferring to `md:` (768px) removes
-that band.
-
-### Pill Cloud (redesign v3 Bundle V3)
-
-For scope/category data with no natural checklist structure — extrapolated
-from Designjoy's own tag-cloud block (HANDOFF §1) rather than a literal
-mockup. Reuses `<Badge>`, not hand-rolled classes, so a future Badge
-restyle propagates here automatically:
-
-```jsx
-<ul className="flex flex-wrap justify-center gap-3 list-none">
-  {items.map((item) => (
-    <li key={item}>
-      <Badge size="lg">{item}</Badge>
-    </li>
-  ))}
-</ul>
-```
-
-A sibling "not in scope" list next to a pill cloud should stay a PLAIN list
-(no pill styling) — decorating what's explicitly out of scope like a
-feature highlight undercuts the honesty the plain treatment is meant to
-signal. Use `text-gray-600` for that list's text, not `text-gray-500` —
-`-500` on this section's `bg-gray-50` measures under WCAG AA (4.09:1);
-`-600` clears it (6.17:1) per this doc's own "Body text on paper: gray-600
-minimum" rule below.
-
----
-
-## Dark Mode
-
-### Color Mapping
-
-| Element | Light Mode | Dark Mode |
-|---------|------------|-----------|
-| Background | `#EBEBE4` (paper) | `#1C1C18` |
-| Surface | `gray-50` | `gray-800` |
-| Border | `gray-200` | `gray-700` |
-| Text primary | `gray-900` | `white` (`--white` is pure `#ffffff` in BOTH themes — see the note in `globals.css`) |
-| Text secondary | `gray-600` | `gray-400` |
-| Brand (`--green-dark`) | `#0F6B3D` | `#125E3A` |
-| Brand (`--green-main`) | `#127A44` | `#2F7A52` |
-
-Dark mode's brand greens are NOT the light-mode values lifted for legibility —
-they're independently tuned so `bg-brand text-white` (buttons, badges,
-`::selection`) clears WCAG AA as a SURFACE under white text, which is a
-different constraint than `text-brand` on paper. Don't derive one from the
-other; read both from `globals.css` directly.
-
-### Implementation
-
-```jsx
-// Background
-className="bg-white dark:bg-gray-900"
-
-// Card
-className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-
-// Text
-className="text-gray-900 dark:text-white"
-className="text-gray-600 dark:text-gray-400"
-```
-
-### Permanently-dark surfaces (the ink band)
-
-Every pattern above assumes the element sits on the PAGE GROUND, which flips with
-the theme. Two surfaces don't flip — they are dark in both themes: the footer, and
-the closing CTA band (`<Section variant="ink">`, the site's one deliberate
-contrast beat per `HANDOFF-redesign-v3.md` §1 rule 4; don't add a second one).
-
-On those, `text-gray-900 dark:text-white` is **wrong and invisible**: in LIGHT
-mode `text-gray-900` resolves to `#0a0a08`, which is the band's own background.
-Foregrounds there are pinned light in both themes instead:
-
-| Role | On the ink band |
-|---|---|
-| Heading | `text-white` (or `<SectionHeader tone="ink">`, which pins all three) |
-| Body / secondary | `text-gray-300` (the gray ramp is NOT inverted in dark mode) |
-| Accent, links, eyebrow | `text-brand-light` — 4.76:1 light / 11.54:1 dark, i.e. only 0.26 over AA in light mode; re-measure if that token ever changes |
-| Primary control | a white pill with `text-gray-900` ON it (19.81:1) |
-
-`.accent` needs special care: it declares its own `color`, which BEATS an
-inherited one, so an accented word inside a white heading renders green on the
-band (~3.01:1). Pass the colour explicitly — `<AccentWord … className="text-white" />`.
-
----
-
-## Responsive Breakpoints
-
-```js
-// Tailwind defaults
-sm: '640px'   // Mobile landscape
-md: '768px'   // Tablet
-lg: '1024px'  // Desktop
-xl: '1280px'  // Large desktop
-2xl: '1536px' // Extra large
-```
-
-### Mobile-First Approach
-
-```jsx
-// Example: Card grid
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-
-// Example: Padding
-<section className="px-4 md:px-8 lg:px-16 py-12 md:py-20 lg:py-28">
-
-// Example: Typography
-<h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-```
-
----
-
-## Accessibility
-
-### Focus Indicators
-
-Always use visible focus states:
-
-```jsx
-className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-```
-
-### Color Contrast
-
-- Body text on paper: `gray-600` minimum (4.5:1 ratio)
-- Headings on paper: `gray-900` (16.5:1 ratio)
-- Brand green on paper: Use `brand-dark` for text (5.5:1 ratio) — plain `brand`
-  also clears AA at 4.5:1 but with less margin; `brand-light` does NOT clear
-  AA as text on paper (it's a hover/gradient-stop color, not a text color)
-
-### Interactive Elements
-
-- Minimum touch target: 44x44px
-- Always include hover AND focus states
-- Use `aria-label` for icon-only buttons
-
----
-
-## File Structure
+## 1. The ground
+
+The brand green **is the ground**, not an accent.
+
+| Token | Value | Use |
+|---|---|---|
+| `--ground` | `#0A1712` | the dark ground — hero, proof, offer, close, footer |
+| `--ground-2` | `#10241B` | the one quiet raised surface on dark (`.panel-deep`) |
+| `--paper` | `#EDEDE6` | the light ground — the services/steps/founder/FAQ run |
+| `--paper-2` | `#E2E2D9` | paper's raised twin |
+| `--chalk` | `#F4F7F2` | primary text on dark |
+| `--chalk-dim` | `#A9B8AF` | secondary text on dark (8.96:1) |
+| `--chalk-faint` | `#7E8D85` | superseded-but-readable on dark (5.28:1) |
+| `--ink` | `#0A1712` | primary text on paper (15.61:1) |
+| `--ink-dim` | `#4C5B52` | secondary text on paper (6.10:1) |
+| `--ink-faint` | `#606863` | de-emphasised-but-readable on paper (4.88:1) |
+| `--mint` | `#6EE7A8` | **only** live/interactive elements |
+| `--brass` | `#C8A24A` | **only** defensible numbers ON DARK (7.6:1). ≈2:1 on paper — never text on a light surface |
+
+**Never use a dark-ground token on paper or vice versa.** W5 shipped `.lede`
+(a `--chalk-dim` token) onto the paper run at **1.76:1**. Paper variants are
+bound to the ground itself — `.paper .label`, `.paper .lede` — never remembered
+at the call site.
+
+**Measure contrast by compositing the FULL opacity chain over the real ground**,
+not by reading the declared colour. Opacity compounds through ancestors: W4's
+shipped chip stacked `.35` on a child's `.7` and landed at 1.7:1 while every
+declared value looked fine. When something must recede but stay readable, give
+it a `*-faint` colour — never stacked opacity.
+
+Every new token must be aliased into `@theme inline`, or `text-<name>` is a
+silent no-op (Tailwind v4 drops unknown theme colours rather than erroring).
+
+## 2. Grounds never hard-cut
+
+Bruno's explicit rule. Every dark↔light transition goes through a `.band`
+gradient (`.band-dl` dark→paper, `.band-ld` paper→dark, ~30vh). The page is two
+runs and four transitions:
 
 ```
-src/
-├── components/
-│   ├── ui/           # Shadcn components
-│   ├── layout/       # Header, Footer, Section
-│   ├── forms/        # ContactForm, NewsletterForm
-│   └── sections/     # Hero, Services, Process, etc.
-├── styles/
-│   └── globals.css   # Custom CSS, animations
-├── lib/
-│   └── utils.ts      # cn() helper, etc.
-└── app/
-    └── globals.css   # Tailwind imports
+hero (dark) → band → Benefits (paper) → band
+  → clients · case studies · terms · queue (dark) → band
+  → what we build · how it works · founder · FAQ (paper) → band
+  → ownership · close · footer (dark)
 ```
 
----
+Sections that own a full-bleed ground are a **bare `<section>` + `data-ground` +
+`.wrap-v4`** — never `.wrap-v4` nested inside a padded container, which doubles
+the page gutter (W2's BLOCKER). Anything adjacent to a band must sit on
+`--paper`, not `bg-white`, or the gradient lands on a colour the section is not.
 
-## Quick Reference
+## 3. Type
 
-### Common Class Combinations
+**One family: Apfel Grotezk** (Collletttivo, OFL 1.1, self-hosted at
+`src/fonts/`). Regular 400 for body, **Mittel 500 for all display**.
 
-```jsx
-// Primary CTA button
-"bg-brand hover:bg-brand-dark text-white font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-brand"
+**Hierarchy comes from SIZE, never weight.** No 600/700/800 exists: the
+`--font-weight-bold`/`semibold`/`extrabold` remaps all resolve to 500, and
+native `strong`/`b` are pinned to 500.
 
-// Card with hover effect
-"bg-white border border-gray-200/60 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-brand/30 hover:-translate-y-2 transition-all duration-400"
+Scale: `.d-xl` `.d-lg` `.d-md` `.label` `.lede`.
 
-// Section label
-"text-xs font-bold uppercase tracking-widest text-brand font-mono"
+> **The `.d-*` classes set `font-size` ONLY.** A display heading is written
+> `class="display d-md"` — `.display` carries the leading and the tracking. W3
+> shipped a heading without it and the block rendered ~65% taller.
 
-// Icon container
-"w-14 h-14 bg-gradient-to-br from-brand/[0.08] to-brand/[0.12] rounded-2xl flex items-center justify-center"
+Hand-set line breaks live in `offer.ts` and are **gated to rejoin** their source
+string exactly (`w4-facts-gate.py`, `w6-close-gate.py`). Re-derive them for the
+real strings and measure at the **gutter boundary** — the mockup's `ch` values
+are calibrated for the mockup's own shorter copy, and `.wrap-v4` doubles its
+padding at 900px, so a spot-check at 1280 and 375 sails past the band where
+lines actually wrap.
 
-// Input field
-"bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-brand focus:ring-2 focus:ring-brand/20 focus:bg-white transition-all"
+## 4. Motion
 
-// Gradient text
-"bg-gradient-to-r from-brand-dark via-brand to-brand-light bg-clip-text text-transparent"
+One entrance gesture: the masked `.line` rise plus `.fade`, armed by a single
+IntersectionObserver 450ms after load, on the house curve `--ease`
+(`cubic-bezier(0.16, 1, 0.3, 1)`).
+
+- **Prices never animate.** A number that wiggles reads as marketing; one that
+  holds still reads as an invoice.
+- The queue's Shipped counter is the ONE number allowed to change — there the
+  number IS the mechanic, and it changes by discrete integer swap, never a
+  count-up.
+- Scroll-driven motion is **quantized**, never 1:1 scroll-linked. The tween
+  belongs to CSS transitions.
+- **Every degradation must land on the FINISHED state.** Killing a transition
+  under `prefers-reduced-motion` or `scripting: none` without pinning the end
+  state strands the content: W2 shipped a blank conversion band, W4 an invisible
+  headline figure, W5 an undrawn strike. Check both media blocks.
+- **An animation referencing undefined `@keyframes` dies silently** and no
+  visual check can see it — a wipe that never ran looks identical to one that
+  finished. `w4-css-gate.py` asserts site-wide that every referenced
+  animation-name has matching keyframes.
+
+## 5. Shape
+
+Pill buttons (`border-radius: 999px`), 18px `.card-soft`, hairline rules at
+`--rule` / `--rule-ink`. A control's boundary needs 3:1 against its ground
+(WCAG 1.4.11) — the hairline rule token is ~1.4:1 and is NOT enough on its own.
+
+## 6. Content
+
+`src/config/offer.ts` is the single source of truth for every price, string,
+FAQ entry and client fact. **Components compose from it and never hardcode.**
+
+This is not a style preference. v3 shipped two fabrications about a real, named
+client — a substituted noun and an invented sentence — past a gate that only
+checked expected strings were PRESENT. Provenance checking is therefore
+**bidirectional and exact**: every fact renders, and every rendered text run is
+an exact member of the config's field set, scoped per owning entity, with no
+length floor.
+
+Where a section has no honest number, it gets none. Meshio has a state machine
+instead of a metric; the page's proof is the price, the terms and the ownership
+claim.
+
+## 7. Gates
+
+`scripts/w2-*` … `w6-*` are the mechanical coverage. Two rules govern them:
+
+1. **A gate you have never seen FAIL is not evidence.** Mutate the input, watch
+   it fail, then trust it.
+2. **`GATE ARMED` from a self-test is not certification.** A self-test probes
+   only the failure modes its author already imagined — W4's passed 10/10 while
+   the gate had four holes an adversarial review then demonstrated live. The
+   review certifies; the self-test prevents regressions.
+
+Nothing invokes them automatically. Wiring `npm test` + CI over `scripts/` is
+the highest-leverage change available on this repo.
+
+## 8. Components
+
+Shadcn primitives with custom styling; Lucide icons. `Section`'s variants are a
+v3 survivor — `default` now paints `--paper` and `ink` paints the v4 ground.
+New v4 sections do not use it (see §2).
+
+## 9. Commands
+
+```bash
+npm run dev     # http://localhost:3000
+npm run build
+npm run lint
 ```
-
----
-
-*Last updated: 2026-08-18 (redesign v3 Bundle V3 — services pill cloud; also carries V0's "Monthly Club" palette flip and V2's blob-card Process pattern)*

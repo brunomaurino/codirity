@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Tailwind v4 auto-detects content sources across the whole project, which
+   means it generates utilities from CLASS NAMES QUOTED IN PROSE. Every bundle's
+   notes.md discusses the classes it deleted, so `docs/` alone was regenerating
+   ~70 dead utilities — including the `dark:` set the retirement sweep had just
+   removed from `src/`. Scoping the scan to the code is the actual fix; the
+   `@custom-variant` below is the belt to this braces. */
+@source not "../../docs";
+@source not "../../scripts";
+
 /* v4 is SINGLE-THEME (HANDOFF-redesign-v4.md §1.3).
    This declaration STAYS, permanently. W6's sweep removed the last 95 `dark:`
    classes from `src/`, and deleting the neutralizer alongside them looked like
@@ -199,6 +208,10 @@
      net UNDER the call-site conversion done in this same bundle. */
   --font-weight-bold: 500;
   --font-weight-semibold: 500;
+  /* extrabold too — the remap covered bold and semibold but left this one at
+     800, so `.font-extrabold{font-weight:800}` still shipped in a system whose
+     contract is 400/500 with no synthesized bold reachable (Phase 4/5 review). */
+  --font-weight-extrabold: 500;
 
   /* Shadows */
   --shadow-xs: var(--shadow-xs);

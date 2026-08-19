@@ -15,16 +15,18 @@ import { cn } from "@/lib/utils";
 // and V6's battery caught it stated twice in one viewport with two different
 // figures. One string, one home.
 
-// The headline is hand-set into the mockup's two lines. The words come from
-// `sections.contact.title` — split, not rewritten, and the gate asserts the
-// split rejoins to the config string exactly.
-const HEADLINE_LINES = ["Tell us what's", "eating your week."];
+// The headline's lines live in offer.ts as `sections.contact.titleLines`, and
+// scripts/w6-close-gate.py asserts they rejoin to `sections.contact.title`
+// exactly. The first draft hardcoded them HERE behind a comment claiming that
+// gate existed — it did not, and the text had already drifted from the config
+// by a trailing period (Phase 4/5 review). A claimed invariant with no gate
+// behind it is worse than no claim.
 
 export function ContactInfo() {
   return (
     <div>
       <h2 className="display d-lg rv" style={{ maxWidth: "14ch" }}>
-        {HEADLINE_LINES.map((line, i) => (
+        {sections.contact.titleLines.map((line, i) => (
           <span key={line} className="line" style={{ "--l": i } as React.CSSProperties}>
             <span>{line}</span>
           </span>
