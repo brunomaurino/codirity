@@ -12,6 +12,7 @@ import {
   Pricing,
   Queue,
   Faq,
+  Ownership,
   Contact,
 } from "@/components/sections";
 
@@ -80,7 +81,12 @@ export default function Home() {
         <Faq />
         <div className="band band-ld" aria-hidden="true" />
 
-        {/* S8 — the closing band, on dark. */}
+        {/* ——— the closing band (W6) ———
+            Ownership → close → footer are one continuous dark surface, not
+            three stacked slabs: the band above is the ONLY transition they
+            need, and W5's commitments record that it already exists — do not
+            add a second. */}
+        <Ownership />
         <Contact />
       </RevealProvider>
     </>

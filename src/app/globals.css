@@ -1,10 +1,17 @@
 @import "tailwindcss";
 
-/* v4 is SINGLE-THEME (HANDOFF-redesign-v4.md §1.3). The dark variant is
-   neutralized — this selector can never match — so every surviving `dark:`
-   class in components compiles to dead weight instead of re-theming the
-   fixed grounds under OS dark mode. W6's retirement sweep deletes the
-   classes; W0 kills the mechanism. */
+/* v4 is SINGLE-THEME (HANDOFF-redesign-v4.md §1.3).
+   This declaration STAYS, permanently. W6's sweep removed the last 95 `dark:`
+   classes from `src/`, and deleting the neutralizer alongside them looked like
+   the tidy finish — but the compiled chunk immediately regrew a
+   `@media (prefers-color-scheme: dark)` block. Tailwind v4 scans the whole
+   project for class names, so the `dark:` utilities quoted inside
+   `docs/autonomous-runs/**` were enough to re-enable REAL OS dark mode against
+   grounds that are deliberately fixed. The guard is not dead weight left over
+   from the migration; it is what makes the single-theme commitment hold against
+   any future `dark:` from any source Tailwind can see.
+   (`Button`'s `dark` CVA variant and the `--*-dark` token names are unrelated —
+   neither is the Tailwind variant.) */
 @custom-variant dark (&:where(.__theme-retired-v4 *));
 
 /* ========================================
@@ -172,13 +179,19 @@
 
   /* Fonts — v4 (HANDOFF-redesign-v4 §1.1): ONE family, Apfel Grotezk,
      for every role — the same one-family discipline the outcrowd.io
-     reference applies with ITC Avant Garde. serif/mono repointed rather
-     than removed so any not-yet-migrated font-serif/font-mono call site
-     renders coherently until W6 sweeps it. --font-accent is DELETED with
-     the `.accent` treatment it served. */
+     reference applies with ITC Avant Garde. W0 repointed serif/mono at Apfel
+     rather than removing them, so any not-yet-migrated `font-serif`/`font-mono`
+     call site still rendered coherently; W6's sweep removed the last of those
+     call sites, and the remaps go with them. Tailwind still needs `--font-sans`
+     — that one is the family, not an alias. --font-accent was DELETED with the
+     `.accent` treatment it served.
+     `initial` DELETES Tailwind's own defaults rather than merely leaving them
+     unoverridden — dropping W0's remaps exposed `ui-serif`/`ui-monospace` in
+     the shipped bytes, which is worse than the remap was: a stray `font-mono`
+     would then render a genuinely different family instead of Apfel. */
   --font-sans: var(--font-apfel), system-ui, sans-serif;
-  --font-serif: var(--font-apfel), system-ui, sans-serif;
-  --font-mono: var(--font-apfel), system-ui, sans-serif;
+  --font-serif: initial;
+  --font-mono: initial;
 
   /* Weight discipline (§1.1): hierarchy comes from SIZE, never weight.
      Apfel ships 400/500 only — a stray font-bold would SYNTHESIZE a faux
@@ -270,22 +283,6 @@ body {
 }
 
 /* Blob Float */
-@keyframes blob-float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(30px, -30px) scale(1.05);
-  }
-  50% {
-    transform: translate(-20px, 20px) scale(0.95);
-  }
-  75% {
-    transform: translate(20px, 30px) scale(1.02);
-  }
-}
-
 /* Shape Spin */
 @keyframes shape-spin {
   from {
@@ -365,18 +362,6 @@ body {
 
 .animate-pulse-dot {
   animation: pulse-dot 2s ease-in-out infinite;
-}
-
-.animate-blob-float {
-  animation: blob-float 20s ease-in-out infinite;
-}
-
-.animate-blob-float-reverse {
-  animation: blob-float 25s ease-in-out infinite reverse;
-}
-
-.animate-blob-float-delayed {
-  animation: blob-float 18s ease-in-out infinite 2s;
 }
 
 .animate-shape-spin {
@@ -518,22 +503,13 @@ body {
    ======================================== */
 
 /* The v3 blob-gradient and glassmorphic treatments are RETIRED (HANDOFF-v4
-   §1.3) — but five not-yet-reworked sections still reference these class
-   NAMES (Process, Benefits, RecentWork, CaseStudies — PricingCard was deleted
-   in W2, and `.glass-dark` now has ZERO consumers: W6 can drop it outright), and their
-   children assume a dark surface with light text. So the names survive this
-   one plan-phase as aliases to a single quiet v4 surface — ground-2 under
-   chalk — keeping every section legible until its own bundle (W2–W5)
-   reworks it. W6's retirement sweep deletes these aliases and the last
-   consumer with them. New v4 code uses .panel-deep or the tokens directly.
+   §1.3). W0 kept `.blob-1..4` and `.glass-dark` alive as ALIASES so the
+   not-yet-reworked sections stayed legible; W6's sweep deletes them, along with
+   the `blob-float` keyframes and their `animate-*` utilities, having repointed
+   the last consumer (Benefits) at `.panel-deep` directly.
    NEVER reintroduce the gradients. */
 @layer components {
-  .panel-deep,
-  .blob-1,
-  .blob-2,
-  .blob-3,
-  .blob-4,
-  .glass-dark {
+  .panel-deep {
     background: var(--ground-2);
     color: var(--chalk);
   }
@@ -1426,11 +1402,17 @@ body {
     display: inline;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
-    background-image: linear-gradient(var(--ink), var(--ink));
+    /* The alpha lives in the GRADIENT, never on the element. W5 moved the
+       strike from a sibling bar to a wrapper AROUND the words — which is what
+       makes it fragment per line — but carried `opacity: .23` across with it,
+       so the declined rows' TEXT rendered at 23% too: measured 1.34:1, i.e.
+       barely visible, on rows that are real content. W5's own contrast check
+       missed it because it sampled the PARENT `.svc-name`, where the child's
+       opacity does not apply (W6 plan-wide sweep). */
+    background-image: linear-gradient(rgba(10, 23, 18, 0.23), rgba(10, 23, 18, 0.23));
     background-repeat: no-repeat;
     background-size: 0 2px;
     background-position: 0 0.52em;
-    opacity: 0.23;
     transition: background-size 0.7s var(--ease) calc(var(--l, 0) * 140ms + 0.35s);
   }
   .in .declined .svc-name .strike {
@@ -1519,6 +1501,60 @@ body {
     margin-bottom: 20px;
     color: var(--ink-dim);
     max-width: 62ch;
+  }
+}
+
+/* ========================================
+   v4 closing run — ownership, close, footer (Bundle W6 — mockup port)
+   ======================================== */
+
+@layer components {
+  /* The ownership quote: the site's honest substitute for an awards wall, so it
+     is set LARGER than the founder quote — it is the closing claim. */
+  .own blockquote {
+    margin: 0;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 1rem + 3vw, 3.2rem);
+    line-height: 1.18;
+    letter-spacing: -0.015em;
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+
+  /* The close's one loud control — mint on ground, the only place a filled mint
+     surface appears. Mint is reserved for live/interactive elements (§1.2), and
+     nothing on the site is more interactive than the address you write to. */
+  .close-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 40px;
+    font-weight: 500;
+    font-size: clamp(1.2rem, 2.4vw, 1.9rem);
+    letter-spacing: -0.01em;
+    color: var(--ground);
+    background: var(--mint);
+    padding: 18px 34px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: transform 0.28s var(--ease);
+  }
+  .close-cta:hover {
+    transform: translateY(-3px);
+  }
+
+  .trust {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--chalk-dim);
+  }
+  .trust .bar {
+    width: 38px;
+    height: 1px;
+    background: var(--rule);
+    flex: 0 0 38px;
   }
 }
 

@@ -16,6 +16,7 @@ export { Faq } from "./Faq";
 
 export { About } from "./About";
 
+export { Ownership } from "./Ownership";
 export { Pricing } from "./Pricing";
 export { Queue } from "./Queue";
 

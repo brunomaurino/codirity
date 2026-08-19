@@ -534,6 +534,13 @@ export const howItWorks: HowItWorksStep[] = [
  *  disappearing. */
 export const FOUNDER_FAQ_INDEX = 0;
 
+/** The index of the entry the ownership block promotes to a display-size quote
+ *  (W6). Same discipline as FOUNDER_FAQ_INDEX and for the same reason: a
+ *  magic-string `.find()` silently renders NOTHING when the wording changes.
+ *  This is the site's honest substitute for an awards wall — the strongest
+ *  claim available is that the client keeps everything. */
+export const OWNERSHIP_FAQ_INDEX = 7;
+
 export const faq: FaqItem[] = [
   {
     // Promoted to the founder block — see FOUNDER_FAQ_INDEX. Keep it first, or
