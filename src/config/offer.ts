@@ -188,6 +188,31 @@ export interface SectionCopy {
   description?: string;
 }
 
+/**
+ * The queue scene (redesign-v4 Bundle W3) — the site's signature motion, where
+ * the business mechanic is demonstrated rather than described.
+ *
+ * ⚠️ `tasks` is ILLUSTRATIVE. These are NOT real client work, not a real board,
+ * and not a backlog anyone is waiting on. The scene renders `note` alongside
+ * them saying exactly that, and that line is the honesty gate on this section:
+ * if the chips are ever changed to real client tasks, `note` becomes a lie and
+ * the section needs re-briefing, not a copy tweak. Keep them generic enough
+ * that no reader could mistake one for a named engagement.
+ */
+export interface QueueContent {
+  label: string;
+  /** Hand-set headline lines, rendered one per masked line-rise. */
+  headline: string[];
+  /** Illustrative chip labels, in queue order. The first is the active one. */
+  tasks: string[];
+  /** Status words for the three chip states, in queued/active/shipped order. */
+  states: { queued: string; active: string; shipped: string };
+  /** Label preceding the brass counter. */
+  shippedLabel: string;
+  /** The honesty line. Rendered verbatim; see the warning above. */
+  note: string;
+}
+
 export interface SectionsContent {
   howItWorks: SectionCopy;
   whatWeBuild: SectionCopy;
@@ -206,6 +231,7 @@ export interface Offer {
   calLink: string;
   hero: HeroContent;
   sections: SectionsContent;
+  queue: QueueContent;
   tiers: Tier[];
   foundingRate: FoundingRate;
   guarantee: Guarantee;
@@ -320,6 +346,29 @@ export const sections: SectionsContent = {
     description:
       "Send it over and we'll tell you whether it's a task, a build, or something we'd talk you out of. If you'd rather just start, pick a plan above.",
   },
+};
+
+/**
+ * The queue scene's content, VERBATIM from the approved mockup
+ * (docs/redesign-v4/approved-mockup.html #queue).
+ *
+ * `tasks` is ILLUSTRATIVE — see the warning on `QueueContent`. `note` is the
+ * honesty gate and is rendered verbatim; the page has no publishable proof
+ * metrics, so the one thing this section must never do is imply that these
+ * chips are a real client board.
+ */
+export const queue: QueueContent = {
+  label: "How the subscription works",
+  headline: ["One task active.", "The rest wait in line."],
+  tasks: [
+    "Stripe webhook retries",
+    "Ops dashboard v1",
+    "Invoice OCR agent",
+    "Legacy cron → queue",
+  ],
+  states: { queued: "queued", active: "active", shipped: "shipped" },
+  shippedLabel: "Shipped",
+  note: "An illustrative queue — you scroll, we ship. Not a client board.",
 };
 
 export const tiers: Tier[] = [
@@ -652,6 +701,7 @@ export const offer: Offer = {
   calLink: CAL_LINK,
   hero,
   sections,
+  queue,
   tiers,
   foundingRate,
   guarantee,

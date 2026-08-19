@@ -20,6 +20,7 @@ export { Faq } from "./Faq";
 export { About } from "./About";
 
 export { Pricing } from "./Pricing";
+export { Queue } from "./Queue";
 
 export { Contact } from "./Contact";
 export { ContactInfo } from "./ContactInfo";
