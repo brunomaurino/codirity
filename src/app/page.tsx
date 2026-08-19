@@ -28,46 +28,59 @@ export default function Home() {
       <ServiceJsonLd />
       <FaqPageJsonLd />
       <RevealProvider>
+        {/* GROUND ORDER (W5). W5 turned four scattered sections to paper, and
+            the brief bounds them with ONE dark→paper band entering and ONE
+            paper→dark band leaving — which only makes sense if they form a
+            contiguous RUN. Left in the v3 sequence they alternated with the
+            dark sections six times, needing six gradients and reading as a
+            strobe. So the four move together, in the APPROVED MOCKUP'S OWN
+            internal order (what we build → how it works → founder → FAQ), and
+            land where the mockup puts them: after the proof and the offer.
+
+            The page is now two runs and four transitions, every one softened:
+              dark hero → band → light Benefits → band → DARK RUN (clients,
+              studies, terms, queue) → band → PAPER RUN (W5's four) → band →
+              dark close.
+
+            What this deliberately does NOT do is re-order the dark run or move
+            the offer relative to the proof; the FAQ still follows the price,
+            as the mockup has it. Benefits is a v3 survivor with no counterpart
+            in the mockup and is left in place for W6's sweep to decide on. */}
         <Hero />
-        {/* S2 — How it works */}
-        <Process />
-        {/* S3 — What we build */}
-        <Services />
-        {/* S4 — Membership benefits */}
+        {/* S4 — Membership benefits: a v3 survivor with no mockup counterpart.
+            The bands terminate at `--paper`, so the section is pinned to the
+            SAME ground rather than its legacy `bg-white` — otherwise each
+            gradient lands on #EDEDE6 against a #FFFFFF section and leaves a
+            visible seam at exactly the boundary it exists to soften (Phase 4/5
+            review). Retiring or reworking the section itself is W6's. */}
+        <div className="band band-dl" aria-hidden="true" />
         <Benefits />
-        {/* S5 — Clients (D6): "who's on the board", from offer.clients —
-            always renders, not gated on offer.caseStudies (that array is
-            unrelated content V8 owns separately). */}
-        {/* W4 turned this run dark, which would have introduced two HARD
-            ground cuts — Benefits (light) → clients, and the last study →
-            About (light). "Grounds never hard-cut" is Bruno's explicit rule
-            (§1.5) and the `.band-*` utilities have existed unused since W0, so
-            the pair of gradients enters here rather than being logged as debt.
-            W5 reworks both neighbours and may reposition them. */}
         <div className="band band-ld" aria-hidden="true" />
+
+        {/* ——— the dark run: proof, then the offer ——— */}
+        {/* S5 — Clients (D6): "who's on the board", from offer.clients —
+            always renders, not gated on offer.caseStudies. */}
         <RecentWork />
         {/* S5b — Case studies (D1): eDairyMarket + Meshio, content from
-            HANDOFF-redesign-v3.md §7. Placed immediately after the clients
-            roll-call and before Pricing, per the bundle brief. Chosen over
-            after-About so the proof runs clients → the two studies in one
-            uninterrupted stretch, and the reader reaches pricing having just
-            read the strongest evidence rather than the team blurb. */}
+            HANDOFF-redesign-v3.md §7 — the proof runs clients → the two
+            studies in one uninterrupted stretch. */}
         <CaseStudies />
-        <div className="band band-dl" aria-hidden="true" />
-        <About />
         {/* S6 — the terms band (W2) */}
         <Pricing />
-        {/* S6b — the queue scene (W3): the signature motion. Placed directly
-            after the terms band to preserve the approved mockup's own
-            terms → queue adjacency. The mockup runs both near the TOP of the
-            page; this page still carries the v3 section order, and reordering
-            it belongs to W4–W6, not here. Both sections sit on the dark
-            ground, so the pair needs no `.band` between them — inserting the
-            queue anywhere in the paper run would have demanded two new
-            gradient bands and broken the no-hard-cut rule mid-bundle. */}
+        {/* S6b — the queue scene (W3): the signature motion, kept directly
+            after the terms band per the mockup's own terms → queue adjacency.
+            Both are dark, so the pair needs no band between them. */}
         <Queue />
-        {/* S7 — FAQ (accordion) + S8 — Book a call */}
+
+        <div className="band band-dl" aria-hidden="true" />
+        {/* ——— the paper run (W5) ——— */}
+        <Services />
+        <Process />
+        <About />
         <Faq />
+        <div className="band band-ld" aria-hidden="true" />
+
+        {/* S8 — the closing band, on dark. */}
         <Contact />
       </RevealProvider>
     </>

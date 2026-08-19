@@ -14,8 +14,6 @@ export {
 } from "./Card";
 export type { CardProps } from "./Card";
 
-export { Badge, badgeVariants } from "./Badge";
-export type { BadgeProps } from "./Badge";
 
 export { Input, inputVariants } from "./Input";
 export type { InputProps } from "./Input";

@@ -11,7 +11,9 @@ const footerLinks = {
     { href: "#services", label: "Legacy Modernization" },
   ],
   company: [
-    { href: "#about", label: "About Us" },
+    // W5 repurposed #about from a company narrative into the "Who does the
+    // work?" founder quote, so "About Us" no longer described its destination.
+    { href: "#about", label: "Who does the work" },
     { href: "#process", label: "Our Process" },
     { href: "#contact", label: "Contact" },
   ],

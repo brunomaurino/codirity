@@ -5,8 +5,6 @@ export { ServiceCard } from "./ServiceCard";
 export type { ServiceCardProps } from "./ServiceCard";
 
 export { Process } from "./Process";
-export { ProcessStep } from "./ProcessStep";
-export type { ProcessStepProps } from "./ProcessStep";
 
 export { Benefits } from "./Benefits";
 
