@@ -23,7 +23,7 @@ interface CalPopupButtonProps {
 }
 
 // The Cal.com embed API is a page-level singleton shared by every
-// CalPopupButton on the page (Hero, Faq, ContactInfo, PricingCard, and the
+// CalPopupButton on the page (Hero, Faq, ContactInfo, and the
 // Header's desktop + mobile nav — six instances as of redesign-v3 Bundle V1;
 // mounted from the root layout, so every route renders at least the two nav
 // instances now, not just the ones on the homepage), so the booking listener

@@ -178,6 +178,7 @@ export interface SectionsContent {
   benefits: SectionCopy;
   recentWork: SectionCopy;
   pricing: SectionCopy;
+  terms: SectionCopy;
   faq: SectionCopy;
   contact: SectionCopy;
   caseStudies: SectionCopy;
@@ -221,7 +222,9 @@ export const hero: HeroContent = {
   headline: "Your AI & automation team, on subscription.",
   subhead:
     "Unlimited requests, senior engineering, and AI-accelerated delivery — for one flat monthly rate. Pause or cancel anytime.",
-  primaryCta: { label: "See pricing", href: "#pricing" },
+  // "#terms" since W2 renamed the section; a full-height "#pricing" alias
+  // layer inside the band keeps old inbound links and the tracker working.
+  primaryCta: { label: "See pricing", href: "#terms" },
   // Duration-neutral: the configured Cal event (CAL_LINK) is a 30-minute call, so a
   // "15-min" label would understate the actual booking. Kept short and low-friction.
   secondaryCta: { label: "Book an intro call" },
@@ -279,6 +282,13 @@ export const sections: SectionsContent = {
     title: "Simple, monthly pricing",
     description:
       "One flat rate, unlimited requests, and no contracts. Pause or cancel anytime.",
+  },
+  // The v4 terms band (W2, from the approved mockup): a single eyebrow line
+  // over the four-figure ledger. `title` is the sr-only heading that keeps the
+  // document outline; the visible framing is the label.
+  terms: {
+    label: "The whole offer, in four numbers",
+    title: "Simple, monthly pricing",
   },
   faq: {
     label: "FAQ",

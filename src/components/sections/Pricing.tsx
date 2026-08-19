@@ -1,135 +1,128 @@
-import { Sparkles, PauseCircle, Rocket } from "lucide-react";
-import { Section, Container } from "@/components/layout";
-import { SectionHeader, TrackedLink } from "@/components/ui";
-import { PricingCard } from "./PricingCard";
-import { PricingViewedTracker } from "./PricingViewedTracker";
+import { Section } from "@/components/layout";
+import { TrackedLink } from "@/components/ui";
 import { tiers, foundingRate, guarantee, sections } from "@/config/offer";
-import { cn } from "@/lib/utils";
+import { PricingViewedTracker } from "./PricingViewedTracker";
 
-// Reused verbatim from existing offer.ts claims (HANDOFF-redesign-v3 §1,
-// Bundle V5 — "reuse existing site claims for delivery time, do not invent
-// a new figure"): both `detail` lines are the exact `benefits[].description`
-// text for the matching entry (PauseCircle / Rocket icons — Rocket, not
-// Zap, found in Phase 4/5 review: Zap is already the "Senior engineering,
-// AI-accelerated" benefit's icon elsewhere on the page, and Rocket is what
-// "Fast, async delivery" actually uses). Not imported from `benefits` —
-// that array's shape (icon name + title + description) doesn't fit a
-// compact trust-box label, so the exact same wording is restated here
-// rather than reshaping shared data for one consumer. The "Pause anytime"
-// detail was originally a bare restatement of its own label (found in
-// Phase 4/5 review) — now the real benefit description instead, which
-// adds information (resuming) rather than repeating the heading.
-const TRUST_BOXES = [
+// The terms band (redesign-v4 Bundle W2) — docs/redesign-v4/approved-mockup.html
+// #terms is the contract. Where the reference site fills this surface with
+// raised-capital numbers, this page puts the price and the terms at the 99px
+// tier, because for a subscription those ARE the numbers. Every figure and
+// every note composes from offer.ts; the founding row is GATED on
+// foundingRate.active and interpolates slots/price, so flipping the documented
+// kill-switch removes the row — the offer can never strand in prose (the
+// V6-class bug this structure exists to prevent).
+//
+// The FIGURES never animate — no count-ups, ever. The row entrance (rules
+// drawing in, content fading up) is the section's only motion.
+//
+// Anchor contract: the section id is `terms` (hero.primaryCta points here).
+// The absolutely-positioned full-height layer below carries the old `pricing`
+// id — old inbound links land in the same place, and PricingViewedTracker
+// (which observes #pricing and needs an element with REAL height, per its own
+// docstring) keeps firing without modification.
+
+type Row = {
+  key: string;
+  label: string;
+  /** The figure. `cur` renders in the hanging gutter; `num` gets brass when it
+   *  is a price (brass = defensible numbers only, §1.2). */
+  cur?: string;
+  num: string;
+  unit?: string;
+  brass: boolean;
+  note: string;
+  cta?: { href: string; event: "checkout_click_standard" | "checkout_click_pro" | "checkout_click_founding" };
+};
+
+const standard = tiers[0];
+const pro = tiers[1];
+
+const ROWS: Row[] = [
   {
-    icon: PauseCircle,
-    label: "Pause anytime",
-    detail: "No lock-in. Pause when your queue is empty and resume when you need us.",
+    key: "standard",
+    label: standard.name,
+    cur: "$",
+    num: standard.price.replace("$", ""),
+    unit: standard.period,
+    brass: true,
+    // Approved mockup note — a composition of standard.tasks + the unlimited-
+    // requests fact, framed for one line.
+    note: "One active task at a time. Unlimited requests in the queue behind it.",
+    cta: { href: standard.stripeUrl, event: "checkout_click_standard" },
   },
-  { icon: Rocket, label: "Fast delivery", detail: "Most tasks land in days." },
+  {
+    key: "pro",
+    label: pro.name,
+    cur: "$",
+    num: pro.price.replace("$", ""),
+    unit: pro.period,
+    brass: true,
+    note: "Two active tasks, running in parallel. Priority delivery.",
+    cta: { href: pro.stripeUrl, event: "checkout_click_pro" },
+  },
+  {
+    key: "guarantee",
+    label: "Guarantee",
+    num: "7 days",
+    unit: "50% back",
+    brass: false,
+    // guarantee.description VERBATIM — a real financial commitment.
+    note: guarantee.description,
+  },
+  ...(foundingRate.active
+    ? [
+        {
+          key: "founding",
+          label: `Founding — ${foundingRate.slots} seats`,
+          cur: "$",
+          num: foundingRate.price.replace("$", "").replace("/mo", ""),
+          unit: "/mo",
+          brass: true,
+          note: `A launch price, not a waiting list. The first ${foundingRate.slots} keep it for as long as they stay.`,
+          cta: { href: foundingRate.stripeUrl, event: "checkout_click_founding" as const },
+        },
+      ]
+    : []),
 ];
 
 export function Pricing() {
   return (
-    <Section id="pricing" variant="default" className="reveal">
+    <Section id="terms" variant="ink" className="relative">
+      {/* Old-anchor alias: full-height so the tracker's IntersectionObserver
+          has a real box to intersect (a zero-height sentinel never fires). */}
+      <div id="pricing" aria-hidden="true" className="absolute inset-0 -z-10" />
       <PricingViewedTracker />
-      <Container>
-        <SectionHeader
-          label={sections.pricing.label}
-          title={sections.pricing.title}
-          description={sections.pricing.description}
-          className="mb-12"
-        />
-
-        {/* Founding-rate launch banner — a limited offer layered on the anchor prices,
-            never the headline. Gated on the config flag so it disappears (one line) when
-            the slots fill. Links to the founding-rate Stripe checkout — tracked like
-            the two tier CTAs, since it is a live checkout link and its click-through
-            is what tells us whether the launch offer is doing any work. */}
-        {foundingRate.active && (
-          <div className="max-w-4xl mx-auto mb-10 reveal">
-            <TrackedLink
-              href={foundingRate.stripeUrl}
-              event="checkout_click_founding"
-              external
-              className={cn(
-                "group flex flex-col sm:flex-row items-center justify-center gap-x-3 gap-y-1 text-center",
-                "rounded-2xl px-6 py-4",
-                "bg-brand-pale text-brand-dark border border-brand/20",
-                "transition-all duration-300 hover:border-brand/40 hover:shadow-brand/10 hover:shadow-lg"
-              )}
-            >
-              <Sparkles className="h-5 w-5 text-brand shrink-0" strokeWidth={2} />
-              <span className="font-medium">Founding offer</span>
-              <span>
-                <span className="font-serif font-medium">{foundingRate.price}</span>{" "}
-                — {foundingRate.label}
+      <div className="wrap-v4">
+        <h2 className="sr-only">{sections.terms.title}</h2>
+        <p className="label rv fade" style={{ marginBottom: "clamp(28px, 4vw, 56px)" }}>
+          {sections.terms.label}
+        </p>
+        <div className="terms rv">
+          {ROWS.map((row, i) => (
+            <div key={row.key} className="term" style={{ "--i": i } as React.CSSProperties}>
+              <span className="term-k">{row.label}</span>
+              <span className={row.brass ? "term-v term-n" : "term-v"}>
+                {row.cur && <span className="cur">{row.cur}</span>}
+                {row.num}
+                {row.unit && <span className="unit">{row.unit}</span>}
               </span>
-              <span className="text-sm opacity-80">
-                ({foundingRate.slots} spots)
-              </span>
-            </TrackedLink>
-          </div>
-        )}
-
-        {/* Two-tier grid — pricing data is server-rendered (no client toggle needed). */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-start">
-          {tiers.map((tier) => (
-            <PricingCard
-              key={tier.id}
-              name={tier.name}
-              price={tier.price}
-              priceSubtext={tier.period}
-              tasks={tier.tasks}
-              description={tier.description}
-              features={tier.features}
-              ctaText={tier.cta}
-              ctaHref={tier.stripeUrl}
-              ctaExternal
-              analyticsEvent={
-                tier.id === "pro"
-                  ? "checkout_click_pro"
-                  : "checkout_click_standard"
-              }
-              featured={tier.highlighted}
-              className="reveal"
-            />
-          ))}
-        </div>
-
-        {/* Trust boxes — dashed border, existing site claims only (no new
-            figures) (HANDOFF-redesign-v3 §1, Bundle V5). */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-10 reveal">
-          {TRUST_BOXES.map(({ icon: Icon, label, detail }) => (
-            <div
-              key={label}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl p-5",
-                "border border-dashed border-gray-300 dark:border-gray-700"
+              <span className="term-note">{row.note}</span>
+              {row.cta ? (
+                <TrackedLink
+                  href={row.cta.href}
+                  event={row.cta.event}
+                  external
+                  className="term-cta"
+                >
+                  {standard.cta}
+                </TrackedLink>
+              ) : (
+                <span aria-hidden="true" />
               )}
-            >
-              <Icon className="h-5 w-5 text-brand shrink-0" strokeWidth={2} />
-              <div>
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {label}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {detail}
-                </div>
-              </div>
             </div>
           ))}
         </div>
-
-        {/* Guarantee cluster */}
-        <div className="max-w-2xl mx-auto mt-10 text-center reveal">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {guarantee.title}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {guarantee.description}
-          </p>
-        </div>
-      </Container>
+      </div>
     </Section>
   );
 }
