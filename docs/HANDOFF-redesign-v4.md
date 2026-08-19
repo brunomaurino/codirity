@@ -84,6 +84,28 @@ matches the mockup.
 - **A self-test must mutate COPIES, never the tracked working tree** — W3's first draft restored by
   a bare second write with no `try/finally`, so an interruption would strand an injected mutation
   (one of which did not typecheck) in the repo.
+- **An animation referencing undefined `@keyframes` dies SILENTLY, and no visual check can see
+  it.** W4 shipped `animation: stat-wipe` with the keyframes never ported: the name resolved to
+  `none`, so the wipe never existed — AND the `@supports not (…)` fallback was suppressed, because
+  the positive branch still matched. A wipe that never ran looks identical to one that finished.
+  `scripts/w4-css-gate.py` asserts site-wide that every referenced animation-name has matching
+  keyframes; **run it after any bundle that adds motion.**
+- **`GATE ARMED` from a self-test is NOT proof a gate is sound.** W4's fact-gate self-test passed
+  10/10 while the gate had four holes an adversarial round then demonstrated live. A self-test only
+  probes the failure modes its author already imagined — it bounds a gate from below, never from
+  above. Keep the adversarial pass as the thing that certifies a gate.
+- **Provenance must be EXACT MEMBERSHIP in a set of field values, scoped per owning entity.** A
+  substring test against one flat concatenation passes a run spanning two fields, a fact borrowed
+  from a sibling entity, and a truncation that drops a load-bearing qualifier ("specced" →
+  shipped). A length floor exempts short fabrications (an invented stack pill, an extra state).
+  And the check must cover EVERY section the bundle owns — W4's skipped the clients strip, where an
+  invented seed round and pre-order percentage passed clean.
+- **A mockup's `ch` values are calibrated for the MOCKUP's copy.** Re-derive hand-set line breaks
+  for the real strings and measure at the GUTTER boundary: W4's lines re-wrapped specifically
+  between 900px and 959px, where `.wrap-v4` doubles its padding — a band that a spot-check at 1280
+  and 375 sails straight past.
+- **`aria-label` on a bare `<div>` is ignored.** Its implicit role is `generic`, which ARIA
+  prohibits from carrying an accessible name. Use `role="img"` for a diagram.
 - **A headless/sandboxed browser pane reports `prefers-reduced-motion: reduce`.** Scroll/motion code
   gated on that preference NEVER RUNS there, so a browser harness cannot be the only proof of a
   motion contract — extract the math into a pure function and commit a test. `tsx` is installed, so
@@ -141,7 +163,7 @@ matches the mockup.
 | **W1** | Hero + nav + the folio constant | W0 | [x] complete | #29 | `c79249b` |
 | **W2** | Terms band replaces Pricing: 4 ledger rows at the 99px tier, hanging `$`, baseline units, per-tier Stripe CTAs, rules-draw motion, prices never animate | W0 | [x] complete | #30 | `7253ca4` |
 | **W3** | The queue scene — signature pinned motion, illustrative chips, reduced-motion static tableau | W0 | [x] complete | #32 | `c66faaf` |
-| **W4** | Case studies + clients strip in the v4 treatment (eDairyMarket stat block + shipped list; Meshio state machine; 3-client strip) | W0 | [ ] not started | | |
+| **W4** | Case studies + clients strip in the v4 treatment (eDairyMarket stat block + shipped list; Meshio state machine; 3-client strip) | W0 | [x] complete | #34 | `f019a4c` |
 | **W5** | What we build (list + strike-through "we say no") + How it works + founder block + FAQ restyle | W0 | [ ] not started | | |
 | **W6** | Ownership quote + close + footer voice/format pass + dead-style retirement sweep + final perf/a11y gate | W0–W5 | [ ] not started | | |
 
