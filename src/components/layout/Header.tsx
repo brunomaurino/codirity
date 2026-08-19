@@ -43,22 +43,30 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-400",
         "px-4 py-5 md:px-8 lg:px-16",
-        isScrolled && [
-          "py-4",
-          "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl",
-          "border-b border-[var(--border)]",
-          "shadow-sm",
-        ]
+        // v4 W1: over the DARK hero at scroll-top, over LIGHT sections when
+        // scrolled — the same isScrolled state drives tone and chrome.
+        isScrolled
+          ? [
+              "py-4",
+              "bg-white/95 backdrop-blur-xl",
+              "border-b border-[var(--border)]",
+              "shadow-sm",
+            ]
+          : "text-chalk"
       )}
     >
       <nav className="max-w-[1400px] mx-auto flex items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 font-mono text-2xl font-medium text-gray-900 dark:text-white tracking-tight"
+          className={cn(
+            "flex items-center gap-2 text-2xl font-medium tracking-tight",
+            // font-mono retired with the v3 system (W0); tone follows ground.
+            isScrolled ? "text-gray-900" : "text-chalk"
+          )}
         >
           <span>Codirity</span>
-          <span className="w-2.5 h-2.5 bg-brand rounded-full animate-pulse-dot" />
+          <span className="w-2.5 h-2.5 bg-mint rounded-full animate-pulse-dot" />
         </Link>
 
         {/* Desktop Navigation */}
@@ -68,9 +76,11 @@ export function Header() {
               <Link
                 href={link.href}
                 className={cn(
-                  "relative text-gray-600 dark:text-gray-400 text-[0.95rem] font-medium",
+                  "relative text-[0.95rem] font-medium",
+                  isScrolled
+                    ? "text-gray-600 hover:text-gray-900"
+                    : "text-chalk-dim hover:text-chalk",
                   "transition-colors duration-300",
-                  "hover:text-gray-900 dark:hover:text-white",
                   "after:content-[''] after:absolute after:-bottom-1.5 after:left-0",
                   "after:w-0 after:h-0.5 after:bg-brand",
                   "after:transition-[width] after:duration-300",
@@ -91,8 +101,9 @@ export function Header() {
             className={cn(
               "btn-pill inline-flex items-center justify-center",
               "px-5 py-2.5 text-sm font-medium",
-              "text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
-              "hover:border-brand hover:text-brand dark:hover:text-brand hover:bg-brand-pale",
+              isScrolled
+                ? "text-gray-700 border border-gray-200 hover:border-brand hover:text-brand hover:bg-brand-pale"
+                : "text-chalk border border-[var(--rule)] hover:border-mint hover:text-mint",
               "transition-all duration-300 cursor-pointer"
             )}
           >
@@ -103,10 +114,11 @@ export function Header() {
             className={cn(
               "btn-pill inline-flex items-center gap-2",
               "px-5 py-2.5 text-sm font-medium",
-              "bg-brand-fill text-white",
+              isScrolled
+                ? "bg-brand-fill text-white hover:bg-brand-fill-dark hover:shadow-brand"
+                : "bg-mint text-ground",
               "transition-all duration-300",
-              "hover:bg-brand-fill-dark hover:-translate-y-0.5",
-              "hover:shadow-brand"
+              "hover:-translate-y-0.5"
             )}
           >
             {hero.primaryCta.label}
@@ -121,9 +133,9 @@ export function Header() {
           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
           {isMobileMenuOpen ? (
-            <X className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+            <X className={cn("w-6 h-6", isScrolled ? "text-gray-800" : "text-chalk")} />
           ) : (
-            <Menu className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+            <Menu className={cn("w-6 h-6", isScrolled ? "text-gray-800" : "text-chalk")} />
           )}
         </button>
       </nav>

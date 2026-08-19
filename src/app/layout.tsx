@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Header, Footer } from "@/components/layout";
+import { Header, Footer, TheConstant } from "@/components/layout";
 import { Toaster } from "@/components/ui/Toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
@@ -88,6 +88,9 @@ export default function RootLayout({
 
         {/* Toast Notifications */}
         <Toaster />
+
+        {/* The constant — §1.7, visible past the hero (aria-hidden ornament) */}
+        <TheConstant />
 
         {/* Organization structured data (server-rendered for crawlers) */}
         <OrganizationJsonLd />

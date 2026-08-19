@@ -35,9 +35,13 @@ export function Section({
   variant = "default",
   padding = "default",
 }: SectionProps) {
+  // data-ground: consumed by TheConstant's tone-flip IO (W1). The ink and
+  // gradient variants sit on dark/colored grounds; default/gray are light.
+  const groundTone = variant === "ink" ? "dark" : "light";
   return (
     <section
       id={id}
+      data-ground={groundTone}
       className={cn(
         "relative z-10",
         // Padding variants

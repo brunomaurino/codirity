@@ -645,6 +645,106 @@ body {
   }
 }
 
+/* ========================================
+   v4 hero + folio (Bundle W1 — mockup port)
+   ======================================== */
+
+@layer components {
+  /* .wrap-v4: the mockup's page gutter. NOT the legacy Container — that
+     carries v3 padding assumptions; sections migrate here as each is
+     reworked. Longhand paddings only (§0 shorthand trap). */
+  .wrap-v4 {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  @media (min-width: 900px) {
+    .wrap-v4 {
+      padding-left: 48px;
+      padding-right: 48px;
+    }
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: 28px;
+  }
+  /* 1040px, not the mockup's 980: measured with the real font, the longest
+     hand-set line is 7.284em, and the two-column grid costs the H1 column
+     ~260px (padding + ledger + gap). Below vw≈1012 that column is narrower
+     than the line at 10.2vw — the mockup's own "verified at 980" was false,
+     caught by this bundle's line-wrap gate. Single column until the math
+     clears, with margin. */
+  @media (min-width: 1040px) {
+    .hero-grid {
+      grid-template-columns: 1fr auto;
+      align-items: end;
+    }
+  }
+  /* The micro/macro move: a 13px ledger on the baseline of a 134px claim.
+     The numbers are the hero's credibility object — above the fold. */
+  .hero-ledger {
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--chalk-dim);
+    text-align: right;
+    white-space: nowrap;
+    margin: 0;
+  }
+  .hero-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px 56px;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 40px;
+  }
+
+  /* The constant (§1.7): the flat-rate promise made behavior. aria-hidden,
+     pointer-events none, out of the tab order — a page ornament that never
+     traps focus. Tone flips over light grounds via body.on-light (IO-driven,
+     see TheConstant.tsx). */
+  .constant {
+    position: fixed;
+    right: clamp(10px, 2vw, 28px);
+    bottom: 32px;
+    z-index: 20;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--chalk-dim);
+    writing-mode: vertical-rl;
+    opacity: 0;
+    transition: opacity 0.5s ease, color 0.4s ease;
+    pointer-events: none;
+  }
+  body.past-hero .constant {
+    opacity: 1;
+  }
+  body.on-light .constant {
+    color: var(--ink-dim);
+  }
+}
+
+/* No-JS fallback: the reveal system hides content until .in arrives from the
+   IO/rAF. Without scripting, render everything in place — the SSR copy is
+   already there, it must also be VISIBLE. */
+@media (scripting: none) {
+  .line > span {
+    transform: none;
+  }
+  .fade,
+  .rv .fade {
+    opacity: 1;
+    transform: none;
+  }
+  .constant {
+    opacity: 1;
+  }
+}
+
 /* Scoped reduced-motion (§1.6): kill the entrance/scroll systems, keep
    sub-300ms state feedback (hover/focus) — the preference targets movement,
    not all change. Never a universal *{transition:none}. */

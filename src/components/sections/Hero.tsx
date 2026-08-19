@@ -1,129 +1,126 @@
 import { ArrowRight } from "lucide-react";
-import { Badge, CalPopupButton, TrackedLink } from "@/components/ui";
-import { Container } from "@/components/layout";
-import { HeroBackground } from "./HeroBackground";
-import { HeroVisual } from "./HeroVisual";
+import { CalPopupButton, TrackedLink } from "@/components/ui";
 import { hero, CAL_LINK } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
-// v4 (Bundle W0): the `.accent` italic-word treatment is retired
-// (HANDOFF-redesign-v4.md §1.1) — the headline renders as plain text in the
-// one Apfel family. W1 rebuilds this hero to the approved mockup; this
-// bundle only removes the retired treatment without restructuring.
+// v4 hero (Bundle W1) — docs/redesign-v4/approved-mockup.html is the contract.
+// The fixed dark ground, the three hand-set headline lines on the masked
+// line-rise, and the 13px ledger sitting on the H1's baseline carrying the
+// REAL numbers. Two structural adaptations from the mockup, both deliberate:
+//
+//  - The mockup draws a nav INSIDE the hero; on the site that nav IS the
+//    shared fixed <Header/>, restyled dark-aware in this same bundle. Padding
+//    top clears it. (Building a second nav here would double the chrome.)
+//
+//  - The mockup's hero-foot carries lede + one CTA; this hero keeps BOTH
+//    existing instrumented CTAs (hero_cta_click via TrackedLink and the Cal
+//    popup) — analytics continuity outranks a one-button composition, and the
+//    mockup's own nav carries the booking CTA anyway.
+//
+// The v3 HeroVisual/HeroBackground (stat cards, floating shapes) are DELETED
+// with this bundle — the v4 ground is deliberately still. That removes the
+// `location: "hero_visual"` emitter of hero_cta_click; the event itself
+// survives on the primary CTA (see notes.md).
+//
+// Line breaks are HAND-SET: hero.headline is split at fixed word boundaries
+// so each line rises in sequence. The split is derived from the copy, not
+// duplicated — a copy change in offer.ts falls back to a single unsplit line
+// rather than drifting (same no-duplicate rule the old accent logic followed).
+const LINE_BREAKS = ["Your AI &", "automation team,", "on subscription."] as const;
+const heroLines: readonly string[] = LINE_BREAKS.join(" ") === hero.headline
+  ? LINE_BREAKS
+  : [hero.headline];
+
+// The ledger's three lines are verbatim reconstructions of offer.ts facts
+// (tiers[0].price + "/mo flat" per hero pricing language, tiers[0].tasks,
+// benefits' pause line) — no new claims. Brass goes on the PRICE only.
+const LEDGER = [
+  { text: "$3,995/mo flat", brass: true },
+  { text: "one active task at a time", brass: false },
+  { text: "pause or cancel anytime", brass: false },
+];
 
 export function Hero() {
   return (
     <section
+      id="hero"
+      data-ground="dark"
       className={cn(
-        "min-h-screen flex items-center",
-        "pt-32 pb-24 px-4 md:px-8 lg:px-16",
-        "relative z-[1]",
-        "bg-gradient-to-b from-white to-gray-50",
-        "dark:from-gray-900 dark:to-gray-800",
-        "overflow-hidden"
+        "relative flex min-h-[92svh] flex-col justify-between",
+        "bg-ground text-chalk",
+        // padding-top LONGHAND (§0 shorthand trap) — clears the fixed Header.
+        "pt-28 md:pt-32"
       )}
     >
-      {/* Background gradient overlay */}
-      <div
-        className={cn(
-          "absolute top-0 right-0 w-[60%] h-full z-0",
-          "bg-[radial-gradient(ellipse_at_70%_30%,rgba(30,92,70,0.07)_0%,transparent_60%)]"
-        )}
-      />
+      <div className="wrap-v4 w-full">
+        <p className="label" style={{ marginBottom: "28px" }}>
+          {hero.trustLine}
+        </p>
+        <div className="hero-grid">
+          <h1 className="display d-xl">
+            {heroLines.map((line, i) => (
+              <span key={line} className="line" style={{ "--l": i } as React.CSSProperties}>
+                <span>{line}</span>
+              </span>
+            ))}
+          </h1>
+          <p
+            className="hero-ledger fade"
+            style={{ "--l": 4 } as React.CSSProperties}
+          >
+            {LEDGER.map(({ text, brass }) => (
+              <span key={text} className={cn("block", brass && "text-brass")}>
+                {text}
+              </span>
+            ))}
+          </p>
+        </div>
+      </div>
 
-      <HeroBackground />
-
-      <Container className="relative z-[1]">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-16 items-center">
-          {/* Hero Content */}
-          <div className="relative">
-            <Badge
-              withDot
-              className="mb-6 opacity-0 animate-slide-up animation-delay-200"
-            >
-              {hero.badge}
-            </Badge>
-
-            <h1
+      <div className="wrap-v4 w-full">
+        <div className="hero-foot">
+          <p className="lede fade" style={{ "--l": 5 } as React.CSSProperties}>
+            {hero.subhead}
+          </p>
+          <div
+            className="fade flex flex-wrap items-center gap-4"
+            style={{ "--l": 6 } as React.CSSProperties}
+          >
+            {/* Top of the funnel: hero_cta_click is the denominator for
+                pricing_viewed. Event name + params byte-identical to main. */}
+            <TrackedLink
+              href={hero.primaryCta.href}
+              event="hero_cta_click"
+              eventParams={{ location: "hero_primary" }}
               className={cn(
-                "text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem]",
-                "font-medium leading-[1.1]",
-                "text-gray-900 dark:text-white mb-6",
-                "opacity-0 animate-slide-up animation-delay-300"
+                "inline-flex items-center justify-center gap-3",
+                "btn-pill px-8 py-4 text-base font-medium",
+                "bg-mint text-ground",
+                "transition-transform duration-300 hover:-translate-y-0.5"
               )}
             >
-              {hero.headline}
-            </h1>
-
-            <p
+              {hero.primaryCta.label}
+              <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            </TrackedLink>
+            {/* No analyticsLocation: main's hero Cal button emitted a bare
+                call_booked, and this bundle's gate is byte-identical events.
+                Labeling it is a one-line follow-up once the funnel owner wants
+                the breakdown. */}
+            <CalPopupButton
+              calLink={CAL_LINK}
               className={cn(
-                "text-lg md:text-xl text-gray-600 dark:text-gray-400",
-                "max-w-[520px] leading-relaxed mb-10",
-                "opacity-0 animate-slide-up animation-delay-400"
+                "inline-flex items-center justify-center gap-2",
+                "btn-pill px-8 py-4 text-base font-medium",
+                "border border-[var(--rule)] text-chalk",
+                "transition-all duration-300 hover:border-mint hover:text-mint",
+                "cursor-pointer"
               )}
             >
-              {hero.subhead}
-            </p>
-
-            <div
-              className={cn(
-                "flex flex-wrap gap-4",
-                "opacity-0 animate-slide-up animation-delay-500"
-              )}
-            >
-              {/* Top of the funnel: hero_cta_click (summed across both `location`
-                  values below) is the denominator for pricing_viewed. HeroVisual's
-                  card CTA (location: "hero_visual") fires the SAME event for the
-                  same action reached a second way — tag both with `location` (the
-                  param key every other TrackedLink site already uses, see
-                  Footer.tsx/ContactInfo.tsx/privacy/page.tsx) so GA4 can break the
-                  total down by entry point instead of only distinguishing them by
-                  one having no param at all. */}
-              <TrackedLink
-                href={hero.primaryCta.href}
-                event="hero_cta_click"
-                eventParams={{ location: "hero_primary" }}
-                className={cn(
-                  "inline-flex items-center justify-center gap-2",
-                  "px-8 py-4 text-base font-medium rounded-full",
-                  "bg-brand-fill text-white",
-                  "hover:bg-brand-fill-dark hover:-translate-y-0.5 hover:shadow-brand",
-                  "transition-all duration-300"
-                )}
-              >
-                {hero.primaryCta.label}
-                <ArrowRight className="w-5 h-5" />
-              </TrackedLink>
-              <CalPopupButton
-                calLink={CAL_LINK}
-                className={cn(
-                  "inline-flex items-center justify-center gap-2",
-                  "px-8 py-4 text-base font-medium rounded-full",
-                  "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
-                  "hover:border-brand hover:text-brand dark:hover:text-brand hover:bg-brand-pale",
-                  "transition-all duration-300 cursor-pointer"
-                )}
-              >
-                {hero.secondaryCta.label}
-              </CalPopupButton>
-            </div>
-
-            <p
-              className={cn(
-                "mt-6 text-sm font-medium text-gray-500 dark:text-gray-400",
-                "opacity-0 animate-slide-up animation-delay-600"
-              )}
-            >
-              {hero.trustLine}
-            </p>
-          </div>
-
-          {/* Hero Visual */}
-          <div>
-            <HeroVisual />
+              {hero.secondaryCta.label}
+            </CalPopupButton>
           </div>
         </div>
-      </Container>
+      </div>
     </section>
   );
 }
