@@ -9,10 +9,11 @@ interface SectionProps {
    * - default: white background
    * - gray: light gray background
    * - gradient: green gradient background
-   * - ink: near-black band. HANDOFF-redesign-v3.md §1 rule 4 allows exactly
-   *   ONE of these on the site — the final CTA, which sits directly above the
-   *   footer so the two read as a single closing band. Do not add a second
-   *   `ink` section elsewhere; the beat only works because it is unique.
+   * - ink: the v4 dark ground. SUPERSEDED RULE: v3 allowed exactly ONE ink
+   *   section site-wide (the closing CTA) because the page was otherwise light.
+   *   v4 inverts that premise — the brand green IS the ground
+   *   (HANDOFF-redesign-v4.md §1.2), so dark sections are the norm and the
+   *   one-per-site restriction no longer applies. W3-W6 may use this freely.
    *   Uses the same `gray-900` token pair the footer already uses (#0A1712 (v4 ground, via the re-pointed gray-900 token)
    *   light / #171713 dark) so the CTA and footer are the same black, and
    *   `text-white` — true white in BOTH themes, the correct foreground for a
@@ -53,7 +54,9 @@ export function Section({
         // Background variants
         variant === "default" && "bg-white dark:bg-gray-900",
         variant === "gray" && "bg-gray-50 dark:bg-gray-800",
-        variant === "ink" && "bg-gray-900 text-white",
+        // v4 tokens directly: the legacy pair resolved the ground correctly
+        // but painted pure white instead of --chalk (Phase 4/5 review).
+        variant === "ink" && "bg-ground text-chalk",
         variant === "gradient" && [
           "bg-[linear-gradient(180deg,_rgba(50,_205,_50,_0.06)_0%,_rgba(89,_243,_89,_0.1)_50%,_rgba(50,_205,_50,_0.06)_100%)]",
           "dark:bg-[linear-gradient(180deg,_rgba(50,_205,_50,_0.1)_0%,_rgba(89,_243,_89,_0.15)_50%,_rgba(50,_205,_50,_0.1)_100%)]",

@@ -24,10 +24,11 @@ export function Services() {
         <div className="max-w-4xl mx-auto space-y-12">
           {/* Included — pill cloud. Reuses <Badge> (found in Phase 4/5
               review) instead of hand-rolled classes that had silently
-              diverged from it in dark mode — the site's other Badge/pill
-              consumers (Pricing.tsx, PricingCard.tsx) now automatically
-              pick up the same fix via Badge's own variant, rather than
-              this bundle fixing only its own copy of the styling. */}
+              diverged from it — every Badge/pill consumer picks up a fix via
+              Badge's own variant rather than each copy of the styling.
+              (The Pricing.tsx and PricingCard.tsx consumers this originally
+              named are gone: v4's W2 rebuilt the first as the terms band and
+              deleted the second.) */}
           <div className="reveal">
             <h3 className="text-[13px] font-medium uppercase tracking-[0.12em] text-brand mb-6 text-center">
               {scopeLabels.included}

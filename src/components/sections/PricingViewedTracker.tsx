@@ -6,8 +6,10 @@ import { track } from "@/lib/analytics";
 /**
  * Fires the `pricing_viewed` conversion event once (to GA4 and Vercel Web
  * Analytics — see src/lib/analytics.ts), when the pricing section scrolls into
- * view. Observes the actual `#pricing` section element (which has real height) — a
- * zero-height sentinel div never satisfies an IntersectionObserver threshold. Renders
+ * view. Observes `#pricing`, which since W2 is a full-height absolute alias layer
+ * inside the `#terms` band (the section renamed; the alias preserves inbound
+ * links, this observer, and the Service JSON-LD offer URLs). It must keep
+ * REAL height — a zero-height sentinel never satisfies an IO threshold. Renders
  * nothing; the pricing data itself stays server-rendered.
  */
 export function PricingViewedTracker() {

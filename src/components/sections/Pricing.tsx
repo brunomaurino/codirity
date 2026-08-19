@@ -1,4 +1,3 @@
-import { Section } from "@/components/layout";
 import { TrackedLink } from "@/components/ui";
 import { tiers, foundingRate, guarantee, sections } from "@/config/offer";
 import { PricingViewedTracker } from "./PricingViewedTracker";
@@ -6,36 +5,54 @@ import { PricingViewedTracker } from "./PricingViewedTracker";
 // The terms band (redesign-v4 Bundle W2) — docs/redesign-v4/approved-mockup.html
 // #terms is the contract. Where the reference site fills this surface with
 // raised-capital numbers, this page puts the price and the terms at the 99px
-// tier, because for a subscription those ARE the numbers. Every figure and
-// every note composes from offer.ts; the founding row is GATED on
-// foundingRate.active and interpolates slots/price, so flipping the documented
-// kill-switch removes the row — the offer can never strand in prose (the
-// V6-class bug this structure exists to prevent).
+// tier, because for a subscription those ARE the numbers.
+//
+// EVERY figure, label, note and CTA composes from offer.ts. The founding row is
+// GATED on foundingRate.active and interpolates slots/price/cta, so flipping the
+// documented kill-switch removes the row, its checkout CTA, the FAQ entry and
+// the eyebrow's own count together — the offer can never strand in prose.
 //
 // The FIGURES never animate — no count-ups, ever. The row entrance (rules
 // drawing in, content fading up) is the section's only motion.
 //
-// Anchor contract: the section id is `terms` (hero.primaryCta points here).
-// The absolutely-positioned full-height layer below carries the old `pricing`
-// id — old inbound links land in the same place, and PricingViewedTracker
-// (which observes #pricing and needs an element with REAL height, per its own
-// docstring) keeps firing without modification.
+// Layout: a BARE <section> carrying the ground itself, exactly like W1's hero —
+// NOT the legacy <Section>, whose px-4/md:px-8 padding nested inside .wrap-v4
+// doubled the page gutter to 80px/side, misaligned the band's left edge from
+// the hero's by 32px, and compounded into a price/note overlap between
+// ~900-1030px (Phase 4/5 review BLOCKER).
+//
+// Anchor contract: the section id is `terms` (hero.primaryCta points here). The
+// absolutely-positioned full-height layer below carries the old `pricing` id —
+// old inbound links and PricingViewedTracker's IntersectionObserver (which needs
+// an element with REAL height) still resolve. The Service JSON-LD points at
+// `#terms` directly. Do not remove the alias without updating that tracker.
 
 type Row = {
   key: string;
   label: string;
-  /** The figure. `cur` renders in the hanging gutter; `num` gets brass when it
-   *  is a price (brass = defensible numbers only, §1.2). */
+  /** Currency symbol; rendered in the figure's hanging gutter. */
   cur?: string;
   num: string;
   unit?: string;
+  /** Brass is for defensible numbers — the prices (HANDOFF §1.2). */
   brass: boolean;
   note: string;
-  cta?: { href: string; event: "checkout_click_standard" | "checkout_click_pro" | "checkout_click_founding" };
+  cta?: {
+    label: string;
+    href: string;
+    event: "checkout_click_standard" | "checkout_click_pro" | "checkout_click_founding";
+  };
 };
 
 const standard = tiers[0];
 const pro = tiers[1];
+
+// The band spells small counts out in prose ("The first five", "in four
+// numbers") while rendering them as digits in labels ("Founding — 5 seats"),
+// exactly as the approved mockup does. Declared ABOVE ROWS: the rows read it
+// during module evaluation, so a later `const` would hit the temporal dead zone.
+const COUNT_WORDS = ["zero", "one", "two", "three", "four", "five", "six"];
+const spell = (n: number) => COUNT_WORDS[n] ?? String(n);
 
 const ROWS: Row[] = [
   {
@@ -45,10 +62,8 @@ const ROWS: Row[] = [
     num: standard.price.replace("$", ""),
     unit: standard.period,
     brass: true,
-    // Approved mockup note — a composition of standard.tasks + the unlimited-
-    // requests fact, framed for one line.
-    note: "One active task at a time. Unlimited requests in the queue behind it.",
-    cta: { href: standard.stripeUrl, event: "checkout_click_standard" },
+    note: standard.note,
+    cta: { label: standard.cta, href: standard.stripeUrl, event: "checkout_click_standard" },
   },
   {
     key: "pro",
@@ -57,14 +72,14 @@ const ROWS: Row[] = [
     num: pro.price.replace("$", ""),
     unit: pro.period,
     brass: true,
-    note: "Two active tasks, running in parallel. Priority delivery.",
-    cta: { href: pro.stripeUrl, event: "checkout_click_pro" },
+    note: pro.note,
+    cta: { label: pro.cta, href: pro.stripeUrl, event: "checkout_click_pro" },
   },
   {
     key: "guarantee",
     label: "Guarantee",
-    num: "7 days",
-    unit: "50% back",
+    num: `${guarantee.days} days`,
+    unit: `${guarantee.refundPct}% back`,
     brass: false,
     // guarantee.description VERBATIM — a real financial commitment.
     note: guarantee.description,
@@ -75,19 +90,31 @@ const ROWS: Row[] = [
           key: "founding",
           label: `Founding — ${foundingRate.slots} seats`,
           cur: "$",
-          num: foundingRate.price.replace("$", "").replace("/mo", ""),
-          unit: "/mo",
+          num: foundingRate.price.replace("$", "").replace(foundingRate.period, ""),
+          unit: foundingRate.period,
           brass: true,
-          note: `A launch price, not a waiting list. The first ${foundingRate.slots} keep it for as long as they stay.`,
-          cta: { href: foundingRate.stripeUrl, event: "checkout_click_founding" as const },
+          note: `A launch price, not a waiting list. The first ${spell(foundingRate.slots)} keep it for as long as they stay.`,
+          cta: {
+            label: foundingRate.cta,
+            href: foundingRate.stripeUrl,
+            event: "checkout_click_founding" as const,
+          },
         },
       ]
     : []),
 ];
 
+// The eyebrow states how many numbers the band shows, so it must follow the
+// gated row count rather than hardcoding "four" (Phase 4/5 review).
+const eyebrow = sections.terms.label.replace("{n}", spell(ROWS.length));
+
 export function Pricing() {
   return (
-    <Section id="terms" variant="ink" className="relative">
+    <section
+      id="terms"
+      data-ground="dark"
+      className="relative bg-ground text-chalk py-16 md:py-24 lg:py-28"
+    >
       {/* Old-anchor alias: full-height so the tracker's IntersectionObserver
           has a real box to intersect (a zero-height sentinel never fires). */}
       <div id="pricing" aria-hidden="true" className="absolute inset-0 -z-10" />
@@ -95,7 +122,7 @@ export function Pricing() {
       <div className="wrap-v4">
         <h2 className="sr-only">{sections.terms.title}</h2>
         <p className="label rv fade" style={{ marginBottom: "clamp(28px, 4vw, 56px)" }}>
-          {sections.terms.label}
+          {eyebrow}
         </p>
         <div className="terms rv">
           {ROWS.map((row, i) => (
@@ -114,7 +141,7 @@ export function Pricing() {
                   external
                   className="term-cta"
                 >
-                  {standard.cta}
+                  {row.cta.label}
                 </TrackedLink>
               ) : (
                 <span aria-hidden="true" />
@@ -123,6 +150,6 @@ export function Pricing() {
           ))}
         </div>
       </div>
-    </Section>
+    </section>
   );
 }

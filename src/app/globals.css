@@ -500,7 +500,8 @@ body {
 
 /* The v3 blob-gradient and glassmorphic treatments are RETIRED (HANDOFF-v4
    §1.3) — but five not-yet-reworked sections still reference these class
-   NAMES (Process, Benefits, RecentWork, CaseStudies, PricingCard), and their
+   NAMES (Process, Benefits, RecentWork, CaseStudies — PricingCard was deleted
+   in W2, and `.glass-dark` now has ZERO consumers: W6 can drop it outright), and their
    children assume a dark surface with light text. So the names survive this
    one plan-phase as aliases to a single quiet v4 surface — ground-2 under
    chalk — keeping every section legible until its own bundle (W2–W5)
@@ -779,6 +780,18 @@ body {
     opacity: 1;
     transform: none;
   }
+  /* The terms band is the site's primary conversion surface and its rows are
+     gated on `.terms.in` from the IntersectionObserver — without JS every
+     label, price, note and Get-started CTA rendered at opacity:0, i.e. an empty
+     dark slab (Phase 4/5 review). W1 added this block for exactly this
+     contract; W2 has to register its new consumer. */
+  .term > * {
+    opacity: 1;
+    transform: none;
+  }
+  .term::after {
+    transform: scaleX(1);
+  }
 }
 
 /* ========================================
@@ -798,7 +811,9 @@ body {
     padding-bottom: clamp(28px, 3.6vw, 44px);
     align-items: baseline;
   }
-  @media (min-width: 900px) {
+  /* 860px — the approved mockup's value verbatim (approved-mockup.html).
+     The build had 900 as an undeclared deviation (Phase 4/5 review). */
+  @media (min-width: 860px) {
     .term {
       grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) minmax(0, 20ch) auto;
       gap: 36px;
@@ -854,7 +869,11 @@ body {
     letter-spacing: -0.015em;
     font-size: clamp(2.5rem, 1.3rem + 5.5vw, 6.2rem);
     line-height: 0.95;
-    padding-left: 0.74em;
+    /* 0.42em: the $ glyph measures 0.381em, so this seats the symbol tight to
+       the first digit the way the mockup's translateX(-105%) does. The first
+       draft reserved 0.74em — a ~0.36em gap (25-36px) that changed the look and
+       compounded into the price/note overlap BLOCKER (Phase 4/5 review). */
+    padding-left: 0.42em;
   }
   .term-v .cur {
     position: absolute;
@@ -893,7 +912,17 @@ body {
       transform 0.25s var(--ease),
       border-color 0.25s ease;
   }
-  .term-cta:hover {
+  /* The CTA is a `.term > *`, so it inherits the entrance's opacity/transform.
+     Its own transition must COMPOSE with that (same specificity, later in the
+     layer = full override otherwise: the CTA popped in while its row faded up).
+     Phase 4/5 review. */
+  .term > .term-cta {
+    transition:
+      opacity 0.6s ease calc(var(--i, 0) * 90ms + 60ms),
+      transform 0.6s var(--ease) calc(var(--i, 0) * 90ms + 60ms),
+      border-color 0.25s ease;
+  }
+  .terms.in .term > .term-cta:hover {
     transform: translateY(-2px);
     border-color: var(--mint);
   }

@@ -60,7 +60,11 @@ export function ServiceJsonLd() {
           name: tier.name,
           price: tier.priceAmount,
           priceCurrency: CURRENCY,
-          url: `${base}/#pricing`,
+          // `#terms` is the canonical id of the band that renders these prices
+          // (W2 renamed it from `pricing`). The old `#pricing` alias still
+          // resolves, but a structured-data URL should point at the real
+          // section, not at a compatibility shim (Phase 4/5 review).
+          url: `${base}/#terms`,
         })),
       }}
     />

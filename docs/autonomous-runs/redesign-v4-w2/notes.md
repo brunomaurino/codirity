@@ -77,7 +77,59 @@ with a full-height `#pricing` alias layer; `PricingCard.tsx` deleted + exports p
 
 ## Review findings + resolutions
 
-(Phase 4/5)
+**16 findings, all confirmed 3/3 by the resumed battery, all applied.** The degraded first pass
+(1/1 voters) surfaced 11; the resume found five more *including the BLOCKER* — the strongest
+argument yet for the V6 rule that a partially-dead battery is resumed, never accepted.
+
+### BLOCKER — price/note collision, 900–1030px
+
+Two independent causes compounded. `Pricing.tsx` nested `.wrap-v4` inside the legacy `<Section>`,
+whose own `px-4 md:px-8` doubled the page gutter to 80px/side and pushed the band's left edge 32px
+off the hero's; and `.term-v` reserved a `0.74em` hanging-`$` gutter where the `$` glyph measures
+`0.381em`, adding ~0.36em (25–36px) of dead space per figure.
+
+Fixes: the band is now a **bare `<section>`** carrying its own ground (exactly like W1's hero), and
+the gutter is `0.42em`.
+
+**My own 900px gate was a false negative, and that is the more important finding.** It asserted "no
+horizontal overflow" — but `body { overflow-x: hidden }` hides intra-*grid* collision entirely, so
+the check could never have failed for this class of bug. The replacement measures **element bounding
+boxes** (`.term-k`/`.term-v`/`.term-note`/`.term-cta`, pairwise, vertical-intersection gated) and is
+**proven to fail** before it is trusted: forcing a collision makes it report 202.2px.
+
+### The rest
+
+| # | What | Resolution |
+|---|---|---|
+| 1 | Breakpoint was `900px`; the mockup says `860px` | `860px`, the contract's value verbatim |
+| 3 | `.term-v` gutter overshot the `$` glyph | `0.42em` (glyph is `0.381em`) |
+| 4 | Founding CTA label hardcoded | `foundingRate.cta` |
+| 5 | Five **required** fields with zero consumers | `sections.pricing`, `Tier.description`, `Tier.highlighted`, `FoundingRate.label`, `Guarantee.title` deleted |
+| 6 | No-JS rendered the conversion band **blank** | `@media (scripting: none)` now covers `.term > *` and `.term::after` |
+| 7 | Eyebrow hardcoded "four" while the 4th row is gated | `"…in {n} numbers"`, spelled from the rendered row count |
+| 8 | Pro note assembled to "at a time, running in parallel" | `Tier.note` holds the mockup's wording; `tasks` keeps its standalone phrasing for the hero + Trello |
+| 9 | CTA's transition **replaced** the row entrance | `.term > .term-cta` composes opacity/transform on the same stagger |
+| 10 | `Section` docstring still carried v3's one-ink-section rule | marked SUPERSEDED — v4 inverts the premise |
+| 11–13 | Stale comments (`#pricing` target, alias consumers, tracker) | corrected |
+| 14 | `JsonLd` offer URL pointed at the `#pricing` shim | `${base}/#terms` |
+| 15 | `Section` ink variant painted `bg-gray-900 text-white` | `bg-ground text-chalk` — pure white was never `--chalk` |
+| — | `guarantee` figures hardcoded in the component | `guarantee.days` / `refundPct`; `foundingRate.period` added so the band splits `price` without string-guessing |
+
+### Gates written for this bundle (all self-tested)
+
+`scripts/w2-*.py`, parameterised so they run anywhere:
+
+- **`w2-copy-gate.py`** — the band's rendered copy vs the approved mockup, **both directions**. The
+  negative half exists because v3's fact-provenance gate only checked that expected strings were
+  PRESENT, which is blind to substitutions and additions — it passed two fabrications.
+- **`w2-copy-gate-selftest.py`** — proves that gate can fail: substitution / figure-drift /
+  eyebrow-count / dropped-row all **caught**, unmutated **passes**. `GATE ARMED`.
+- **`w2-css-gate.py`** — asserts the W2 contracts in the **compiled chunk**, not in source (Lightning
+  CSS drops the second of two identical-value declarations, and a source grep is comment-blind).
+  Caught its own over-literal assertion: the compiler normalises `::after` → `:after`.
+- **`w2-killswitch-check.py`** — flipping `foundingRate.active` removes the row, the checkout CTA,
+  the FAQ entry and the eyebrow's count **together**, with no stranded prose. Verified: 3 rows,
+  "in three numbers", zero `founding` mentions outside the flight payload.
 
 ## Pre-battery verification (Phase 6 evidence)
 
@@ -93,16 +145,61 @@ with a full-height `#pricing` alias layer; `PricingCard.tsx` deleted + exports p
 - **Perf: document 27,713 B gz — −1,830 B vs W1.** Four bundles in, v4 has cut the homepage document
   by 3,905 B (~12.6%) while replacing the entire visual system.
 
+## Post-fix verification (after applying all 16)
+
+- `tsc --noEmit` ✅ · `eslint src/` ✅ · clean `next build` ✅ (10/10 static pages).
+- **Collision gate, production build, 257 widths 320→1600px:** worst overlap **0px**, band gutter
+  matches the hero's at **every** width (`gutterDelta 0`), no document overflow. Measured with all
+  motion disabled so the boxes are settled — a per-child entrance stagger puts siblings at different
+  `translateY`, which silently defeats the vertical-intersection test. **Gate armed** (reports
+  202.2px when a collision is forced).
+- **Clearance, not just absence of overlap:** the tightest figure↔note gap is a constant **36px**
+  (the grid's own column gap) across every side-by-side width — the columns never squeeze, so this
+  is not shipping one pixel from the edge.
+- Copy gate ✅ both directions against the **production** document · self-test **GATE ARMED** ·
+  kill-switch ✅ · compiled-CSS gate ✅.
+- **Computed styles on the live production page** (not source): ground `#0A1712`, text `#F4F7F2`,
+  brass `#C8A24A` on exactly the three price figures with `Guarantee` correctly left in chalk (the
+  mockup gives it no `.term-n`), mint `#6EE7A8` only on the three CTAs, pill radius `999px`, rules
+  at `rgba(244,247,242,0.14)`, family `apfel`, and **zero elements above weight 500** anywhere in
+  the band.
+- **Perf: document 27,967 B gz — −1,576 B vs W1** (29,543). Applying the 16 findings cost +254 B,
+  almost entirely the `Tier.note` strings in the RSC flight payload — which *is* a real client cost,
+  per the W8 lesson that server-component markup reaches the browser.
+
 ## Areas examined and rejected
 
-(battery)
+- **Adding `Tier.note` looks like re-adding the `Tier.description` this same bundle deleted.** It is
+  not: `description` had zero consumers, while `note` is rendered by the band. The alternative —
+  interpolating the note from `tasks` — is what produced the defect.
+- **Pointing `PricingViewedTracker` at `#terms` and deleting the `#pricing` alias.** Rejected: the
+  alias is also the landing target for old inbound links, and `pricing_viewed` is a live analytics
+  series whose continuity is worth more than one removed div.
+- **Reproducing the original BLOCKER by regressing the CSS.** Attempted (restoring `0.74em` plus a
+  40px gutter) and it did **not** reproduce, so that reconstruction is not offered as evidence. The
+  gate's credibility rests on the forced-collision self-test instead, which does fire.
 
 ## Open items NOT addressed in this PR
 
-(Phase 7)
+- **Operator-owned, still open:** the live Trello `[TEMPLATE] Codirity Client Board` still promises
+  **"75% back"**. The codebase says 7 days / 50% everywhere; only a manual Trello edit closes this.
+  Carried since v3 — it is the one place a customer can still read the wrong number.
+- **`dark:` classes still on the page.** v4 neutralised the variant (`@custom-variant dark` can never
+  match), so they compile to dead weight rather than wrong colour. **W6 sweeps them.**
+- **`.glass-dark` now has zero consumers** (PricingCard was deleted here). W6 can drop it outright.
+- **`Section`'s `ink` variant is now v4-correct but still legacy-shaped.** W3–W6 use it freely; the
+  component itself is a W6 question.
 
 ## Durable handles
 
 - marker: $HOME/.claude/autonomous-active/autonomous-task-redesign-v4-w2 (+ .json sidecar)
 - worktree: /Users/brunomaurino/projects/codirity-rv4-w2
 - worktree_entry: path
+- battery_run_id: `wf_ca4b8ee3-a2a` (2+2, mixed finder, 3 voters, customAgents false).
+  **Session-kill incident (2026-08-19 ~00:00–01:00):** the battery's first pass lost ALL 16 verify
+  voters to the account's session limit (reset 1am America/Cordoba) and returned with MAJORs
+  adjudicated at 1/1 instead of 3/3 — degraded verdicts, 8/24 agents done. The owning Claude
+  process then exited; the external watchdog resumed the session at ~09:47. Per the V6 lesson
+  (resume a partially-dead battery, never accept it), the battery was RESUMED with
+  `resumeFromRunId` — cached finders/dedup replay, only the dead voters re-run at full strength.
+  The degraded first-pass verdicts are NOT applied until the resumed adjudication lands.

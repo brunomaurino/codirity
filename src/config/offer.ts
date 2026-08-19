@@ -27,35 +27,51 @@ export interface Tier {
   priceAmount: number;
   /** Billing period suffix, e.g. "/mo". */
   period: string;
-  /** One-line summary of the active-task limit. */
+  /** One-line summary of the active-task limit. Rendered standalone by the hero
+   *  ledger and the Trello onboarding copy, so it must read as a full clause. */
   tasks: string;
-  /** Short positioning line under the price. */
-  description: string;
+  /** The terms band's note for this tier, VERBATIM from the approved mockup
+   *  (docs/redesign-v4/approved-mockup.html #terms). Held separately rather than
+   *  interpolated from `tasks`: the band's wording is "Two active tasks, running
+   *  in parallel", while `tasks` says "Two active tasks at a time" — assembling
+   *  one from the other produced "at a time, running in parallel" (Phase 4/5
+   *  review). Keep the active-task count here consistent with `tasks`. */
+  note: string;
   /** Bullet feature list, in display order. */
   features: string[];
   /** Stripe Payment Link (env-configured; "#" placeholder until set). */
   stripeUrl: string;
   /** Call-to-action label. */
   cta: string;
-  /** Visually emphasized tier (Pro). */
-  highlighted: boolean;
 }
 
 export interface FoundingRate {
-  /** Gates the home launch banner. Flip to false (one line) when the slots fill. */
+  /** Gates the founding row of the terms band AND the founding FAQ entry (the
+   *  v3 launch banner it originally gated was deleted in W2). Flip to false —
+   *  one line — when the slots fill, and both surfaces disappear together. */
   active: boolean;
   /** Display price (spec-mandated verbatim), e.g. "$2,995/mo". */
   price: string;
   /** Machine-readable monthly amount, for structured data / analytics. */
   priceAmount: number;
   slots: number;
-  label: string;
+  /** Billing period suffix, matching Tier.period. Declared explicitly so the
+   *  terms band can split `price` into figure + unit without string-guessing —
+   *  the first draft stripped "/mo" and re-appended a hardcoded one, which
+   *  would corrupt silently if `price`'s format ever changed (Phase 4/5
+   *  review). `price` stays the spec-mandated verbatim string. */
+  period: string;
+  /** Call-to-action label for the founding row. */
+  cta: string;
   /** Stripe Payment Link for the founding rate (env-configured). */
   stripeUrl: string;
 }
 
 export interface Guarantee {
-  title: string;
+  /** Days from subscription start the refund window covers. */
+  days: number;
+  /** Percentage refunded inside that window. */
+  refundPct: number;
   description: string;
 }
 
@@ -158,7 +174,7 @@ export interface HeroContent {
   /** The page's single <h1>. */
   headline: string;
   subhead: string;
-    /** Always a link (currently to #pricing) — see LinkCta. */
+    /** Always a link (currently to #terms) — see LinkCta. */
   primaryCta: LinkCta;
   /** Secondary CTA opens the Cal.com popup (no href — uses calLink). */
   secondaryCta: Cta;
@@ -177,7 +193,6 @@ export interface SectionsContent {
   whatWeBuild: SectionCopy;
   benefits: SectionCopy;
   recentWork: SectionCopy;
-  pricing: SectionCopy;
   terms: SectionCopy;
   faq: SectionCopy;
   contact: SectionCopy;
@@ -277,17 +292,15 @@ export const sections: SectionsContent = {
     description:
       "What was actually built, what it replaced, and the diagram of how it fits together.",
   },
-  pricing: {
-    label: "Pricing",
-    title: "Simple, monthly pricing",
-    description:
-      "One flat rate, unlimited requests, and no contracts. Pause or cancel anytime.",
-  },
   // The v4 terms band (W2, from the approved mockup): a single eyebrow line
   // over the four-figure ledger. `title` is the sr-only heading that keeps the
   // document outline; the visible framing is the label.
   terms: {
-    label: "The whole offer, in four numbers",
+    // "{n}" is replaced with the SPELLED-OUT count of rows the band actually
+    // renders (Pricing.tsx). The literal "four" was hardcoded while the founding
+    // row is gated on foundingRate.active — flipping that documented kill-switch
+    // left three rows under a promise of four (Phase 4/5 review).
+    label: "The whole offer, in {n} numbers",
     title: "Simple, monthly pricing",
   },
   faq: {
@@ -317,7 +330,7 @@ export const tiers: Tier[] = [
     priceAmount: 3995,
     period: "/mo",
     tasks: "One active task at a time",
-    description: "For teams with a steady stream of automation and build work.",
+    note: "One active task at a time. Unlimited requests in the queue behind it.",
     // The active-task limit lives in `tasks` (rendered prominently); it is not
     // repeated here to keep a single authoritative copy of that fact.
     features: [
@@ -328,7 +341,6 @@ export const tiers: Tier[] = [
     ],
     stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_STANDARD),
     cta: "Get started",
-    highlighted: false,
   },
   {
     id: "pro",
@@ -337,7 +349,7 @@ export const tiers: Tier[] = [
     priceAmount: 6995,
     period: "/mo",
     tasks: "Two active tasks at a time",
-    description: "For teams that need two things moving in parallel, faster.",
+    note: "Two active tasks, running in parallel. Priority delivery.",
     // Active-task limit lives in `tasks` (not repeated here); Priority delivery is
     // the Pro-only differentiator and stays in the list.
     features: [
@@ -349,7 +361,6 @@ export const tiers: Tier[] = [
     ],
     stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_PRO),
     cta: "Get started",
-    highlighted: true,
   },
 ];
 
@@ -358,17 +369,22 @@ export const foundingRate: FoundingRate = {
   price: "$2,995/mo",
   priceAmount: 2995,
   slots: 5,
-  label: "first 5 clients, price locked for life",
+  period: "/mo",
+  cta: "Get started",
   stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_FOUNDING),
 };
 
 export const guarantee: Guarantee = {
+  // The band renders these two figures at the 99px tier; they were hardcoded in
+  // Pricing.tsx until Phase 4/5 review. They are a REAL financial commitment —
+  // `description` below restates the same terms in prose and must stay in sync.
+  days: 7,
+  refundPct: 50,
   // D3 RESOLVED 2026-08-18 (redesign v3): 50% refund if cancelled within
   // the first 7 days of a NEW subscription — a real financial commitment,
   // use this exact figure (see docs/HANDOFF-redesign-v3.md §6). Titled to
   // match the actual terms (50% back, not a full refund) — the heading
   // must not overstate it.
-  title: "7-day 50%-back guarantee",
   description:
     "Cancel within your first 7 days on a new subscription and get 50% back, no questions asked.",
 };
