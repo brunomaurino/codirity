@@ -243,11 +243,12 @@ export interface SectionsContent {
   howItWorks: SectionCopy;
   whatWeBuild: SectionCopy;
   benefits: SectionCopy;
-  recentWork: SectionCopy;
+  /** Only the title is consumed — the v4 clients strip renders it as its own
+   *  heading and shows no eyebrow or description (W4). */
+  recentWork: Pick<SectionCopy, "title">;
   terms: SectionCopy;
   faq: SectionCopy;
   contact: SectionCopy;
-  caseStudies: SectionCopy;
 }
 
 export interface Offer {
@@ -326,23 +327,14 @@ export const sections: SectionsContent = {
       "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
   },
   recentWork: {
-    // Updated 2026-08-18 per Bruno's direction to present all three
-    // entries as "client" (see the NOTE on `ClientEntry` in this file) —
-    // the previous description explicitly called out the client/ours
-    // split ("Tagged below so you can tell which is which"), which no
-    // longer matches what the cards show.
-    label: "Clients",
+    // Only `title` survives. W4's v4 treatment renders it as the section's own
+    // heading and shows no eyebrow or description, leaving `label` and
+    // `description` with zero consumers — and `description` still described the
+    // client/ours split that the 2026-08-18 amendment removed. Dead REQUIRED
+    // fields are deleted on sight in this file (the W2 precedent): a
+    // write-only string drifts from what ships and then resurfaces as a stale
+    // claim (Phase 4/5 review).
     title: "Already on the board",
-    description: "A look at who's been through the queue.",
-  },
-  caseStudies: {
-    label: "Case studies",
-    // No count in the prose: "Two of them, in detail" hardcoded a number with no
-    // link to `caseStudies.length`, so adding or removing a study would silently
-    // contradict the heading (Phase 4/5 review).
-    title: "In detail",
-    description:
-      "What was actually built, what it replaced, and the diagram of how it fits together.",
   },
   // The v4 terms band (W2, from the approved mockup): a single eyebrow line
   // over the four-figure ledger. `title` is the sr-only heading that keeps the
@@ -652,10 +644,14 @@ export const caseStudies: CaseStudy[] = [
     // factual matters (HANDOFF §1), and every trim removed a TRUE claim, so the
     // mockup's LAYOUT ships with these STRINGS.
     stat: { value: "27", of: "of 273 product pages" },
+    // Re-balanced so the longest line is 40 characters. The first draft's
+    // 48-char line did not fit between 900px and 959px — where `.wrap-v4`
+    // doubles its gutter — and re-wrapped inside its own mask, which breaks the
+    // line-rise the device depends on. Measured at the boundary, not guessed.
     headlineLines: [
       "were returning 404 — 10% of the catalog,",
-      "still listed in the sitemap Google was crawling.",
-      "Found and fixed.",
+      "still listed in the sitemap Google",
+      "was crawling. Found and fixed.",
     ],
     background:
       "A 20+ year old marketplace doing around 17k visits a month on a legacy Angular and Node stack, rebuilt in place — new NestJS APIs, a Next.js SSR storefront, a React admin panel — without dropping the SEO traffic the old stack was still serving.",
@@ -685,10 +681,12 @@ export const caseStudies: CaseStudy[] = [
     // and the state machine below is the story instead. An empty slot is the
     // correct output here; inventing a figure to fill it is the exact failure
     // this whole section is built to avoid.
+    // Three lines, longest 40 characters — same measured constraint as the
+    // eDairyMarket headline above.
     headlineLines: [
-      "Onboarding rebuilt around one",
-      "activation metric — first post",
-      "published — instead of a generic signup flow.",
+      "Onboarding rebuilt around one activation",
+      "metric — first post published —",
+      "instead of a generic signup flow.",
     ],
     // Every state name below also appears in the whatShipped bullet that names
     // the machine, and the gate checks it — so the diagram can never assert a
@@ -707,8 +705,16 @@ export const caseStudies: CaseStudy[] = [
     // generic signup flow" and "OAuth sign-in deliberately deferred until the point
     // the user actually needs it (pushed friction past the moment the user has
     // already seen the product, not before)".
+    // The opening sentence — "Onboarding became a state machine with a single
+    // destination — the first published post — rather than a generic signup
+    // flow." — was REMOVED in Phase 4/5 review. It is not a distinct fact: the
+    // headline states it and the state-machine diagram shows it, so rendering
+    // it here said the same thing a third time in one screen. Removing a
+    // DUPLICATE is not the same as trimming a true claim (which is why the
+    // mockup's trims were rejected) — every clause below is still §7's own,
+    // and nothing this field carried is now unstated on the page.
     background:
-      "Onboarding became a state machine with a single destination — the first published post — rather than a generic signup flow. Sign-in is deferred to the point a user actually needs an account, which puts the friction after they have already seen the product rather than before.",
+      "Sign-in is deferred to the point a user actually needs an account, which puts the friction after they have already seen the product rather than before.",
     whatShipped: [
       "A New → Niche Set → Voice Set → Activated state machine",
       "OAuth sign-in deliberately deferred until the point the user actually needs it — friction pushed past the moment they have already seen the product, not before",

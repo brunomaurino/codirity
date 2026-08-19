@@ -12,7 +12,14 @@ import { clients, sections } from "@/config/offer";
 export function RecentWork() {
   if (clients.length === 0) return null;
   return (
-    <section data-ground="dark" className="relative bg-ground text-chalk py-16 md:py-24 lg:py-28">
+    // `id="work"` is preserved from the pre-rework section: it is a PUBLIC
+    // anchor, and dropping it would silently 404 any inbound link to
+    // /#work. Same precedent as W2 keeping `#pricing` alive inside `#terms`.
+    <section
+      id="work"
+      data-ground="dark"
+      className="relative bg-ground text-chalk py-16 md:py-24 lg:py-28"
+    >
       <div className="wrap-v4">
         {/* The mockup's eyebrow here IS the section's title ("Already on the
             board"), so it ships as a real <h2> wearing `.label` rather than as

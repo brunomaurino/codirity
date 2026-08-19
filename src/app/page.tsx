@@ -38,6 +38,13 @@ export default function Home() {
         {/* S5 — Clients (D6): "who's on the board", from offer.clients —
             always renders, not gated on offer.caseStudies (that array is
             unrelated content V8 owns separately). */}
+        {/* W4 turned this run dark, which would have introduced two HARD
+            ground cuts — Benefits (light) → clients, and the last study →
+            About (light). "Grounds never hard-cut" is Bruno's explicit rule
+            (§1.5) and the `.band-*` utilities have existed unused since W0, so
+            the pair of gradients enters here rather than being logged as debt.
+            W5 reworks both neighbours and may reposition them. */}
+        <div className="band band-ld" aria-hidden="true" />
         <RecentWork />
         {/* S5b — Case studies (D1): eDairyMarket + Meshio, content from
             HANDOFF-redesign-v3.md §7. Placed immediately after the clients
@@ -46,6 +53,7 @@ export default function Home() {
             uninterrupted stretch, and the reader reaches pricing having just
             read the strongest evidence rather than the team blurb. */}
         <CaseStudies />
+        <div className="band band-dl" aria-hidden="true" />
         <About />
         {/* S6 — the terms band (W2) */}
         <Pricing />

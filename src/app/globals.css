@@ -1100,7 +1100,11 @@ body {
 
   /* The stat is the page's one permitted display-size NUMBER on a client's
      work. It caps AT the h1 size and no higher: one king per page, and it
-     isn't a client's bug count. */
+     isn't a client's bug count.
+     The cap is 8.4rem, matching `.d-xl` — NOT the mockup's 8.5rem, which
+     rendered the figure 136px against the hero's 130.56px at 1280px and so
+     contradicted the principle the mockup's own comment states (measured in
+     Phase 4/5 review). A 0.1rem deviation that makes the stated intent true. */
   .stat {
     display: flex;
     align-items: baseline;
@@ -1109,7 +1113,7 @@ body {
   }
   .stat-big {
     font-weight: 500;
-    font-size: clamp(3.5rem, 1rem + 10.5vw, 8.5rem);
+    font-size: clamp(3.5rem, 1rem + 10.5vw, 8.4rem);
     line-height: 0.85;
     letter-spacing: -0.02em;
     color: var(--brass);
@@ -1132,6 +1136,24 @@ body {
       animation-range: entry 20% cover 45%;
     }
   }
+  /* The keyframes the declaration above references. Porting the `animation`
+     shorthand WITHOUT these shipped a silently dead flagship: an undefined
+     animation-name resolves to none, so on every browser that DOES support
+     `animation-timeline: view()` the wipe simply never ran — and because that
+     `@supports` branch matched, the `@supports not` fallback below was
+     suppressed too, leaving no reveal at all. Nothing errored and the figure
+     looked correct at rest, which is exactly why it survived a visual check
+     (Phase 4/5 review BLOCKER). */
+  @keyframes stat-wipe {
+    from {
+      clip-path: inset(100% 0 0 0);
+      transform: translateY(0.08em);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+      transform: none;
+    }
+  }
   @supports not (animation-timeline: view()) {
     .stat-big {
       clip-path: inset(100% 0 0 0);
@@ -1144,6 +1166,17 @@ body {
       clip-path: inset(0 0 0 0);
       transform: none;
     }
+  }
+
+  /* MEASURED, not inherited. The mockup's 24ch was calibrated for its own
+     trimmed copy (~28-32 char lines); offer.ts's fuller, truer strings run to
+     48 characters, and at 24ch every hand-set line re-wrapped into two — 4-6
+     ragged lines instead of three, which defeats the masked line-rise the
+     device depends on (Phase 4/5 review). Value verified in-browser: each
+     `.line > span` renders as ONE line from 1440px down to the width where the
+     type scale takes over. */
+  .work-headline {
+    max-width: 44ch;
   }
 
   .work-grid {
@@ -1232,9 +1265,12 @@ body {
     color: var(--mint);
     margin-top: 2px;
   }
+  /* `--chalk-faint`, not `chalk-dim` at 0.6 opacity — the mockup's value, but
+     stacking opacity on a colour is the exact anti-pattern W3's commitments
+     flagged for this bundle, and composited it lands near 3.9:1. The token is
+     the measured recessive-but-readable tier. */
   .sm-arrow {
-    color: var(--chalk-dim);
-    opacity: 0.6;
+    color: var(--chalk-faint);
   }
 
   .clients {

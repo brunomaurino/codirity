@@ -30,21 +30,39 @@ MUTATIONS = {
         "Buyer carts, with guest carts merged into the account on login",
         1,
     ),
-    # The anchor must exist in the RENDERED html — apostrophes arrive escaped as
-    # `&#x27;` and the tag nesting is not what a hand-written guess assumes, so
-    # a mutation keyed off the source string silently becomes a no-op and the
-    # self-test reports a pass it never earned.
+    # The anchor must exist in the RENDERED html AND belong to the right
+    # entity. Two ways this mutation has already been wrong: apostrophes arrive
+    # escaped as `&#x27;` (so a source-string anchor silently no-ops), and the
+    # FIRST `<ul class="shipped-list">` belongs to eDairyMarket, not Meshio — so
+    # a mutation named "meshio" was reported "caught" while never touching
+    # Meshio's block at all (Phase 4/5 review). Anchor on Meshio's own text.
     "v3-invented-meshio-sentence": lambda p: p.replace(
-        '<ul class="shipped-list">',
-        "<p>Signup asked for everything up front and measured nothing that mattered.</p>"
-        '<ul class="shipped-list">',
+        "Sign-in is deferred to the point",
+        "Signup asked for everything up front and measured nothing that mattered. "
+        "Sign-in is deferred to the point",
         1,
     ),
     # ---- the other ways this section can lie ----
+    # Anchor on the VISIBLE span, not on the first occurrence of the phrase:
+    # the headline's `aria-label` now carries the same sentence and appears
+    # EARLIER in the document, so `replace(phrase, …, 1)` silently hit the
+    # attribute and left the rendered text untouched (Phase 4/5 review — the
+    # same anchor-drift class as the Meshio mutation).
     "invented-percentage": lambda p: p.replace(
-        "Found and fixed.", "Found and fixed. Conversion rose 38%.", 1
+        "<span>was crawling. Found and fixed.</span>",
+        "<span>was crawling. Found and fixed. Conversion rose 38%.</span>",
+        1,
     ),
-    "found-and-fixed-dropped": lambda p: p.replace("Found and fixed.", "", 1),
+    "found-and-fixed-dropped": lambda p: p.replace(
+        "<span>was crawling. Found and fixed.</span>", "<span>was crawling.</span>", 1
+    ),
+    # The accessible name is the only form of the claim AT receives — it must
+    # be checked as a rendered fact in its own right.
+    "aria-label-drifted": lambda p: p.replace(
+        'Google was crawling. Found and fixed."',
+        'Google was crawling."',
+        1,
+    ),
     "stat-drifts-from-headline": lambda p: p.replace(
         '<span class="stat-big">27</span>', '<span class="stat-big">42</span>', 1
     ),
@@ -66,6 +84,39 @@ MUTATIONS = {
         "An outfit-scoring iOS app we&#x27;re building pre-launch", "", 1
     ),
     "prelaunch-tag-dropped": lambda p: p.replace('<span class="tag">pre-launch</span>', "", 1),
+    # ---- the four holes the Phase 4/5 review demonstrated LIVE against this
+    # gate. Every one of these passed the first draft. They are the reason the
+    # provenance check is now exact per-field membership over every owned
+    # section with no length floor, rather than a substring test against one
+    # flat concatenation of the two studies. ----
+    "fabricated-client-sentence": lambda p: p.replace(
+        "one queue item at a time, the same way every other request comes through.",
+        "one queue item at a time. Backed by a $2.4M seed round, with 87% of "
+        "pre-orders converting in the first week.",
+        1,
+    ),
+    "fabricated-short-stack-pill": lambda p: p.replace(
+        "<li>AWS</li>", "<li>AWS</li><li>Shopify</li>", 1
+    ),
+    "fabricated-short-state": lambda p: p.replace(
+        '<span class="sm-state">New</span>',
+        '<span class="sm-state">New</span><span class="sm-state">Paid</span>',
+        1,
+    ),
+    "stat-figure-mutated": lambda p: p.replace(
+        '<span class="stat-big">27</span>', '<span class="stat-big">404</span>', 1
+    ),
+    # A truncation that DROPS a load-bearing qualifier still leaves a substring
+    # of the original, so a substring-based gate cannot see it.
+    "specced-qualifier-truncated": lambda p: p.replace(
+        "Stripe subscription tiers specced", "Stripe subscription tiers", 1
+    ),
+    # A fact copied from one study into the other's section.
+    "fact-borrowed-across-studies": lambda p: p.replace(
+        "<li>Next.js</li><li>Stripe</li>",
+        "<li>Next.js</li><li>Stripe</li><li>NestJS</li>",
+        1,
+    ),
 }
 
 work = tempfile.mkdtemp(prefix="w4-selftest-")
