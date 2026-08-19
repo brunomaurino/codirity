@@ -49,6 +49,26 @@ matches the mockup.
   `width: 100%`.
 - A server component's markup ships in the RSC flight payload — perf deltas are measured on the
   prerendered DOCUMENT, not just static chunks (V8 finding: +76 B chunks hid +6.7 KB document).
+- **A gate you have never seen FAIL is not evidence.** Both gates that misled this plan were false
+  negatives that "passed": W2's `900px` overflow check (structurally unable to fail — see below)
+  and v3's fact-provenance check (only asserted expected strings were PRESENT, so it was blind to
+  substitutions and passed two fabrications). **Mutate the input, watch the gate fail, then trust
+  it** — `scripts/w2-copy-gate-selftest.py` is the pattern.
+- **"No horizontal overflow" is NOT a layout gate.** `body { overflow-x: hidden }` hides intra-grid
+  collision completely. Measure **element bounding boxes** pairwise, gated on vertical intersection
+  — and disable all motion first, because a per-child entrance stagger puts siblings at different
+  `translateY` and silently defeats that test (W2 BLOCKER).
+- **Never nest `.wrap-v4` inside a padded container.** `<Section>`'s own `px-4 md:px-8` doubled the
+  page gutter to 80px/side and knocked the terms band 32px off the hero's left edge. A section that
+  owns a full-bleed ground is a bare `<section>` + `data-ground` + `.wrap-v4` (W1 hero, W2 band).
+- **The in-app browser pane is often hidden, and a hidden pane composites nothing and fires no
+  `requestAnimationFrame`.** Screenshots come back blank and `await`-on-rAF hangs the tool; timers
+  are throttled to ~1/s, so long `await` sweeps time out. Verify with **synchronous** DOM
+  measurement and computed styles (both are real), never with a screenshot, and force reveal
+  classes on manually because IntersectionObservers will not fire either.
+- Vercel preview deployments sit behind Vercel Authentication — an anonymous fetch returns Vercel's
+  *login page*, not the site. Gate the local production build; don't claim preview verification.
+- Lightning CSS normalises `::after` to the legacy `:after` — assert compiled selectors loosely.
 
 ## §1 — The visual system (from the approved mockup)
 
@@ -100,7 +120,7 @@ matches the mockup.
 |---|---|---|---|---|---|
 | **W0** | Foundation flip: Apfel via `next/font/local`, v4 token system, single-theme commitment (retire `data-theme` + dark remaps + blobs + glass + `.accent`), type scale, reveal system (line-rise + fade + IO, house curve), `.band` gradient utilities, weight discipline (no 700 in display) | — | [x] complete | #28 | `087a20c` |
 | **W1** | Hero + nav + the folio constant | W0 | [x] complete | #29 | `c79249b` |
-| **W2** | Terms band replaces Pricing: 4 ledger rows at the 99px tier, hanging `$`, baseline units, per-tier Stripe CTAs, rules-draw motion, prices never animate | W0 | [ ] not started | | |
+| **W2** | Terms band replaces Pricing: 4 ledger rows at the 99px tier, hanging `$`, baseline units, per-tier Stripe CTAs, rules-draw motion, prices never animate | W0 | [x] complete | #30 | `7253ca4` |
 | **W3** | The queue scene — signature pinned motion, illustrative chips, reduced-motion static tableau | W0 | [ ] not started | | |
 | **W4** | Case studies + clients strip in the v4 treatment (eDairyMarket stat block + shipped list; Meshio state machine; 3-client strip) | W0 | [ ] not started | | |
 | **W5** | What we build (list + strike-through "we say no") + How it works + founder block + FAQ restyle | W0 | [ ] not started | | |
