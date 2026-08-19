@@ -84,6 +84,26 @@ matches the mockup.
 - **A self-test must mutate COPIES, never the tracked working tree** — W3's first draft restored by
   a bare second write with no `try/finally`, so an interruption would strand an injected mutation
   (one of which did not typecheck) in the repo.
+- **NEVER use a dark-ground text token on paper (or vice versa).** W5 shipped `.lede`
+  (`--chalk-dim`) onto the paper run at **1.76:1** as a BLOCKER — while a `.lede-ink` utility sat
+  unused in the repo for exactly that case. Bind the paper variant to the GROUND
+  (`.paper .label`, `.paper .lede`), never remember it at the call site.
+- **A "draw a line over text" effect must be an INLINE box WRAPPING the text with
+  `box-decoration-break: clone`.** An absolutely-positioned bar with `width: 100%` silently assumes
+  a single-line row: W5's strike hit only line 1, at the BOX's width rather than the text's, on the
+  three declined rows that wrap at 375px. `.svc-name` must stay `inline-block` for its hover
+  transform (transform does not apply to non-replaced inline boxes), so the strike needs to be its
+  own inline element around the words.
+- **`--paper`, not `bg-white`, wherever a `.band-*` is adjacent.** The gradients terminate at
+  `--paper`; a white section next to one leaves a seam at exactly the boundary the band exists to
+  soften.
+- **New tokens must be aliased into `@theme inline`** — Tailwind v4 silently DROPS an unknown theme
+  colour, so an un-aliased token makes `text-<name>` a no-op that reads as a typo nobody notices.
+  `--chalk-faint` (W3) and `--ink-faint` (W5) both shipped un-aliased.
+- **A flattened CSS selector is a SUBSTRING of its own prefixed variants.** `.declined.svc-name
+  .strike` matches inside `.in.declined.svc-name.strike`, and `box-decoration-break` matches inside
+  `-webkit-box-decoration-break` — in both cases a gate's check was satisfied by the wrong rule and
+  could not fail. Anchor with a negative lookbehind.
 - **An animation referencing undefined `@keyframes` dies SILENTLY, and no visual check can see
   it.** W4 shipped `animation: stat-wipe` with the keyframes never ported: the name resolved to
   `none`, so the wipe never existed — AND the `@supports not (…)` fallback was suppressed, because
@@ -164,7 +184,7 @@ matches the mockup.
 | **W2** | Terms band replaces Pricing: 4 ledger rows at the 99px tier, hanging `$`, baseline units, per-tier Stripe CTAs, rules-draw motion, prices never animate | W0 | [x] complete | #30 | `7253ca4` |
 | **W3** | The queue scene — signature pinned motion, illustrative chips, reduced-motion static tableau | W0 | [x] complete | #32 | `c66faaf` |
 | **W4** | Case studies + clients strip in the v4 treatment (eDairyMarket stat block + shipped list; Meshio state machine; 3-client strip) | W0 | [x] complete | #34 | `f019a4c` |
-| **W5** | What we build (list + strike-through "we say no") + How it works + founder block + FAQ restyle | W0 | [ ] not started | | |
+| **W5** | What we build (list + strike-through "we say no") + How it works + founder block + FAQ restyle | W0 | [x] complete | #36 | `a232495` |
 | **W6** | Ownership quote + close + footer voice/format pass + dead-style retirement sweep + final perf/a11y gate | W0–W5 | [ ] not started | | |
 
 ## §3 — Per-bundle launch commands
