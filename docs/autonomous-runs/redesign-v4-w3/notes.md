@@ -165,3 +165,7 @@ than implied:
 - marker: `$HOME/.claude/autonomous-active/autonomous-task-redesign-v4-w3` (+ `.json` sidecar)
 - worktree: `/Users/brunomaurino/projects/codirity/.claude/worktrees/rv4-w3`
 - worktree_entry: `path` (teardown = `ExitWorktree({action:"keep"})` + `git worktree remove`)
+- battery_run_id: `wf_28e15a7c-9f1` (2+2 rounds, mixed finder, **3 verify voters**, customAgents
+  false). Resume with `Workflow({scriptPath, resumeFromRunId})` on any death — W2's battery lost all
+  16 voters to a session limit and returned MAJORs adjudicated 1/1; resuming took it from 11
+  degraded findings to 16 confirmed 3/3, including a BLOCKER the degraded pass never found.

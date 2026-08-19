@@ -973,12 +973,19 @@ body {
     overflow: clip;
   }
   .queue {
-    --slot: 296px; /* chip 280 + gap 16 */
+    /* One slot = one chip + one gap. COMPOSED, not the mockup's literal 296px:
+       the track's translation and the chip's width are the same measurement, so
+       hardcoding the sum lets a future chip-width or gap change desync the
+       advance silently — the queue would stop landing on a chip boundary and
+       nothing would fail loudly. */
+    --chip: 280px;
+    --gap: 16px;
+    --slot: calc(var(--chip) + var(--gap));
     margin-top: clamp(32px, 5vw, 56px);
   }
   .q-track {
     display: flex;
-    gap: 16px;
+    gap: var(--gap);
     list-style: none;
     padding: 0;
     margin: 0;
@@ -987,7 +994,7 @@ body {
     will-change: transform;
   }
   .q-task {
-    flex: 0 0 280px;
+    flex: 0 0 var(--chip);
     padding: 22px 24px;
     border: 1px solid var(--rule);
     border-radius: 16px;
