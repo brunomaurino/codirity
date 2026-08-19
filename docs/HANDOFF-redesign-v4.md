@@ -68,7 +68,26 @@ matches the mockup.
   classes on manually because IntersectionObservers will not fire either.
 - Vercel preview deployments sit behind Vercel Authentication — an anonymous fetch returns Vercel's
   *login page*, not the site. Gate the local production build; don't claim preview verification.
-- Lightning CSS normalises `::after` to the legacy `:after` — assert compiled selectors loosely.
+- Lightning CSS normalises `::after` to the legacy `:after` AND reorders declarations
+  alphabetically — assert compiled selectors loosely and parse a rule's BODY, never its
+  declaration order.
+- **`.d-*` sets font-size ONLY.** A display heading is `class="display d-md"` — `.display` carries
+  the leading and tracking. W3 shipped a heading without it and the block rendered ~65% taller,
+  enough to overflow a clipped sticky stage.
+- **Opacity COMPOUNDS through ancestors, and text you still want read should be given a COLOUR.**
+  W3's `.is-shipped{opacity:.35}` multiplied with a child's own `.7` down to 1.7:1. Measure
+  contrast by compositing the FULL ancestor opacity chain over the real ground — reading the
+  declared colour reports it as passing. `--chalk-faint` is the recessive-but-readable tier.
+- **A flex item with `margin-inline: auto` shrink-wraps to min-content.** The mockup patches this
+  for its hero (`.hero > .wrap{width:100%}`); any `.wrap-v4` inside a flex container needs
+  `width: 100%` or the page gutter silently stops matching the rest of the site.
+- **A self-test must mutate COPIES, never the tracked working tree** — W3's first draft restored by
+  a bare second write with no `try/finally`, so an interruption would strand an injected mutation
+  (one of which did not typecheck) in the repo.
+- **A headless/sandboxed browser pane reports `prefers-reduced-motion: reduce`.** Scroll/motion code
+  gated on that preference NEVER RUNS there, so a browser harness cannot be the only proof of a
+  motion contract — extract the math into a pure function and commit a test. `tsx` is installed, so
+  a `.ts` test runs directly (`npx tsx scripts/…`).
 
 ## §1 — The visual system (from the approved mockup)
 
@@ -121,7 +140,7 @@ matches the mockup.
 | **W0** | Foundation flip: Apfel via `next/font/local`, v4 token system, single-theme commitment (retire `data-theme` + dark remaps + blobs + glass + `.accent`), type scale, reveal system (line-rise + fade + IO, house curve), `.band` gradient utilities, weight discipline (no 700 in display) | — | [x] complete | #28 | `087a20c` |
 | **W1** | Hero + nav + the folio constant | W0 | [x] complete | #29 | `c79249b` |
 | **W2** | Terms band replaces Pricing: 4 ledger rows at the 99px tier, hanging `$`, baseline units, per-tier Stripe CTAs, rules-draw motion, prices never animate | W0 | [x] complete | #30 | `7253ca4` |
-| **W3** | The queue scene — signature pinned motion, illustrative chips, reduced-motion static tableau | W0 | [ ] not started | | |
+| **W3** | The queue scene — signature pinned motion, illustrative chips, reduced-motion static tableau | W0 | [x] complete | #32 | `c66faaf` |
 | **W4** | Case studies + clients strip in the v4 treatment (eDairyMarket stat block + shipped list; Meshio state machine; 3-client strip) | W0 | [ ] not started | | |
 | **W5** | What we build (list + strike-through "we say no") + How it works + founder block + FAQ restyle | W0 | [ ] not started | | |
 | **W6** | Ownership quote + close + footer voice/format pass + dead-style retirement sweep + final perf/a11y gate | W0–W5 | [ ] not started | | |
