@@ -1,87 +1,50 @@
-import { Section, Container } from "@/components/layout";
-import { SectionHeader } from "@/components/ui";
 import { clients, sections } from "@/config/offer";
-import { cn } from "@/lib/utils";
-import type { BlobClass } from "@/lib/blob";
 
-// "Who's on the board" — Designjoy-style badge cards: one blob-gradient
-// tile per entry, a one-liner adapted from docs/redesign-storytelling.md
-// §1b. All three entries render a "Client" tag (updated 2026-08-18 per
-// Bruno's direction — see the NOTE on `ClientEntry` in offer.ts for the
-// superseded client/ours distinction this replaces). `preLaunch` still
-// renders when true (Vivi) — that's an independent operational fact, not
-// part of the (now-removed) provenance framing.
+// The clients strip — "who's on the board" (Bundle W4, v4 treatment).
 //
-// Starts at blob-3 (found in Phase 4/5 review): Benefits.tsx (the section
-// immediately before this one) cycles 6 tiles through all 4 blobs and its
-// last row lands on blob-4/blob-1/blob-2 across its 3 columns — an
-// earlier version of this array put blob-2 in the matching 3rd column
-// here too, stacking the same gradient vertically across the section
-// boundary. blob-3/blob-4/blob-1 differs in every column. Uses all 4
-// blobs (not just 3), matching Benefits' own "more blobs than visible
-// slots" cycling discipline, so a future 4th client entry doesn't land
-// directly under the 1st with an identical gradient.
-const CLIENT_BLOBS: BlobClass[] = ["blob-3", "blob-4", "blob-1", "blob-2"];
+// Every name, tag and story comes from `offer.ts` `clients[]`. The tag set is
+// COMPOSED, not written: every entry carries "client" (the 2026-08-18 D6
+// amendment recorded in offer.ts presents all three that way), plus
+// "pre-launch" when `preLaunch` is true. Hardcoding the tags would let the
+// badge drift from the flag — and "pre-launch" is a factual claim about
+// whether an app has shipped, not decoration.
 
 export function RecentWork() {
+  if (clients.length === 0) return null;
   return (
-    <Section id="work" variant="gray" className="reveal">
-      <Container>
-        <SectionHeader
-          label={sections.recentWork.label}
-          title={sections.recentWork.title}
-          description={sections.recentWork.description}
-          className="mb-16"
-        />
-
-        {/* md:grid-cols-2 lg:grid-cols-3 (not md:grid-cols-3 directly,
-            found in Phase 4/5 review): these stories run much longer than
-            Benefits' tile copy, and 3 equal columns starting at 768px
-            squeezed text to an unreadable width in the 768-1023px band —
-            matching Benefits.tsx's own established responsive pattern
-            instead of Process.tsx's (which has much shorter card copy). */}
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 list-none">
-          {clients.map((entry, index) => (
-            <li key={entry.name} className="reveal">
-              <div
-                className={cn(
-                  CLIENT_BLOBS[index % CLIENT_BLOBS.length],
-                  "card-soft h-full p-8",
-                  "flex flex-col justify-between gap-6",
-                  "transition-transform duration-400 hover:-translate-y-1"
-                )}
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-xl font-medium">{entry.name}</h3>
-                  <span
-                    className={cn(
-                      "btn-pill inline-flex items-center",
-                      "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
-                      "bg-black/20 border border-[var(--rule)]"
-                    )}
-                  >
-                    Client
-                  </span>
-                  {entry.preLaunch && (
-                    <span
-                      className={cn(
-                        "btn-pill inline-flex items-center",
-                        "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
-                        "bg-black/20 border border-[var(--rule)]"
-                      )}
-                    >
-                      pre-launch
-                    </span>
-                  )}
-                </div>
-                <p className="text-[0.95rem] leading-relaxed">
-                  {entry.story}
-                </p>
-              </div>
-            </li>
+    // `id="work"` is preserved from the pre-rework section: it is a PUBLIC
+    // anchor, and dropping it would silently 404 any inbound link to
+    // /#work. Same precedent as W2 keeping `#pricing` alive inside `#terms`.
+    <section
+      id="work"
+      data-ground="dark"
+      className="relative bg-ground text-chalk py-16 md:py-24 lg:py-28"
+    >
+      <div className="wrap-v4">
+        {/* The mockup's eyebrow here IS the section's title ("Already on the
+            board"), so it ships as a real <h2> wearing `.label` rather than as
+            a <p> plus a duplicate sr-only heading — visually identical, and the
+            section keeps a heading in the outline without saying it twice. */}
+        <h2 className="label rv fade" style={{ marginBottom: "clamp(28px, 4vw, 52px)" }}>
+          {sections.recentWork.title}
+        </h2>
+        <div className="clients rv">
+          {clients.map((client, i) => (
+            <div
+              key={client.name}
+              className="client fade"
+              style={{ "--l": i } as React.CSSProperties}
+            >
+              <h3>
+                {client.name}
+                <span className="tag">client</span>
+                {client.preLaunch && <span className="tag">pre-launch</span>}
+              </h3>
+              <p>{client.story}</p>
+            </div>
           ))}
-        </ul>
-      </Container>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

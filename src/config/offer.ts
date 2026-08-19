@@ -119,19 +119,42 @@ export interface CaseStudy {
    *  exists for either study, the headline is the concrete TECHNICAL fact
    *  itself, never a fabricated percentage. */
   headline: string;
-  /** The word inside `headline` the retired `.accent` treatment emphasized.
-   *  v4 W0: renders as plain text (AccentWord is a pass-through); W4's case-
-   *  study rework removes the field. */
-  headlineAccent: string;
+  /** The headline broken into the display lines the v4 treatment hand-sets,
+   *  one per masked line-rise.
+   *
+   *  **GATED INVARIANT** — `[stat?.value, stat?.of, ...headlineLines].join(" ")`
+   *  must equal `headline` character for character (`scripts/w4-facts-gate.py`).
+   *  `headline` stays the canonical FACT; these are a view of it. Splitting the
+   *  string at render time instead would let the display silently drift from
+   *  the claim it was carved out of, which is the whole failure class this
+   *  section has to be immune to. Re-line-break freely — just keep the words. */
+  headlineLines: string[];
+  /** The figure lifted out of `headline` and set at the H1 tier in brass.
+   *  OPTIONAL and deliberately absent for Meshio: there is no honest number
+   *  for that engagement, and the state machine IS its story (§7). Never
+   *  invent one to fill the slot. */
+  stat?: {
+    /** The figure alone. */
+    value: string;
+    /** The clause that follows it, e.g. "of 273 product pages". */
+    of: string;
+  };
+  /** The activation state machine rendered as the study's visual.
+   *  **GATED**: every `states[]` label must appear in the `whatShipped` bullet
+   *  that names the machine, so the diagram cannot claim a state the written
+   *  record does not. */
+  stateMachine?: {
+    states: string[];
+    /** The final state — rendered as the goal, with `goalNote` beneath it. */
+    goal: string;
+    goalNote: string;
+  };
   /** Longer context paragraph — the situation the work happened in. */
   background: string;
   /** What was actually built. Each item is a §7 "What shipped" bullet. */
   whatShipped: string[];
   /** Stack tags, exactly as §7 lists them. */
   stack: string[];
-  /** Selects the architecture sketch. A union, not a free string, so a study
-   *  can never silently render no diagram — or another study's. */
-  sketch: "edairymarket" | "meshio";
 }
 
 /** The "who's on the board" clients section (redesign v3 Bundle V4).
@@ -220,11 +243,12 @@ export interface SectionsContent {
   howItWorks: SectionCopy;
   whatWeBuild: SectionCopy;
   benefits: SectionCopy;
-  recentWork: SectionCopy;
+  /** Only the title is consumed — the v4 clients strip renders it as its own
+   *  heading and shows no eyebrow or description (W4). */
+  recentWork: Pick<SectionCopy, "title">;
   terms: SectionCopy;
   faq: SectionCopy;
   contact: SectionCopy;
-  caseStudies: SectionCopy;
 }
 
 export interface Offer {
@@ -303,23 +327,14 @@ export const sections: SectionsContent = {
       "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
   },
   recentWork: {
-    // Updated 2026-08-18 per Bruno's direction to present all three
-    // entries as "client" (see the NOTE on `ClientEntry` in this file) —
-    // the previous description explicitly called out the client/ours
-    // split ("Tagged below so you can tell which is which"), which no
-    // longer matches what the cards show.
-    label: "Clients",
+    // Only `title` survives. W4's v4 treatment renders it as the section's own
+    // heading and shows no eyebrow or description, leaving `label` and
+    // `description` with zero consumers — and `description` still described the
+    // client/ours split that the 2026-08-18 amendment removed. Dead REQUIRED
+    // fields are deleted on sight in this file (the W2 precedent): a
+    // write-only string drifts from what ships and then resurfaces as a stale
+    // claim (Phase 4/5 review).
     title: "Already on the board",
-    description: "A look at who's been through the queue.",
-  },
-  caseStudies: {
-    label: "Case studies",
-    // No count in the prose: "Two of them, in detail" hardcoded a number with no
-    // link to `caseStudies.length`, so adding or removing a study would silently
-    // contradict the heading (Phase 4/5 review).
-    title: "In detail",
-    description:
-      "What was actually built, what it replaced, and the diagram of how it fits together.",
   },
   // The v4 terms band (W2, from the approved mockup): a single eyebrow line
   // over the four-figure ledger. `title` is the sr-only heading that keeps the
@@ -623,7 +638,21 @@ export const caseStudies: CaseStudy[] = [
     // client's production catalog rather than as delivered work, inverting §7's
     // outcome-first intent.
     headline: "27 of 273 product pages were returning 404 — 10% of the catalog, still listed in the sitemap Google was crawling. Found and fixed.",
-    headlineAccent: "404",
+    // The stat + these lines reconstruct `headline` exactly; the gate proves it.
+    // NOTE: the approved mockup's own copy drops "— 10% of the catalog" here and
+    // shortens `background` — a design artifact trimming to fit. offer.ts wins on
+    // factual matters (HANDOFF §1), and every trim removed a TRUE claim, so the
+    // mockup's LAYOUT ships with these STRINGS.
+    stat: { value: "27", of: "of 273 product pages" },
+    // Re-balanced so the longest line is 40 characters. The first draft's
+    // 48-char line did not fit between 900px and 959px — where `.wrap-v4`
+    // doubles its gutter — and re-wrapped inside its own mask, which breaks the
+    // line-rise the device depends on. Measured at the boundary, not guessed.
+    headlineLines: [
+      "were returning 404 — 10% of the catalog,",
+      "still listed in the sitemap Google",
+      "was crawling. Found and fixed.",
+    ],
     background:
       "A 20+ year old marketplace doing around 17k visits a month on a legacy Angular and Node stack, rebuilt in place — new NestJS APIs, a Next.js SSR storefront, a React admin panel — without dropping the SEO traffic the old stack was still serving.",
     whatShipped: [
@@ -640,7 +669,6 @@ export const caseStudies: CaseStudy[] = [
       "A move off a shared box that had run prod, dev and admin together for years, onto isolated AWS infra with merge-to-trunk auto-deploy",
     ],
     stack: ["NestJS", "Next.js (SSR)", "React", "Stripe", "AWS"],
-    sketch: "edairymarket",
   },
   {
     name: "Meshio",
@@ -649,7 +677,25 @@ export const caseStudies: CaseStudy[] = [
       "An AI content-ideation product that drafts post ideas in your own voice for X, LinkedIn and Threads.",
     headline:
       "Onboarding rebuilt around one activation metric — first post published — instead of a generic signup flow.",
-    headlineAccent: "published",
+    // NO `stat`. There is no honest number for this engagement — §7 gives none —
+    // and the state machine below is the story instead. An empty slot is the
+    // correct output here; inventing a figure to fill it is the exact failure
+    // this whole section is built to avoid.
+    // Three lines, longest 40 characters — same measured constraint as the
+    // eDairyMarket headline above.
+    headlineLines: [
+      "Onboarding rebuilt around one activation",
+      "metric — first post published —",
+      "instead of a generic signup flow.",
+    ],
+    // Every state name below also appears in the whatShipped bullet that names
+    // the machine, and the gate checks it — so the diagram can never assert a
+    // state the written record does not.
+    stateMachine: {
+      states: ["New", "Niche Set", "Voice Set"],
+      goal: "Activated",
+      goalNote: "first post published",
+    },
     // Rewritten in Phase 4/5 review. The previous opener — "Signup asked for
     // everything up front and measured nothing that mattered." — was a
     // characterization of the prior product state that §7 never makes. It read as
@@ -659,15 +705,22 @@ export const caseStudies: CaseStudy[] = [
     // generic signup flow" and "OAuth sign-in deliberately deferred until the point
     // the user actually needs it (pushed friction past the moment the user has
     // already seen the product, not before)".
+    // The opening sentence — "Onboarding became a state machine with a single
+    // destination — the first published post — rather than a generic signup
+    // flow." — was REMOVED in Phase 4/5 review. It is not a distinct fact: the
+    // headline states it and the state-machine diagram shows it, so rendering
+    // it here said the same thing a third time in one screen. Removing a
+    // DUPLICATE is not the same as trimming a true claim (which is why the
+    // mockup's trims were rejected) — every clause below is still §7's own,
+    // and nothing this field carried is now unstated on the page.
     background:
-      "Onboarding became a state machine with a single destination — the first published post — rather than a generic signup flow. Sign-in is deferred to the point a user actually needs an account, which puts the friction after they have already seen the product rather than before.",
+      "Sign-in is deferred to the point a user actually needs an account, which puts the friction after they have already seen the product rather than before.",
     whatShipped: [
       "A New → Niche Set → Voice Set → Activated state machine",
       "OAuth sign-in deliberately deferred until the point the user actually needs it — friction pushed past the moment they have already seen the product, not before",
       "Stripe subscription tiers specced",
     ],
     stack: ["Next.js", "Stripe"],
-    sketch: "meshio",
   },
 ];
 
