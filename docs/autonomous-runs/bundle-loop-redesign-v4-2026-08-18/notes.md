@@ -22,7 +22,7 @@ unaffected; only driver-side pool burn is higher.
 
 | Bundle | Scope | Depends on | Status |
 |---|---|---|---|
-| W0 | Foundation flip (Apfel, v4 tokens, single-theme, scale, reveal system, bands) | — | `[ ]` not started |
+| W0 | Foundation flip (Apfel, v4 tokens, single-theme, scale, reveal system, bands) | — | `[x]` complete (PR #28, 087a20c) |
 | W1 | Hero + nav + folio constant | W0 | `[ ]` not started |
 | W2 | Terms band replaces Pricing | W0 | `[ ]` not started |
 | W3 | Queue scene (signature motion) | W0 | `[ ]` not started |
@@ -42,6 +42,7 @@ unaffected; only driver-side pool burn is higher.
 
 | Bundle | PR | Merge SHA | Review battery | Notes |
 |---|---|---|---|---|
+| W0 | [#28](https://github.com/brunomaurino/codirity/pull/28) | `087a20c` | 40 raw → 15 deduped → 15 confirmed (8 MAJOR, 7 MINOR), 0 refuted, 62 areas examined, 0 deferrals; all 15 applied | Foundation flip under live consumers. Battery's headline catches: the `--gray-900` re-point LIGHTENED the ink band and sank `text-brand-light` under AA — while the same diff deleted the comment that warned about that exact pair; the OG image was still painting the v3 gradient at weight 800; the reduced-motion kill-list covered only the new (consumer-less) system while ~15 live animations kept running, and killing entrance animations naively would have left `opacity-0` content invisible; Preflight's `strong{bolder}` synthesized faux-700 past the weight remap. Perf: the flip made the site SMALLER (doc −653 B gz, JS −1.5 KB) and dropped the Google-Fonts dependency — doc 30,965 gz is the plan baseline. Also: Tailwind v4 scans DOCS for classes — a historical sample in design-system.md kept a dead utility compiling |
 
 ## Cross-bundle drift / surfaced concerns
 

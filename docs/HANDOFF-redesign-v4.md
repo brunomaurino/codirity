@@ -98,7 +98,7 @@ matches the mockup.
 
 | Bundle | Scope | Depends on | Status | PR # | Merge SHA |
 |---|---|---|---|---|---|
-| **W0** | Foundation flip: Apfel via `next/font/local`, v4 token system, single-theme commitment (retire `data-theme` + dark remaps + blobs + glass + `.accent`), type scale, reveal system (line-rise + fade + IO, house curve), `.band` gradient utilities, weight discipline (no 700 in display) | — | [ ] not started | | |
+| **W0** | Foundation flip: Apfel via `next/font/local`, v4 token system, single-theme commitment (retire `data-theme` + dark remaps + blobs + glass + `.accent`), type scale, reveal system (line-rise + fade + IO, house curve), `.band` gradient utilities, weight discipline (no 700 in display) | — | [x] complete | #28 | `087a20c` |
 | **W1** | Hero + nav + the folio constant | W0 | [ ] not started | | |
 | **W2** | Terms band replaces Pricing: 4 ledger rows at the 99px tier, hanging `$`, baseline units, per-tier Stripe CTAs, rules-draw motion, prices never animate | W0 | [ ] not started | | |
 | **W3** | The queue scene — signature pinned motion, illustrative chips, reduced-motion static tableau | W0 | [ ] not started | | |
