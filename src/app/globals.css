@@ -23,6 +23,11 @@
   --paper-2: #E2E2D9;
   --chalk: #F4F7F2;
   --chalk-dim: #A9B8AF;
+  /* The recessive tier below --chalk-dim, for content that has been superseded
+     but must still be READ (the queue's shipped chips). Chosen as an explicit
+     colour rather than an opacity so it cannot compound with another opacity
+     into unreadability — and measured against --ground, not derived. */
+  --chalk-faint: #7E8D85;
   --ink: #0A1712;
   --ink-dim: #4C5B52;
   --mint: #6EE7A8;
@@ -792,6 +797,25 @@ body {
   .term::after {
     transform: scaleX(1);
   }
+  /* Without JS the quantizer never runs, so a 320vh scene would be three
+     viewports of dead scroll past a queue that never advances — the same class
+     of defect as W2's blank conversion band, caught by registering the new
+     consumer here rather than after review. The server-rendered state (chip 0
+     active, three queued, counter 0) is coherent on its own, so collapsing the
+     track to a static tableau loses no information. */
+  .queue-scene {
+    height: auto;
+    padding-top: clamp(72px, 11vw, 168px);
+    padding-bottom: clamp(72px, 11vw, 168px);
+  }
+  .queue-stage {
+    position: static;
+    height: auto;
+  }
+  .q-track {
+    transform: none;
+    flex-wrap: wrap;
+  }
 }
 
 /* ========================================
@@ -928,6 +952,134 @@ body {
   }
 }
 
+/* ========================================
+   v4 queue scene (Bundle W3 — the signature motion)
+   ======================================== */
+
+/* The scene is a tall scroll track (320vh) whose stage sticks for its whole
+   length, so scrolling ADVANCES THE QUEUE instead of moving past it — the
+   business mechanic demonstrated rather than described.
+   The quantizer (Queue.tsx) writes only a discrete integer `--step`; every
+   visual change below is a CSS transition on the house curve. Nothing here is
+   1:1 scroll-linked, which is why the motion reads as deliberate rather than
+   as the page being dragged. */
+@layer components {
+  .queue-scene {
+    height: 320vh;
+  }
+  .queue-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    /* `clip` not `hidden`: `overflow:hidden` on an ancestor would make the
+       sticky stage scroll-clip against its own container. */
+    overflow: clip;
+  }
+  /* The stage is a ROW flex container and `.wrap-v4` carries `margin-inline:
+     auto`, so the wrap shrink-wraps to its min-content (~1264px, driven by the
+     track) instead of filling the stage — the page gutter would then stop
+     matching every other section's. This is the same trap the mockup documents
+     and patches for its hero (`.hero > .wrap { width: 100% }`); that patch was
+     never ported to the queue stage (Phase 4/5 review). */
+  .queue-stage > .wrap-v4 {
+    width: 100%;
+  }
+  .queue {
+    /* One slot = one chip + one gap. COMPOSED, not the mockup's literal 296px:
+       the track's translation and the chip's width are the same measurement, so
+       hardcoding the sum lets a future chip-width or gap change desync the
+       advance silently — the queue would stop landing on a chip boundary and
+       nothing would fail loudly. */
+    --chip: 280px;
+    --gap: 16px;
+    --slot: calc(var(--chip) + var(--gap));
+    margin-top: clamp(32px, 5vw, 56px);
+  }
+  .q-track {
+    display: flex;
+    gap: var(--gap);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    transform: translateX(calc(var(--step, 0) * var(--slot) * -1));
+    transition: transform 0.8s var(--ease);
+    will-change: transform;
+  }
+  .q-task {
+    flex: 0 0 var(--chip);
+    padding: 22px 24px;
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    color: var(--chalk-dim);
+    font-size: 15px;
+    line-height: 1.35;
+    transition:
+      border-color 0.5s ease,
+      color 0.5s ease,
+      opacity 0.5s ease;
+  }
+  .q-task.is-active {
+    border-color: var(--mint);
+    color: var(--chalk);
+  }
+  /* The mockup fades the shipped chip with `opacity: .35`. Opacity composites
+     the TEXT toward the ground, and it COMPOUNDED with the status word's own
+     `opacity: .7` — measured at roughly 2.2:1 and 1.7:1 against --ground, far
+     under AA, and the reduced-motion tableau pins chip 0 in that state
+     permanently (Phase 4/5 review). Since the chip still says "shipped" in
+     words, that text has to be readable.
+     So the recede is expressed as an explicit COLOUR instead: same visual
+     intent (dimmer than a queued chip, clearly behind the active one), and the
+     mint strike-through still carries the state. This is a deliberate,
+     measured deviation from the mockup on an accessibility matter — §1.3's
+     "comfortably over AA" commitment wins over a literal opacity value. */
+  .q-task.is-shipped {
+    color: var(--chalk-faint);
+    border-color: var(--rule);
+    text-decoration: line-through;
+    text-decoration-color: var(--mint);
+  }
+  .q-task small {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  /* Stop the second multiplication: the status word is the one string that
+     must stay legible on a shipped chip. */
+  .q-task.is-shipped small {
+    opacity: 1;
+  }
+  .q-shipped {
+    margin-top: 30px;
+    margin-bottom: 0;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+  }
+  /* Brass, because the counter IS the mechanic here. This is the one number on
+     the site allowed to change — and it changes by discrete integer swap, never
+     a count-up tween. The prices, whose stillness is the argument, never move
+     (HANDOFF §1.2). */
+  .q-count {
+    color: var(--brass);
+    font-weight: 500;
+    font-size: 1.7em;
+    vertical-align: -0.1em;
+  }
+  .q-note {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--chalk-dim);
+    opacity: 0.7;
+  }
+}
+
 /* Scoped reduced-motion (§1.6): kill the entrance/scroll systems, keep
    sub-300ms state feedback (hover/focus) — the preference targets movement,
    not all change. Never a universal *{transition:none}. */
@@ -942,12 +1094,32 @@ body {
   .reveal,
   .constant,
   .term::after,
-  .term > * {
+  .term > *,
+  .q-track,
+  .q-task {
     animation: none !important;
     transition: none !important;
   }
   .term::after {
     transform: scaleX(1);
+  }
+  /* The queue scene collapses to a STATIC TABLEAU: no scroll track, no sticky
+     stage, no translation — the chips wrap and stand still. Queue.tsx pins the
+     step-1 state (one shipped, one active), so the reader gets the full
+     mechanic as a picture instead of as motion. Height must go auto or the
+     scene leaves 320vh of empty scroll behind it. */
+  .queue-scene {
+    height: auto;
+    padding-top: clamp(72px, 11vw, 168px);
+    padding-bottom: clamp(72px, 11vw, 168px);
+  }
+  .queue-stage {
+    position: static;
+    height: auto;
+  }
+  .q-track {
+    transform: none;
+    flex-wrap: wrap;
   }
   .term > * {
     opacity: 1;

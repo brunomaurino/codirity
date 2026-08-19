@@ -10,6 +10,7 @@ import {
   CaseStudies,
   About,
   Pricing,
+  Queue,
   Faq,
   Contact,
 } from "@/components/sections";
@@ -46,8 +47,17 @@ export default function Home() {
             read the strongest evidence rather than the team blurb. */}
         <CaseStudies />
         <About />
-        {/* S6 — Pricing (two-tier + Stripe + founding banner + guarantee) */}
+        {/* S6 — the terms band (W2) */}
         <Pricing />
+        {/* S6b — the queue scene (W3): the signature motion. Placed directly
+            after the terms band to preserve the approved mockup's own
+            terms → queue adjacency. The mockup runs both near the TOP of the
+            page; this page still carries the v3 section order, and reordering
+            it belongs to W4–W6, not here. Both sections sit on the dark
+            ground, so the pair needs no `.band` between them — inserting the
+            queue anywhere in the paper run would have demanded two new
+            gradient bands and broken the no-hard-cut rule mid-bundle. */}
+        <Queue />
         {/* S7 — FAQ (accordion) + S8 — Book a call */}
         <Faq />
         <Contact />
