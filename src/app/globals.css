@@ -816,6 +816,14 @@ body {
     transform: none;
     flex-wrap: wrap;
   }
+  /* The stat's `@supports not (animation-timeline: view())` fallback reveals
+     off `.rv` → `.in`, which never fires without JS — so on a browser that has
+     NEITHER scroll-driven animations NOR scripting the headline figure would be
+     clipped to nothing, permanently. Show it. */
+  .stat-big {
+    clip-path: none;
+    transform: none;
+  }
 }
 
 /* ========================================
@@ -1080,6 +1088,193 @@ body {
   }
 }
 
+/* ========================================
+   v4 case studies + clients (Bundle W4 — mockup port)
+   ======================================== */
+
+@layer components {
+  .work {
+    display: grid;
+    gap: clamp(40px, 6vw, 88px);
+  }
+
+  /* The stat is the page's one permitted display-size NUMBER on a client's
+     work. It caps AT the h1 size and no higher: one king per page, and it
+     isn't a client's bug count. */
+  .stat {
+    display: flex;
+    align-items: baseline;
+    gap: clamp(12px, 2vw, 24px);
+    flex-wrap: wrap;
+  }
+  .stat-big {
+    font-weight: 500;
+    font-size: clamp(3.5rem, 1rem + 10.5vw, 8.5rem);
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    color: var(--brass);
+  }
+  .stat-of {
+    font-weight: 500;
+    font-size: clamp(1.5rem, 3.6vw, 2.8rem);
+    color: var(--chalk-dim);
+    letter-spacing: -0.012em;
+  }
+  /* The wipe is genuinely scroll-linked (the ONE place that is legitimate — it
+     reveals a static number rather than animating its value; the figure itself
+     never counts up). Where `animation-timeline` is unsupported the same reveal
+     runs off the shared `.rv` → `.in` observer instead, so no browser is left
+     with a permanently clipped, invisible number. */
+  @supports (animation-timeline: view()) {
+    .stat-big {
+      animation: stat-wipe linear both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+  }
+  @supports not (animation-timeline: view()) {
+    .stat-big {
+      clip-path: inset(100% 0 0 0);
+      transform: translateY(0.08em);
+      transition:
+        clip-path 0.9s var(--ease),
+        transform 0.9s var(--ease);
+    }
+    .in .stat-big {
+      clip-path: inset(0 0 0 0);
+      transform: none;
+    }
+  }
+
+  .work-grid {
+    display: grid;
+    gap: 28px;
+  }
+  @media (min-width: 900px) {
+    .work-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 56px;
+    }
+  }
+  .work p {
+    margin: 0;
+    max-width: 52ch;
+  }
+
+  .shipped-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .shipped-list li {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    font-size: 15.5px;
+    line-height: 1.45;
+    color: var(--chalk-dim);
+  }
+  .shipped-list li::before {
+    content: "";
+    flex: 0 0 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mint);
+    transform: translateY(-2px);
+  }
+
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin-top: 24px;
+    margin-bottom: 0;
+  }
+  .stack li {
+    font-size: 13px;
+    padding: 6px 13px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    color: var(--chalk-dim);
+  }
+
+  /* Meshio's visual IS its story: the activation state machine. There is no
+     number for that engagement and none is invented to fill the slot. */
+  .sm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: clamp(24px, 4vw, 40px);
+  }
+  .sm-state {
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 13px 22px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--chalk-dim);
+  }
+  .sm-state.is-goal {
+    border-color: var(--mint);
+    color: var(--chalk);
+  }
+  .sm-state.is-goal small {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin-top: 2px;
+  }
+  .sm-arrow {
+    color: var(--chalk-dim);
+    opacity: 0.6;
+  }
+
+  .clients {
+    display: grid;
+    gap: 28px;
+  }
+  @media (min-width: 900px) {
+    .clients {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+  }
+  .client h3 {
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .client .tag {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .client p {
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 15px;
+    color: var(--chalk-dim);
+    max-width: 38ch;
+  }
+}
+
 /* Scoped reduced-motion (§1.6): kill the entrance/scroll systems, keep
    sub-300ms state feedback (hover/focus) — the preference targets movement,
    not all change. Never a universal *{transition:none}. */
@@ -1096,9 +1291,18 @@ body {
   .term::after,
   .term > *,
   .q-track,
-  .q-task {
+  .q-task,
+  .stat-big {
     animation: none !important;
     transition: none !important;
+  }
+  /* Both wipe implementations must land on the FINISHED state. Killing the
+     animation alone would strand the number at `clip-path: inset(100% 0 0 0)`
+     — i.e. a permanently invisible headline figure, the same class of defect as
+     W2's blank conversion band. */
+  .stat-big {
+    clip-path: none;
+    transform: none;
   }
   .term::after {
     transform: scaleX(1);

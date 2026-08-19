@@ -1,153 +1,117 @@
-import { Section, Container } from "@/components/layout";
-import { SectionHeader, AccentWord } from "@/components/ui";
-import { caseStudies, sections } from "@/config/offer";
-import { cn } from "@/lib/utils";
-import type { BlobClass } from "@/lib/blob";
-import { CaseStudySketch } from "./CaseStudySketch";
+import { caseStudies } from "@/config/offer";
 
-// The two full case studies (redesign-v3 Bundle V8, content from
-// HANDOFF-redesign-v3.md §7). Deliberately NOT the RecentWork badge-card
-// treatment: that section is a lightweight roll-call, this one is the evidence.
-// One generously-padded block per study rather than a grid — these are meant to
-// be read, and two studies side by side would halve the reading width for no
-// gain.
+// Case studies in the v4 treatment (Bundle W4) —
+// docs/redesign-v4/approved-mockup.html is the layout contract.
 //
-// Blob choice: blob-2 and blob-1. RecentWork (the section immediately above)
-// cycles blob-3 / blob-4 / blob-1 across its three columns, so its LAST tile is
-// blob-1 — putting blob-1 first here would stack the same gradient across the
-// section boundary, the exact adjacency RecentWork's own comment documents
-// avoiding. blob-2 leads; blob-1 is far enough down the page to be clear of it.
-const STUDY_BLOBS: BlobClass[] = ["blob-2", "blob-1"];
+// CONTENT HONESTY IS THE POINT OF THIS FILE. Not one content string is written
+// here: every headline, line, bullet, stack tag and state name comes from
+// `offer.ts`, whose own comments record why. Two fabrications shipped past
+// review in v3 and both were about a REAL, NAMED client:
+//   - "guest carts" where the record says buyer FAVORITES — an invented
+//     e-commerce feature attributed to a real engagement;
+//   - an invented sentence characterising Meshio's product before the work.
+// Both slipped a fact gate that only checked the expected strings were PRESENT.
+// So `scripts/w4-facts-gate.py` checks BOTH directions: a substituted noun or
+// an added clause fails it, not just a missing one.
+//
+// The two studies are deliberately asymmetric. eDairyMarket has a real,
+// concrete number and it is set at the display tier. Meshio has NONE — §7
+// records no activation percentage because none was ever measured — so its
+// visual is the state machine instead. The empty slot is the honest output;
+// filling it would be the failure.
+
+function Study({ study }: { study: (typeof caseStudies)[number] }) {
+  const sm = study.stateMachine;
+  return (
+    <section data-ground="dark" className="relative bg-ground text-chalk py-16 md:py-24 lg:py-28">
+      <div className="wrap-v4 work">
+        <div className="rv">
+          {/* `.label` is `text-transform: uppercase`, so `relationship` renders
+              verbatim — no case-munging of a data value in the component. */}
+          <p className="label" style={{ marginBottom: "clamp(24px, 3vw, 44px)" }}>
+            {study.name} — {study.relationship}
+          </p>
+
+          {/* Present only when the study HAS an honest figure. */}
+          {study.stat && (
+            <div className="stat">
+              <span className="stat-big">{study.stat.value}</span>
+              <span className="stat-of">{study.stat.of}</span>
+            </div>
+          )}
+
+          {/* `display` carries the leading and tracking; `.d-md` is font-size
+              only (W3 shipped a heading without it and the block ran ~65%
+              taller). The lines are hand-set in offer.ts and gated to
+              reconstruct `headline` exactly. */}
+          <h2
+            className="display d-md"
+            style={{ marginTop: study.stat ? "24px" : 0, maxWidth: "24ch" }}
+          >
+            {study.headlineLines.map((line, i) => (
+              <span key={line} className="line" style={{ "--l": i } as React.CSSProperties}>
+                <span>{line}</span>
+              </span>
+            ))}
+          </h2>
+
+          {sm && (
+            // The arrows are decorative; the aria-label carries the sequence as
+            // a sentence so the machine is not conveyed by glyphs alone.
+            <div
+              className="sm"
+              aria-label={`Onboarding state machine: ${[...sm.states, sm.goal].join(", then ")} — ${sm.goalNote}`}
+            >
+              {sm.states.map((state) => (
+                <span key={state} style={{ display: "contents" }}>
+                  <span className="sm-state">{state}</span>
+                  <span className="sm-arrow" aria-hidden="true">
+                    →
+                  </span>
+                </span>
+              ))}
+              <span className="sm-state is-goal">
+                {sm.goal}
+                <small>{sm.goalNote}</small>
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="work-grid rv fade">
+          <div>
+            {/* BOTH paragraphs. The mockup's left column carries one, having
+                merged and trimmed the two to fit its layout — but `context`
+                ("what the product IS, for readers who don't know it") and
+                `background` hold different true facts, and the mockup's merge
+                dropped some of them. Layout from the mockup, strings from
+                offer.ts. */}
+            <p>{study.context}</p>
+            <p style={{ marginTop: "14px" }}>{study.background}</p>
+            <ul className="stack">
+              {study.stack.map((tech) => (
+                <li key={tech}>{tech}</li>
+              ))}
+            </ul>
+          </div>
+          <ul className="shipped-list">
+            {study.whatShipped.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function CaseStudies() {
+  if (caseStudies.length === 0) return null;
   return (
-    <Section id="case-studies" variant="default" className="reveal">
-      <Container>
-        <SectionHeader
-          label={sections.caseStudies.label}
-          title={<AccentWord text={sections.caseStudies.title} word="detail" />}
-          description={sections.caseStudies.description}
-          className="mb-16"
-        />
-
-        <div className="flex flex-col gap-12 lg:gap-16">
-          {caseStudies.map((study, index) => (
-            <article
-              key={study.name}
-              className={cn(
-                "reveal card-soft overflow-hidden",
-                "border border-[var(--border)] bg-white dark:bg-gray-800",
-                "p-6 sm:p-8 lg:p-10"
-              )}
-            >
-              {/* Header — name, relationship, stack */}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <h3 className="text-2xl font-medium text-gray-900 dark:text-white">{study.name}</h3>
-                <span
-                  className={cn(
-                    "btn-pill inline-flex items-center",
-                    "px-3 py-1 text-xs font-medium uppercase tracking-[0.08em]",
-                    // bg-brand-fill, never bare bg-brand: this is a solid fill
-                    // under white text, which is the role the *-fill token pair
-                    // exists for (V0's dual-role-token finding).
-                    "bg-brand-fill text-white"
-                  )}
-                >
-                  {study.relationship}
-                </span>
-              </div>
-
-              <p className="mt-2 text-gray-600 dark:text-gray-400">{study.context}</p>
-
-              {/* Headline stat on its own blob-gradient panel. The blob utility
-                  sets a near-white foreground and carries V0's built-in dark
-                  scrim, so text on it is FULL opacity and nothing lightening is
-                  layered on top (V1/V2 findings). `.accent` declares its OWN
-                  colour, which beats the colour it would inherit here — so the
-                  accent word is passed an explicit `text-white` (V6 finding). */}
-              <div
-                className={cn(
-                  STUDY_BLOBS[index % STUDY_BLOBS.length],
-                  "card-soft mt-6 p-6 sm:p-8"
-                )}
-              >
-                <p className="text-xl sm:text-2xl font-medium leading-snug">
-                  <AccentWord text={study.headline} word={study.headlineAccent} className="text-white" />
-                </p>
-              </div>
-
-              <p className="mt-6 leading-relaxed text-gray-600 dark:text-gray-400">{study.background}</p>
-
-              {/* What shipped + the architecture sketch. Single column until lg:
-                  — the sketch has a fixed aspect ratio and a real minimum
-                  legible width, and pairing it with the list any earlier
-                  squeezes both (the ungated-grid trap from V5). */}
-              <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-                <div>
-                  <h4 className="text-[13px] font-medium uppercase tracking-[0.12em] text-brand">
-                    What shipped
-                  </h4>
-                  <ul className="mt-4 flex flex-col gap-3">
-                    {study.whatShipped.map((item) => (
-                      <li key={item} className="flex items-start gap-3 text-[0.95rem] leading-relaxed">
-                        <span
-                          className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-fill"
-                          aria-hidden="true"
-                        />
-                        <span className="text-gray-600 dark:text-gray-400">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="text-gray-900 dark:text-white">
-                  <h4 className="text-[13px] font-medium uppercase tracking-[0.12em] text-brand">
-                    How it fits together
-                  </h4>
-                  {/* Horizontally scrollable rather than shrink-to-fit. The
-                      sketches carry a fixed 620-unit viewBox; scaled to a ~295px
-                      phone column their 15px node labels rendered at ~7 CSS px —
-                      illegible across the entire phone band, on the section's
-                      marquee proof deliverable. The `lg:` gate on the grid above
-                      protects the tablet band but mobile single-column IS the
-                      worst case. `min-w` on the SVG plus `overflow-x-auto` here
-                      keeps the type at a readable size and lets the reader pan.
-                      Found in Phase 4/5 review — the Phase-6 audit had measured
-                      the labels' CONTRAST and never their rendered SIZE. */}
-                  <div className="mt-4 -mx-2 overflow-x-auto px-2 pb-2">
-                    <CaseStudySketch sketch={study.sketch} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Stack tags — reuse the pill language, muted so they read as
-                  metadata rather than competing with the headline. */}
-              {/* Labelled: unlike the other two lists in this article, the stack
-                  tags had no heading or accessible name, so a screen reader
-                  announced an unlabelled 5-item list (Phase 4/5 review). */}
-              <ul
-                aria-label={`${study.name} — stack`}
-                className="mt-8 flex flex-wrap gap-2 border-t border-[var(--border)] pt-6"
-              >
-                {study.stack.map((tag) => (
-                  <li
-                    key={tag}
-                    className={cn(
-                      "btn-pill inline-flex items-center",
-                      "px-3 py-1 text-xs font-medium",
-                      "bg-gray-50 dark:bg-gray-900",
-                      "border border-[var(--border)]",
-                      "text-gray-600 dark:text-gray-400"
-                    )}
-                  >
-                    {tag}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </Container>
-    </Section>
+    <>
+      {caseStudies.map((study) => (
+        <Study key={study.name} study={study} />
+      ))}
+    </>
   );
 }
