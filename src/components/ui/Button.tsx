@@ -32,6 +32,14 @@ const buttonVariants = cva(
           "bg-white text-brand-dark",
           "hover:-translate-y-0.5 hover:shadow-lg",
         ],
+        // v4: mint on the ground, matching `.close-cta`. §1.2 reserves mint for
+        // live/interactive elements, which is exactly what a submit is. The
+        // `primary` variant above is the v3 action green and is now unused by
+        // the site — kept only until its own consumers are gone.
+        mint: [
+          "bg-mint text-ground",
+          "hover:-translate-y-0.5",
+        ],
       },
       size: {
         sm: "px-4 py-2 text-sm",

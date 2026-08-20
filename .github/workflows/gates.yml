@@ -1,0 +1,33 @@
+# The gates redesign-v4 built, running automatically.
+#
+# Seventeen gate scripts shipped across six bundles and nothing invoked them:
+# each ran once, by hand, by whoever wrote it. W4 shipped a dead flagship
+# deliverable behind that gap — an `animation:` whose `@keyframes` were never
+# ported, so the wipe silently never ran, and only an adversarial review caught
+# it. The gate that would have caught it already existed.
+name: gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      # Builds, serves, and runs every gate against the REAL rendered document
+      # and the REAL compiled CSS chunk — several of them exist precisely
+      # because a source grep misses what the bytes actually ship.
+      - run: npm test

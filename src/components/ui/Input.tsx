@@ -4,22 +4,15 @@ import { cn } from "@/lib/utils";
 
 const inputVariants = cva(
   [
-    "w-full",
-    "bg-white",
-    "border border-gray-200",
-    "rounded-xl",
-    "text-gray-900",
-    "placeholder:text-ink-dim",
-    "transition-all duration-300",
-    "focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand",
-    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50",
+    // v4: a ruled field on the dark ground — see `.field` in globals.css.
+    "field",
   ],
   {
     variants: {
       size: {
-        sm: "px-3 py-2 text-sm",
-        md: "px-4 py-3 text-sm",
-        lg: "px-5 py-4 text-base",
+        sm: "text-sm",
+        md: "text-[15px]",
+        lg: "text-base",
       },
     },
     defaultVariants: {
@@ -48,7 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="field-label"
           >
             {label}
           </label>
@@ -58,7 +51,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={cn(
             inputVariants({ size }),
-            error && "border-red-500 focus:border-red-500 focus:ring-red-500/20",
+            error && "border-b-red-400 focus:border-b-red-400",
             className
           )}
           aria-invalid={error ? "true" : undefined}
@@ -73,7 +66,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-2 text-sm text-gray-500">
+          <p id={`${inputId}-helper`} className="mt-2 text-sm text-chalk-dim">
             {helperText}
           </p>
         )}

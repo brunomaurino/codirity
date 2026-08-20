@@ -75,13 +75,6 @@ export interface Guarantee {
   description: string;
 }
 
-export interface Benefit {
-  /** lucide-react icon name (mapped to a component by the consumer). */
-  icon: string;
-  title: string;
-  description: string;
-}
-
 export interface HowItWorksStep {
   number: string;
   title: string;
@@ -242,7 +235,6 @@ export interface QueueContent {
 export interface SectionsContent {
   howItWorks: Pick<SectionCopy, "label">;
   whatWeBuild: Pick<SectionCopy, "label">;
-  benefits: SectionCopy;
   /** Only the title is consumed — the v4 clients strip renders it as its own
    *  heading and shows no eyebrow or description (W4). */
   recentWork: Pick<SectionCopy, "title">;
@@ -266,7 +258,6 @@ export interface Offer {
   guarantee: Guarantee;
   included: string[];
   notIncluded: string[];
-  benefits: Benefit[];
   howItWorks: HowItWorksStep[];
   faq: FaqItem[];
   caseStudies: CaseStudy[];
@@ -312,12 +303,6 @@ export const sections: SectionsContent = {
   },
   whatWeBuild: {
     label: "What we build",
-  },
-  benefits: {
-    label: "Membership benefits",
-    title: "Why teams subscribe",
-    description:
-      "Everything an agency gives you, without the overhead, the hourly billing, or the lock-in.",
   },
   recentWork: {
     // Only `title` survives. W4's v4 treatment renders it as the section's own
@@ -472,45 +457,6 @@ export const notIncluded: string[] = [
   "Ongoing manual data entry or operations staffing",
   "Hardware or on-site IT",
   "Work that needs a dedicated full-time team",
-];
-
-export const benefits: Benefit[] = [
-  {
-    icon: "CreditCard",
-    title: "One flat monthly rate",
-    description:
-      "No hourly billing and no surprise invoices. One price, unlimited requests.",
-  },
-  {
-    icon: "Infinity",
-    title: "Unlimited requests & revisions",
-    description:
-      "Queue as many tasks as you like and revise each one until it's right.",
-  },
-  {
-    icon: "Zap",
-    title: "Senior engineering, AI-accelerated",
-    description:
-      "Work is shipped by senior engineers using AI to move faster than an agency.",
-  },
-  {
-    icon: "Rocket",
-    title: "Fast, async delivery",
-    description:
-      "Most tasks land in days. Track everything in a shared Trello board.",
-  },
-  {
-    icon: "PauseCircle",
-    title: "Pause or cancel anytime",
-    description:
-      "No lock-in. Pause when your queue is empty and resume when you need us.",
-  },
-  {
-    icon: "TrendingUp",
-    title: "Scales with you",
-    description:
-      "Move up to Pro when you need two tasks running in parallel.",
-  },
 ];
 
 export const howItWorks: HowItWorksStep[] = [
@@ -782,7 +728,6 @@ export const offer: Offer = {
   guarantee,
   included,
   notIncluded,
-  benefits,
   howItWorks,
   faq,
   caseStudies,

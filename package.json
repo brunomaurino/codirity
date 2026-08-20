@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "python3 scripts/run-gates.py",
+    "test:fast": "python3 scripts/run-gates.py --skip-build"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

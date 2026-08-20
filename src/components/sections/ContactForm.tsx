@@ -112,29 +112,23 @@ export function ContactForm() {
   };
 
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden",
-        "bg-white border border-[var(--border)] rounded-2xl",
-        "p-8 md:p-10 shadow-lg",
-        "before:absolute before:top-0 before:left-0 before:right-0 before:h-1",
-        "before:bg-gradient-to-r before:from-brand-dark before:via-brand before:to-brand-light"
-      )}
-    >
+    // Part of the closing band, not a card floating on it. This was the last
+    // v3 surface on the site: a white card with a shadow and the v3 green
+    // gradient accent bar that globals.css explicitly says never to
+    // reintroduce — and it put a SECOND action green (bg-brand-fill) directly
+    // beside the mint close CTA. The fields are ruled now, the same vocabulary
+    // as the terms band and the services list.
+    <div>
       {/* Header */}
       <div className="mb-8">
         {/* §4 voice pass (Bundle V6): the prior "Send Us a Message" / "Fill out
             the form below and we'll get back to you shortly" predated the voice
-            gate. This card stays a LIGHT card on the near-black band — see
-            Contact.tsx — so it keeps its own light-surface foreground pairs
-            rather than being re-tuned for dark. Two of those pairs DID change in
-            this bundle: this sub-copy and the privacy note below both moved off
-            `text-gray-500`, which measures 4.47:1 on the white card — under AA
-            for 14px text. */}
-        <h3 className="text-xl font-medium text-gray-900 mb-2">
+            gate. Foregrounds are now the dark-ground pairs, since the card
+            became part of the band. */}
+        <h3 className="label" style={{ marginBottom: "10px" }}>
           Write it out
         </h3>
-        <p className="text-[0.95rem] text-gray-600">
+        <p className="lede">
           A paragraph is plenty. {RESPONSE_TIME_CLAIM}.
         </p>
       </div>
@@ -200,7 +194,7 @@ export function ContactForm() {
         <div className="w-full">
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="field-label"
           >
             How Can We Help? *
           </label>
@@ -213,20 +207,19 @@ export function ContactForm() {
             required
             disabled={isSubmitting}
             className={cn(
-              "w-full min-h-[130px] resize-y",
-              "bg-white border border-gray-200 rounded-xl",
-              "px-4 py-3 text-sm text-gray-900",
-              "placeholder:text-ink-dim",
-              "transition-all duration-300",
-              "focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand",
-              "disabled:opacity-60 disabled:cursor-not-allowed"
+              // Same ruled field as Input/Select — see `.field`.
+              "field min-h-[130px] resize-y"
             )}
           />
         </div>
 
         {/* Submit */}
         <div className="mt-2">
-          <Button type="submit" fullWidth size="lg" disabled={isSubmitting}>
+          {/* Mint, like the address CTA beside it: §1.2 reserves mint for
+              live/interactive elements, and a form's submit is exactly that.
+              This replaces `bg-brand-fill` (#127A44) — a second, older action
+              green that was visible at the same time as the mint one. */}
+          <Button type="submit" fullWidth size="lg" disabled={isSubmitting} variant="mint">
             {isSubmitting ? (
               <>
                 Sending...
@@ -242,8 +235,8 @@ export function ContactForm() {
         </div>
 
         {/* Privacy Note */}
-        <p className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
-          <Lock className="w-4 h-4 stroke-brand" />
+        <p className="flex items-center justify-center gap-2 mt-4 text-sm text-chalk-dim">
+          <Lock className="w-4 h-4 stroke-mint" />
           Your information is secure and will never be shared.
         </p>
       </form>

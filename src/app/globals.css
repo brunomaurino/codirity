@@ -1569,6 +1569,55 @@ body {
     background: var(--rule);
     flex: 0 0 38px;
   }
+
+  /* The close's form, on the dark ground.
+     It was the last v3 surface on the site: a white card with a shadow and the
+     v3 green gradient accent bar this file elsewhere says never to reintroduce,
+     sitting beside the mint CTA so two different action greens were visible at
+     once. It is now part of the band rather than a card floating on it — the
+     fields are ruled, not boxed, which is the same vocabulary as the terms band
+     and the services list. */
+  .field {
+    width: 100%;
+    background: transparent;
+    color: var(--chalk);
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 12px 2px;
+    font-size: 15px;
+    transition: border-color 0.25s ease;
+  }
+  .field::placeholder {
+    color: var(--chalk-faint);
+  }
+  .field:focus {
+    outline: none;
+    border-bottom-color: var(--mint);
+  }
+  .field:focus-visible {
+    outline: 2px solid var(--mint);
+    outline-offset: 3px;
+  }
+  .field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  /* The native select's own menu is painted by the OS, so its options need a
+     real background — a transparent select renders chalk-on-white options and
+     is unreadable when opened. */
+  .field option {
+    background: var(--ground-2);
+    color: var(--chalk);
+  }
+  .field-label {
+    display: block;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-bottom: 6px;
+  }
 }
 
 /* Scoped reduced-motion (§1.6): kill the entrance/scroll systems, keep
