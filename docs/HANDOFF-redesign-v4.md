@@ -211,9 +211,12 @@ matches the mockup.
    real rendered document and the real compiled chunk, and `.github/workflows/gates.yml` runs it on
    every push and PR. (`w2-killswitch-check.py` stays hand-only by design: it needs
    `foundingRate.active` flipped and a re-render.)
-2. **The live Trello `[TEMPLATE] Codirity Client Board` still promises "75% back."** The codebase
-   says 7 days / 50% everywhere. Carried since v3 V5 — the only surface a customer can read the
-   wrong number on, and only a manual edit closes it.
+2. ~~The live Trello `[TEMPLATE] Codirity Client Board` still promises "75% back."~~
+   **CLOSED 2026-08-19.** The board's "Pausing & billing" card now says 50%, matching
+   `guarantee.refundPct`. Every OPEN board in the workspace was scanned, not just the template — a
+   client board copied before the fix would have inherited the wrong figure — and none carried it.
+   `scripts/trello-offer-parity.ts` re-checks this on demand; it is deliberately NOT in `npm test`,
+   since it needs live Trello credentials that CI has no business holding.
 3. ~~`Benefits` and `ContactForm` are still v3.~~ **CLOSED 2026-08-19** — `Benefits` was retired
    (its promises are made by `hero.subhead`, the terms band and the FAQ) and the form was reworked
    into the closing band with ruled fields and a mint submit. The page order now matches the
