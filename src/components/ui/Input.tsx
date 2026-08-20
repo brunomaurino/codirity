@@ -9,6 +9,8 @@ const inputVariants = cva(
   ],
   {
     variants: {
+      // TYPE SIZE only. `.field` owns the padding and the underline, so
+      // these no longer change the control's box (Phase 4/5 review).
       size: {
         sm: "text-sm",
         md: "text-[15px]",
@@ -61,7 +63,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p id={`${inputId}-error`} className="mt-2 text-sm text-red-600">
+          <p id={`${inputId}-error`} className="mt-2 text-sm text-red-400">
             {error}
           </p>
         )}

@@ -1,6 +1,6 @@
 # The gates redesign-v4 built, running automatically.
 #
-# Seventeen gate scripts shipped across six bundles and nothing invoked them:
+# Sixteen gate scripts shipped across six bundles and nothing invoked them:
 # each ran once, by hand, by whoever wrote it. W4 shipped a dead flagship
 # deliverable behind that gap — an `animation:` whose `@keyframes` were never
 # ported, so the wipe silently never ran, and only an adversarial review caught
@@ -11,6 +11,12 @@ on:
   push:
     branches: [main]
   pull_request:
+
+# Least privilege: the job only reads the checkout. Without this it inherits the
+# repository default, which is often write-scoped — and `npm ci` runs package
+# lifecycle scripts, so a compromised dependency would inherit a writable token.
+permissions:
+  contents: read
 
 jobs:
   gates:

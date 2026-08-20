@@ -12,6 +12,21 @@ import { track } from "@/lib/analytics";
  * REAL height — a zero-height sentinel never satisfies an IO threshold. Renders
  * nothing; the pricing data itself stays server-rendered.
  */
+// ⚠️ THE METRIC'S MEANING CHANGED on 2026-08-19, when the page order was
+// aligned to the approved mockup and the terms band moved from mid-page (after
+// the clients strip and both case studies) to DIRECTLY BELOW THE HERO.
+//
+// `pricing_viewed` used to be a mid-funnel signal: it meant a reader had gone
+// through the proof and reached the offer. It now fires for nearly every
+// visitor, almost immediately — closer to a pageview than to intent. Two
+// consequences: series that cross the cutover are NOT comparable, and
+// `hero_cta_click / pricing_viewed` is no longer a meaningful ratio in the
+// direction it used to be.
+//
+// Left in place deliberately rather than re-pointed at a lower section: the
+// event's contract is "the terms band entered the viewport", and that is still
+// exactly what it reports. What changed is where the terms band sits.
+
 export function PricingViewedTracker() {
   const fired = useRef(false);
 

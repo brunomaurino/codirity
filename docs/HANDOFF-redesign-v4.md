@@ -207,15 +207,24 @@ matches the mockup.
 | Fabrications | 0 — the fact gate runs in both directions and its self-test replays v3's two real ones |
 
 **Still open (operator-owned, not deferrals):**
-1. **No CI runs any gate.** `scripts/w2-*` … `w6-*` are the only mechanical coverage these sections
-   have, and every one is invoked by hand. Named in three bundles' commitments; the highest-leverage
-   change left on this repo.
+1. ~~No CI runs any gate.~~ **CLOSED 2026-08-19** — `npm test` runs all 15 wired gates against the
+   real rendered document and the real compiled chunk, and `.github/workflows/gates.yml` runs it on
+   every push and PR. (`w2-killswitch-check.py` stays hand-only by design: it needs
+   `foundingRate.active` flipped and a re-render.)
 2. **The live Trello `[TEMPLATE] Codirity Client Board` still promises "75% back."** The codebase
    says 7 days / 50% everywhere. Carried since v3 V5 — the only surface a customer can read the
    wrong number on, and only a manual edit closes it.
-3. **`Benefits` and `ContactForm` are still v3.** The plan never scheduled a bundle for either. Both
-   work and measure AA, but the form is a white card with the v3 green gradient accent bar beside
-   the mint close CTA — two action greens visible together.
+3. ~~`Benefits` and `ContactForm` are still v3.~~ **CLOSED 2026-08-19** — `Benefits` was retired
+   (its promises are made by `hero.subhead`, the terms band and the FAQ) and the form was reworked
+   into the closing band with ruled fields and a mint submit. The page order now matches the
+   approved mockup exactly.
+4. **The anti-hourly framing went with `Benefits`.** "No hourly billing and no surprise invoices" /
+   "without the overhead, the hourly billing, or the lock-in" is now stated nowhere. It is a
+   positioning line, not one of the six promises the section made — restoring it somewhere is a
+   copy decision, recorded rather than quietly dropped.
+5. **`pricing_viewed` changed meaning** when the terms band moved under the hero: it fires for
+   nearly every visitor now, closer to a pageview than to mid-funnel intent. Series crossing
+   2026-08-19 are not comparable. Documented at `PricingViewedTracker.tsx`.
 
 ## §3 — Per-bundle launch commands
 

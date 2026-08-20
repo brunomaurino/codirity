@@ -52,14 +52,16 @@ silent no-op (Tailwind v4 drops unknown theme colours rather than erroring).
 
 Bruno's explicit rule. Every dark↔light transition goes through a `.band`
 gradient (`.band-dl` dark→paper, `.band-ld` paper→dark, ~30vh). The page is two
-runs and four transitions:
+runs and TWO transitions:
 
 ```
-hero (dark) → band → Benefits (paper) → band
-  → clients · case studies · terms · queue (dark) → band
+hero · terms · queue · case studies · clients (dark) → band
   → what we build · how it works · founder · FAQ (paper) → band
   → ownership · close · footer (dark)
 ```
+
+That order is the approved mockup's. The offer leads because the price IS the
+argument; the proof answers "can they actually do it" after it, not before.
 
 Sections that own a full-bleed ground are a **bare `<section>` + `data-ground` +
 `.wrap-v4`** — never `.wrap-v4` nested inside a padded container, which doubles

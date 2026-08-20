@@ -3,7 +3,7 @@
 
 `npm test` — the thing this repo did not have.
 
-redesign-v4 shipped seventeen gate scripts across six bundles and NOTHING ran
+redesign-v4 shipped sixteen gate scripts across six bundles and NOTHING ran
 them: each was invoked by hand, once, by whoever wrote it. The cost of that is
 on the record — W4 shipped its flagship deliverable dead (an `animation:` whose
 `@keyframes` were never ported, so the wipe silently never ran) and only an
@@ -13,6 +13,11 @@ existed.
 Three of these need a rendered page, so this builds and serves the site itself
 rather than asking the caller to remember. Pass --skip-build to reuse an
 existing .next and a server you already have up on $PORT.
+
+Fifteen of the sixteen scripts run here. `w2-killswitch-check.py` is the
+exception and is deliberately hand-only: it needs `foundingRate.active` flipped
+to false and the site re-rendered, which is a config change no test run should
+make on its own.
 
 Exit code is the number of failing gates, so CI fails loudly and a human can
 see how much is broken at a glance.
@@ -24,6 +29,7 @@ import http.client
 import os
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -57,16 +63,41 @@ def sh(argv: list[str], **kw) -> subprocess.CompletedProcess:
     return subprocess.run(argv, cwd=ROOT, **kw)
 
 
-def wait_for_server(port: int, timeout: float = 60.0) -> bool:
+def port_is_free(port: int) -> bool:
+    with socket.socket() as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind(("127.0.0.1", port))
+            return True
+        except OSError:
+            return False
+
+
+def wait_for_server(port: int, proc: subprocess.Popen | None, timeout: float = 90.0) -> bool:
+    """Wait for OUR server, not for any 200 on the port.
+
+    Grading a DIFFERENT build's bytes as PASS is the exact false-pass class
+    these gates exist to prevent, so the caller pre-flights the port and this
+    also gives up the moment the child dies instead of waiting out the timeout
+    on a server that already crashed.
+    """
     deadline = time.time() + timeout
     while time.time() < deadline:
+        if proc is not None and proc.poll() is not None:
+            print(f"server exited early (code {proc.returncode})")
+            return False
+        conn = None
         try:
             conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
             conn.request("GET", "/")
             if conn.getresponse().status == 200:
                 return True
         except OSError:
-            time.sleep(0.5)
+            pass
+        finally:
+            if conn is not None:
+                conn.close()
+        time.sleep(0.5)
     return False
 
 
@@ -92,6 +123,12 @@ def main() -> int:
     server = None
     try:
         if not args.skip_build:
+            # Refuse to grade someone else's server. Without this the run can
+            # silently score a stale build's bytes with full confidence.
+            if not port_is_free(PORT):
+                print(f"port {PORT} is already in use — refusing to run against a "
+                      f"server this script did not start. Free it, or set PORT.")
+                return 1
             print("· building…", flush=True)
             if sh(["npm", "run", "build"], stdout=subprocess.DEVNULL).returncode != 0:
                 print("BUILD FAILED — gates need a build to check the shipped bytes")
@@ -102,7 +139,7 @@ def main() -> int:
                 cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 start_new_session=True,
             )
-        if not wait_for_server(PORT):
+        if not wait_for_server(PORT, server):
             print(f"no server answering on :{PORT}")
             return 1
         PAGE.parent.mkdir(parents=True, exist_ok=True)
@@ -132,10 +169,15 @@ def main() -> int:
         return 0
     finally:
         if server is not None:
-            os.killpg(os.getpgid(server.pid), signal.SIGTERM)
+            # Unguarded, this raises ProcessLookupError when the child already
+            # exited — replacing a clean `return 1` with a traceback and
+            # skipping the cleanup below it.
+            try:
+                os.killpg(os.getpgid(server.pid), signal.SIGTERM)
+            except (ProcessLookupError, PermissionError):
+                pass
         if PAGE.exists():
             PAGE.unlink()
-        shutil.rmtree(ROOT / ".next" / "gate-tmp", ignore_errors=True)
 
 
 if __name__ == "__main__":

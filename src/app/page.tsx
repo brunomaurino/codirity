@@ -45,11 +45,22 @@ export default function Home() {
               has asked yet.
             - The two case studies come BEFORE the clients strip: the detailed
               evidence first, the roll-call as the summary after it.
-            - `Benefits` is GONE. All six of its promises restated things the
-              page already says where they belong — four were character-identical
-              to `tiers[].features` — which is why the approved mockup has no
-              such section. Removing a duplicate is not trimming a claim;
-              nothing it carried is now unstated.
+            - `Benefits` is GONE, which is why the approved mockup has no such
+              section. Precisely (the first draft of this comment overstated it
+              and the review caught that): FIVE of its six promises are already
+              made by `hero.subhead` — "Unlimited requests, senior engineering,
+              and AI-accelerated delivery — for one flat monthly rate. Pause or
+              cancel anytime." The sixth, "Scales with you", is the terms band's
+              Pro row ("Two active tasks, running in parallel") and the
+              what-counts-as-a-task FAQ. Two of the six titles were also
+              character-identical to `tiers[].features`, though that array is
+              not itself rendered, so it proves nothing on its own.
+              What DID go with it: the anti-hourly framing — "no hourly billing
+              and no surprise invoices", "without the overhead, the hourly
+              billing, or the lock-in". Nothing on the page says that now. It is
+              a positioning line, not one of the six promises, and restoring it
+              is a copy decision rather than a cleanup — recorded as open rather
+              than quietly dropped.
 
             The page is one dark run, one paper run, and TWO transitions — down
             from four bands, because Benefits' light island is gone. */}
