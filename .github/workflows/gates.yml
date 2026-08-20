@@ -25,7 +25,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # 24, matching the toolchain the lockfile was generated with. npm 10
+          # (which ships with node 22) rejects an npm 11 lockfile's nested
+          # resolution in `ci` mode — the runner failed three times on a
+          # picomatch entry that is internally consistent under npm 11.
+          node-version: 24
           cache: npm
       - uses: actions/setup-python@v5
         with:
