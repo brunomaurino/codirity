@@ -14,23 +14,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: [
-          "bg-brand-fill text-white",
-          "hover:bg-brand-fill-dark hover:-translate-y-0.5",
-          "hover:shadow-brand",
-        ],
-        secondary: [
-          "bg-white text-gray-700",
-          "border border-gray-200",
-          "hover:border-brand hover:text-brand hover:bg-brand-pale",
-        ],
-        ghost: [
-          "text-brand",
-          "hover:bg-brand-pale",
-        ],
-        dark: [
-          "bg-white text-brand-dark",
-          "hover:-translate-y-0.5 hover:shadow-lg",
+        // The only variant. v4 has one action colour on the dark ground, and
+        // it reads the same `--mint`/`--ground` tokens as `.close-cta` rather
+        // than hardcoding them. The v3 primary/secondary/ghost/dark variants
+        // were deleted with their last call site (Phase 4/5 review).
+        mint: [
+          "bg-mint text-ground",
+          "hover:-translate-y-0.5",
         ],
       },
       size: {
@@ -44,7 +34,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "primary",
+      variant: "mint",
       size: "md",
     },
   }

@@ -81,7 +81,10 @@ if css:
             fails.append(f"COMPILED CHUNK still ships {label}")
 
     # And the v4 system is present — a sweep that deleted too much would fail here.
-    for needed in [".panel-deep", ".close-cta", ".ownblockquote", ".trust", ".wrap-v4"]:
+    # `.panel-deep` was REMOVED from this list: it was the v3 deep-surface
+    # alias whose last consumer (Benefits) is gone, and requiring it here
+    # actively blocked finishing the sweep (Phase 4/5 review).
+    for needed in [".close-cta", ".ownblockquote", ".trust", ".wrap-v4"]:
         if needed.replace(" ", "") not in flat:
             fails.append(f"COMPILED CHUNK is missing {needed} — the sweep took too much")
 

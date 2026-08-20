@@ -1,12 +1,9 @@
 export { Hero } from "./Hero";
 
 export { Services } from "./Services";
-export { ServiceCard } from "./ServiceCard";
-export type { ServiceCardProps } from "./ServiceCard";
 
 export { Process } from "./Process";
 
-export { Benefits } from "./Benefits";
 
 export { RecentWork } from "./RecentWork";
 

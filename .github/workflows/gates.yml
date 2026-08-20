@@ -1,0 +1,43 @@
+# The gates redesign-v4 built, running automatically.
+#
+# Sixteen gate scripts shipped across six bundles and nothing invoked them:
+# each ran once, by hand, by whoever wrote it. W4 shipped a dead flagship
+# deliverable behind that gap — an `animation:` whose `@keyframes` were never
+# ported, so the wipe silently never ran, and only an adversarial review caught
+# it. The gate that would have caught it already existed.
+name: gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: the job only reads the checkout. Without this it inherits the
+# repository default, which is often write-scoped — and `npm ci` runs package
+# lifecycle scripts, so a compromised dependency would inherit a writable token.
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 24, matching the toolchain the lockfile was generated with. npm 10
+          # (which ships with node 22) rejects an npm 11 lockfile's nested
+          # resolution in `ci` mode — the runner failed three times on a
+          # picomatch entry that is internally consistent under npm 11.
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      # Builds, serves, and runs every gate against the REAL rendered document
+      # and the REAL compiled CSS chunk — several of them exist precisely
+      # because a source grep misses what the bytes actually ship.
+      - run: npm test

@@ -3,14 +3,13 @@ import { RevealProvider } from "@/components/layout";
 import { ServiceJsonLd, FaqPageJsonLd } from "@/components/seo/JsonLd";
 import {
   Hero,
-  Process,
-  Services,
-  Benefits,
-  RecentWork,
-  CaseStudies,
-  About,
   Pricing,
   Queue,
+  CaseStudies,
+  RecentWork,
+  Services,
+  Process,
+  About,
   Faq,
   Ownership,
   Contact,
@@ -29,49 +28,54 @@ export default function Home() {
       <ServiceJsonLd />
       <FaqPageJsonLd />
       <RevealProvider>
-        {/* GROUND ORDER (W5). W5 turned four scattered sections to paper, and
-            the brief bounds them with ONE dark→paper band entering and ONE
-            paper→dark band leaving — which only makes sense if they form a
-            contiguous RUN. Left in the v3 sequence they alternated with the
-            dark sections six times, needing six gradients and reading as a
-            strobe. So the four move together, in the APPROVED MOCKUP'S OWN
-            internal order (what we build → how it works → founder → FAQ), and
-            land where the mockup puts them: after the proof and the offer.
+        {/* SECTION ORDER — the approved mockup's, exactly
+            (docs/redesign-v4/approved-mockup.html).
 
-            The page is now two runs and four transitions, every one softened:
-              dark hero → band → light Benefits → band → DARK RUN (clients,
-              studies, terms, queue) → band → PAPER RUN (W5's four) → band →
-              dark close.
+            redesign-v4 shipped W0–W6 with the v3 sequence still underneath:
+            `Benefits` sat second, the offer landed after the proof, and the two
+            case studies came after the clients strip. W5 grouped the paper run
+            and recorded the rest as an open design decision; this closes it by
+            matching the contract rather than leaving the page half-ported.
 
-            What this deliberately does NOT do is re-order the dark run or move
-            the offer relative to the proof; the FAQ still follows the price,
-            as the mockup has it. Benefits is a v3 survivor with no counterpart
-            in the mockup and is left in place for W6's sweep to decide on. */}
+            What changed, and why it reads better:
+            - The OFFER now follows the hero directly. The mockup leads with the
+              price because the price IS the argument — a flat monthly number a
+              reader can act on before any persuading. The proof then answers
+              "can they actually do it", instead of preceding a question nobody
+              has asked yet.
+            - The two case studies come BEFORE the clients strip: the detailed
+              evidence first, the roll-call as the summary after it.
+            - `Benefits` is GONE, which is why the approved mockup has no such
+              section. Precisely (the first draft of this comment overstated it
+              and the review caught that): FIVE of its six promises are already
+              made by `hero.subhead` — "Unlimited requests, senior engineering,
+              and AI-accelerated delivery — for one flat monthly rate. Pause or
+              cancel anytime." The sixth, "Scales with you", is the terms band's
+              Pro row ("Two active tasks, running in parallel") and the
+              what-counts-as-a-task FAQ. Two of the six titles were also
+              character-identical to `tiers[].features`, though that array is
+              not itself rendered, so it proves nothing on its own.
+              What DID go with it: the anti-hourly framing — "no hourly billing
+              and no surprise invoices", "without the overhead, the hourly
+              billing, or the lock-in". Nothing on the page says that now. It is
+              a positioning line, not one of the six promises, and restoring it
+              is a copy decision rather than a cleanup — recorded as open rather
+              than quietly dropped.
+
+            The page is one dark run, one paper run, and TWO transitions — down
+            from four bands, because Benefits' light island is gone. */}
         <Hero />
-        {/* S4 — Membership benefits: a v3 survivor with no mockup counterpart.
-            The bands terminate at `--paper`, so the section is pinned to the
-            SAME ground rather than its legacy `bg-white` — otherwise each
-            gradient lands on #EDEDE6 against a #FFFFFF section and leaves a
-            visible seam at exactly the boundary it exists to soften (Phase 4/5
-            review). Retiring or reworking the section itself is W6's. */}
-        <div className="band band-dl" aria-hidden="true" />
-        <Benefits />
-        <div className="band band-ld" aria-hidden="true" />
 
-        {/* ——— the dark run: proof, then the offer ——— */}
-        {/* S5 — Clients (D6): "who's on the board", from offer.clients —
-            always renders, not gated on offer.caseStudies. */}
-        <RecentWork />
-        {/* S5b — Case studies (D1): eDairyMarket + Meshio, content from
-            HANDOFF-redesign-v3.md §7 — the proof runs clients → the two
-            studies in one uninterrupted stretch. */}
-        <CaseStudies />
-        {/* S6 — the terms band (W2) */}
+        {/* ——— the dark run: the offer, then the proof ——— */}
+        {/* The terms band (W2) and the queue scene (W3) stay adjacent per the
+            mockup's own terms → queue pairing, and every section here is dark,
+            so no band sits between any of them. */}
         <Pricing />
-        {/* S6b — the queue scene (W3): the signature motion, kept directly
-            after the terms band per the mockup's own terms → queue adjacency.
-            Both are dark, so the pair needs no band between them. */}
         <Queue />
+        {/* eDairyMarket + Meshio — the detailed evidence. */}
+        <CaseStudies />
+        {/* "Who's on the board" — the roll-call that summarises it. */}
+        <RecentWork />
 
         <div className="band band-dl" aria-hidden="true" />
         {/* ——— the paper run (W5) ——— */}
@@ -84,8 +88,7 @@ export default function Home() {
         {/* ——— the closing band (W6) ———
             Ownership → close → footer are one continuous dark surface, not
             three stacked slabs: the band above is the ONLY transition they
-            need, and W5's commitments record that it already exists — do not
-            add a second. */}
+            need. */}
         <Ownership />
         <Contact />
       </RevealProvider>

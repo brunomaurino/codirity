@@ -50,6 +50,10 @@
   --brass: #C8A24A;
   --rule: rgba(244, 247, 242, 0.14);
   --rule-ink: rgba(10, 23, 18, 0.16);
+  /* Interactive rules need 3:1 to identify the control (WCAG 1.4.11); the
+     decorative --rule above is deliberately quieter and is NOT enough on a
+     form field, whose underline is its only boundary. */
+  --rule-field: rgba(244, 247, 242, 0.42);
   /* The paper-ground twin of --chalk-faint: de-emphasised but still READ.
      The mockup declines rows with `opacity: .42`, which composites to roughly
      2.7:1 on paper — under AA even at the large-text threshold, and these rows
@@ -515,18 +519,7 @@ body {
    v4 interim deep panel (W0)
    ======================================== */
 
-/* The v3 blob-gradient and glassmorphic treatments are RETIRED (HANDOFF-v4
-   §1.3). W0 kept `.blob-1..4` and `.glass-dark` alive as ALIASES so the
-   not-yet-reworked sections stayed legible; W6's sweep deletes them, along with
-   the `blob-float` keyframes and their `animate-*` utilities, having repointed
-   the last consumer (Benefits) at `.panel-deep` directly.
-   NEVER reintroduce the gradients. */
 @layer components {
-  .panel-deep {
-    background: var(--ground-2);
-    color: var(--chalk);
-  }
-
   .btn-pill {
     border-radius: 9999px;
   }
@@ -1568,6 +1561,72 @@ body {
     height: 1px;
     background: var(--rule);
     flex: 0 0 38px;
+  }
+
+  /* The close's form, on the dark ground.
+     It was the last v3 surface on the site: a white card with a shadow and the
+     v3 green gradient accent bar this file elsewhere says never to reintroduce,
+     sitting beside the mint CTA so two different action greens were visible at
+     once. It is now part of the band rather than a card floating on it — the
+     fields are ruled, not boxed, which is the same vocabulary as the terms band
+     and the services list. */
+  .field {
+    width: 100%;
+    background: transparent;
+    color: var(--chalk);
+    border: 0;
+    /* --rule (alpha .14) composites to ~1.47:1 on the ground, and the rule is
+       the field's ONLY affordance — no background, no side borders, no radius.
+       WCAG 1.4.11 wants 3:1 to identify a control, so this uses a stronger
+       alpha of its own rather than the hairline used for decorative rules
+       elsewhere (Phase 4/5 review). */
+    border-bottom: 1px solid var(--rule-field);
+    border-radius: 0;
+    padding: 12px 2px;
+    font-size: 15px;
+    transition: border-color 0.25s ease;
+  }
+  /* The custom ChevronDown is absolutely positioned over the control, so the
+     native arrow has to go or BOTH render — and the text needs room to clear
+     the icon. Scoped to select: inputs and textareas have no arrow.
+     (`appearance-none` and the pr-8/10/12 padding lived on the old cva and were
+     dropped in the rework; Tailwind v4's preflight does not reset select
+     appearance — Phase 4/5 review.) */
+  select.field {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding-right: 32px;
+  }
+  .field::placeholder {
+    color: var(--chalk-faint);
+  }
+  .field:focus {
+    outline: none;
+    border-bottom-color: var(--mint);
+  }
+  .field:focus-visible {
+    outline: 2px solid var(--mint);
+    outline-offset: 3px;
+  }
+  .field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  /* The native select's own menu is painted by the OS, so its options need a
+     real background — a transparent select renders chalk-on-white options and
+     is unreadable when opened. */
+  .field option {
+    background: var(--ground-2);
+    color: var(--chalk);
+  }
+  .field-label {
+    display: block;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-bottom: 6px;
   }
 }
 
