@@ -1,5 +1,5 @@
 import { CalPopupButton, TrackedLink } from "@/components/ui";
-import { sections, CAL_LINK, CONTACT_EMAIL, RESPONSE_TIME_CLAIM } from "@/config/offer";
+import { sections, CAL_LINK, CONTACT_EMAIL, RESPONSE_TIME_CLAIM, BOOKING_ENABLED } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 // The close (Bundle W6, v4 treatment) — the left half of the final band, on the
@@ -59,6 +59,9 @@ export function ContactInfo() {
             Secondary to the address above it, so it is an outline control
             rather than a second filled one: two filled pills in one block read
             as two primary actions. */}
+        {/* BOOK-A-CALL DISABLED — offer.ts BOOKING_ENABLED */}
+        {BOOKING_ENABLED && (
+          <>
         <p className="lede" style={{ marginTop: "36px", marginBottom: "12px" }}>
           Rather talk it through?
         </p>
@@ -74,6 +77,8 @@ export function ContactInfo() {
         >
           Book a call
         </CalPopupButton>
+          </>
+        )}
       </div>
     </div>
   );

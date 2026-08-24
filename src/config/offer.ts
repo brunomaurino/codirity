@@ -274,6 +274,22 @@ export const LEGAL_ENTITY = "BOMAU LLC";
 export const CONTACT_EMAIL = "brunomaurino27@gmail.com";
 /** Cal.com link (namespace/event) used by CalPopupButton. */
 export const CAL_LINK = "support-codirity-lz8rjc/30min";
+/**
+ * BOOK-A-CALL DISABLED (2026-08-24) — the master switch for every "Book a call"
+ * control: header (desktop + mobile), hero, FAQ, and the closing band.
+ *
+ * The Cal event itself is LIVE (cal.com/support-codirity-lz8rjc/30min → 200), which
+ * is exactly the problem: it belongs to the `Support Codirity` account on the
+ * inactive codirity.com Workspace, so a prospect can book a slot and the
+ * confirmation lands in a mailbox nobody reads. Silently missing a booked call is
+ * worse than not offering one. Typed `boolean` on purpose — a literal `false` would
+ * narrow and stop type-checking the JSX behind it.
+ *
+ * Flip to true once Cal points at a live inbox. NOTE: w6-close-gate.py's
+ * `("call_booked", "contact_close")` funnel assertion is commented out under the
+ * same marker — restore it in the same change, or the funnel goes unguarded.
+ */
+export const BOOKING_ENABLED: boolean = false;
 
 /** The response-time promise, stated ONCE. It is a real commitment to anyone who
  *  writes in, and Bundle V6's review battery caught it restated twice in the same

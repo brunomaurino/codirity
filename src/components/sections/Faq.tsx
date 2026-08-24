@@ -1,6 +1,6 @@
 "use client";
 
-import { faq, sections, CAL_LINK } from "@/config/offer";
+import { faq, sections, CAL_LINK, BOOKING_ENABLED } from "@/config/offer";
 import { CalPopupButton } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
@@ -51,6 +51,8 @@ export function Faq() {
         {/* Book a call, framed as optional. `analyticsLocation` keeps this
             booking distinguishable from the closing band's Cal CTA — the two
             fired an identical unparameterized `call_booked` until v3's review. */}
+        {/* BOOK-A-CALL DISABLED — offer.ts BOOKING_ENABLED */}
+        {BOOKING_ENABLED && (
         <div className="rv fade" style={{ marginTop: "clamp(32px, 5vw, 56px)" }}>
           <p className="lede" style={{ marginBottom: "14px" }}>
             Prefer to talk first?
@@ -73,6 +75,7 @@ export function Faq() {
             Book a call
           </CalPopupButton>
         </div>
+        )}
       </div>
     </section>
   );

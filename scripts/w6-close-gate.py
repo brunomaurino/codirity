@@ -61,7 +61,12 @@ if squash(own["answer"]) not in quotes:
 for event, ctx in [
     ("email_click", "contact_section"),
     ("email_click", "footer"),
-    ("call_booked", "contact_close"),
+    # BOOK-A-CALL DISABLED (2026-08-24) — every Cal CTA is behind offer.ts
+    # BOOKING_ENABLED=false, so `call_booked` cannot fire. This assertion is grep-based
+    # and the JSX still sits in the file, so leaving it armed would make it PASS on a
+    # dead funnel — a check that cannot fail. Restore it in the same change that flips
+    # BOOKING_ENABLED back to true.
+    # ("call_booked", "contact_close"),
     ("contact_form_submitted", None),
     ("contact_form_success", None),
     ("contact_form_error", None),

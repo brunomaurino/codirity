@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { CalPopupButton } from "@/components/ui";
-import { hero, CAL_LINK } from "@/config/offer";
+import { hero, CAL_LINK, BOOKING_ENABLED } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -110,6 +110,8 @@ export function Header() {
         {/* Desktop CTAs — Book a call / See pricing pill pair (HANDOFF-redesign-v3 §1,
             mirrors the hero's own two-CTA pattern in the persistent nav) */}
         <div className="hidden lg:flex items-center gap-3">
+          {/* BOOK-A-CALL DISABLED — offer.ts BOOKING_ENABLED */}
+          {BOOKING_ENABLED && (
           <CalPopupButton
             calLink={CAL_LINK}
             className={cn(
@@ -123,6 +125,7 @@ export function Header() {
           >
             Book a call
           </CalPopupButton>
+          )}
           <Link
             href={hero.primaryCta.href}
             className={cn(
@@ -187,6 +190,8 @@ export function Header() {
             ))}
           </ul>
           <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col gap-3">
+            {/* BOOK-A-CALL DISABLED — offer.ts BOOKING_ENABLED */}
+            {BOOKING_ENABLED && (
             <CalPopupButton
               calLink={CAL_LINK}
               onOpen={() => setIsMobileMenuOpen(false)}
@@ -200,6 +205,7 @@ export function Header() {
             >
               Book a call
             </CalPopupButton>
+            )}
             <Link
               href={hero.primaryCta.href}
               onClick={() => setIsMobileMenuOpen(false)}

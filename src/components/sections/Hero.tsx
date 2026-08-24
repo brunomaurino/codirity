@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { CalPopupButton, TrackedLink } from "@/components/ui";
-import { hero, tiers, CAL_LINK } from "@/config/offer";
+import { hero, tiers, CAL_LINK, BOOKING_ENABLED } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 // v4 hero (Bundle W1) — docs/redesign-v4/approved-mockup.html is the contract.
@@ -121,6 +121,8 @@ export function Hero() {
                 call_booked, and this bundle's gate is byte-identical events.
                 Labeling it is a one-line follow-up once the funnel owner wants
                 the breakdown. */}
+            {/* BOOK-A-CALL DISABLED — offer.ts BOOKING_ENABLED */}
+            {BOOKING_ENABLED && (
             <CalPopupButton
               calLink={CAL_LINK}
               className={cn(
@@ -133,6 +135,7 @@ export function Hero() {
             >
               {hero.secondaryCta.label}
             </CalPopupButton>
+            )}
           </div>
         </div>
       </div>
