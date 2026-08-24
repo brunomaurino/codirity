@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { CONTACT_EMAIL } from "@/config/offer";
 
 interface ContactFormData {
   firstName: string;
@@ -10,11 +11,11 @@ interface ContactFormData {
   message: string;
 }
 
-const RECIPIENTS = [
-  "support@codirity.com",
-  "juan.maurino@codirity.com",
-  "bruno.maurino@codirity.com",
-];
+// One inbox, and it is the same address the site publishes (offer.ts CONTACT_EMAIL) —
+// so the "write to us" link and the form land in the same place. The three
+// @codirity.com addresses that used to be here all sit on the inactive Workspace, so
+// every one of them would bounce — and a rejected RCPT TO can fail the whole send.
+const RECIPIENTS = [CONTACT_EMAIL];
 
 export async function POST(request: NextRequest) {
   try {

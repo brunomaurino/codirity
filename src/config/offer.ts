@@ -268,7 +268,10 @@ export const BRAND = "Codirity";
 /** ISO 4217 currency for all prices — used by Service.offers structured data (Bundle E). */
 export const CURRENCY = "USD";
 export const LEGAL_ENTITY = "BOMAU LLC";
-export const CONTACT_EMAIL = "support@codirity.com";
+// Interim address: the codirity.com Google Workspace mailbox is inactive, so support@
+// would bounce. Every public mailto + the contact form's delivery inbox read from
+// HERE — flip this one line back to support@codirity.com when the Workspace is live.
+export const CONTACT_EMAIL = "brunomaurino27@gmail.com";
 /** Cal.com link (namespace/event) used by CalPopupButton. */
 export const CAL_LINK = "support-codirity-lz8rjc/30min";
 

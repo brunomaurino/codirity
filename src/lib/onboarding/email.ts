@@ -5,8 +5,12 @@ import type { PlanId } from "./plans";
 import { requiredEnv } from "./env";
 import { WelcomeEmail, WELCOME_EMAIL_SUBJECT } from "./email-template";
 
+// Resend only sends from a DNS-verified domain, so the FROM stays on codirity.com —
+// gmail.com can never be verified as a sender there. That mailbox is currently
+// inactive, which is exactly why REPLY_TO points at the live inbox: a client hitting
+// Reply reaches Bruno, not a dead Workspace address.
 const FROM_ADDRESS = "Codirity <support@codirity.com>";
-const REPLY_TO_ADDRESS = "bruno.maurino@codirity.com";
+const REPLY_TO_ADDRESS = "brunomaurino27@gmail.com";
 
 function requiredTierName(id: "standard" | "pro"): string {
   const tier = tiers.find((t) => t.id === id);

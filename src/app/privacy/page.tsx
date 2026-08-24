@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { TrackedLink } from "@/components/ui";
+import { CONTACT_EMAIL } from "@/config/offer";
 
 export const metadata: Metadata = {
   // "Privacy Policy" only — the root layout's title.template ("%s | Codirity")
@@ -393,12 +394,12 @@ export default function PrivacyPolicy() {
                 <p>
                   By email:{" "}
                   <TrackedLink
-                    href="mailto:support@codirity.com"
+                    href={`mailto:${CONTACT_EMAIL}`}
                     event="email_click"
                     eventParams={{ location: "privacy_page" }}
                     className="text-brand hover:underline"
                   >
-                    support@codirity.com
+                    {CONTACT_EMAIL}
                   </TrackedLink>
                 </p>
               </div>
