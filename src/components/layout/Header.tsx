@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, ArrowRight } from "lucide-react";
-import { CalPopupButton } from "@/components/ui";
+import { CalPopupButton, Logo } from "@/components/ui";
 import { hero, CAL_LINK, BOOKING_ENABLED } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
@@ -74,13 +74,12 @@ export function Header() {
         <Link
           href="/"
           className={cn(
-            "flex items-center gap-2 text-2xl font-medium tracking-tight",
+            "flex items-center text-2xl font-medium tracking-tight",
             // font-mono retired with the v3 system (W0); tone follows ground.
             !overDark ? "text-gray-900" : "text-chalk"
           )}
         >
-          <span>Codirity</span>
-          <span className="w-2.5 h-2.5 bg-mint rounded-full animate-pulse-dot" />
+          <Logo />
         </Link>
 
         {/* Desktop Navigation */}

@@ -1645,6 +1645,7 @@ body {
   .constant,
   .term::after,
   .term > *,
+  .animate-pulse-dot,
   .q-track,
   .q-task,
   .stat-big,

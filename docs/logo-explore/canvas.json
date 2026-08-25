@@ -1,0 +1,14 @@
+{
+  "artboards": [
+    { "file": "Queue.dc.html",    "title": "A — The queue",    "x": 0,    "y": 0,    "w": 860,  "h": 640 },
+    { "file": "Aperture.dc.html", "title": "B — The aperture",  "x": 920,  "y": 0,    "w": 860,  "h": 640 },
+    { "file": "Ledger.dc.html",   "title": "C — The ledger",    "x": 0,    "y": 720,  "w": 860,  "h": 640 },
+    { "file": "Track.dc.html",    "title": "D — The track",     "x": 920,  "y": 720,  "w": 860,  "h": 640 },
+    { "file": "Main.dc.html",     "title": "Recommendation",    "x": 0,    "y": 1440, "w": 1780, "h": 560 }
+  ],
+  "annotations": [
+    { "id": "brief", "x": -420, "y": 0, "w": 340, "text": "Four directions on the v4 system.\nGround #0A1712, mint only on the live element, brass only on a defensible number, pill terminals throughout.\nWordmark is constant across all four — Apfel Grotezk Mittel 500, -0.012em — so the comparison is the mark, not the type." },
+    { "id": "pick", "x": -420, "y": 1440, "w": 340, "text": "My pick: B. Say the word and I'll cut the production SVGs (mark, lockup, favicon set) into public/ and wire the header." }
+  ],
+  "launch": { "view": "canvas" }
+}

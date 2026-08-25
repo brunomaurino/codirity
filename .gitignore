@@ -42,3 +42,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .autonomous/reports/
+
+# design canvases: the seeded editor payload is ~2.5 MB of generated bundle.
+# Re-seed it from the .dc.html artboards — docs/logo-explore/README.md.
+docs/**/codirity-logo-directions.html
