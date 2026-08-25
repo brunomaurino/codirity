@@ -53,16 +53,18 @@ check(".deleted no entra por acá", isCancellationRequested(ev(sub(), undefined,
 check("cambio irrelevante (metadata) se ignora", isCancellationRequested(ev(sub(), { metadata: {} })), false);
 
 console.log("\n── garantía: 7 días / 50% ──");
-const inside = (n: number) => guaranteeNote(sub(), START + n).includes("INSIDE");
+// canceled_at is what the note measures from; the second arg is only the fallback.
+const inside = (n: number) => guaranteeNote(sub({ canceled_at: START + n }), START).includes("INSIDE");
 check("día 1 (0s) está adentro", inside(0), true);
 check("día 3 está adentro", inside(3 * DAY), true);
 check("exactamente 7x24h está adentro (el borde va a favor del cliente)", inside(7 * DAY), true);
 check("7x24h + 1s ya está afuera", inside(7 * DAY + 1), false);
 check("día 30 está afuera", inside(30 * DAY), false);
 check("monto: 50% de USD 99.00 = USD 49.50", guaranteeNote(sub(), START).includes("USD 49.50"), true);
+check("mide desde canceled_at, no desde el evento", guaranteeNote(sub({ canceled_at: START + 30 * DAY }), START).includes("no refund owed"), true);
+check("sin canceled_at cae al timestamp del evento", guaranteeNote(sub(), START + 30 * DAY).includes("no refund owed"), true);
 check("suma por cantidad: 2 x 9900 → USD 99.00", guaranteeNote(sub({ items: { data: [{ quantity: 2, price: { unit_amount: 9900 } }] } }), START).includes("USD 99.00"), true);
-check("afuera no promete plata", guaranteeNote(sub(), START + 30 * DAY).includes("no refund owed"), true);
-check("el número de día es correcto (día 4 a las 72h)", guaranteeNote(sub(), START + 3 * DAY).startsWith("Day 4 "), true);
+check("el número de día es correcto (día 4 a las 72h)", guaranteeNote(sub({ canceled_at: START + 3 * DAY }), START).startsWith("Day 4 "), true);
 
 console.log("\n── fecha de fin de acceso ──");
 check("usa cancel_at cuando está", accessEndsOn(sub({ cancel_at: START + 12 * DAY })), "2025-06-27");

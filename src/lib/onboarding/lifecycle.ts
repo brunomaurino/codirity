@@ -57,12 +57,20 @@ export function formatMoney(cents: number, currency: string): string {
  * Turns `guarantee` (offer.ts — the same 7 days / 50% the site promises) into the one line
  * the founder needs to act: is a refund owed, and how much.
  *
- * `nowUnix` is the EVENT's timestamp, never wall-clock time. Two reasons: a Stripe retry
- * hours later must not recompute a different day number than the delivery it retries, and
- * a test clock's simulated time only ever reaches this code through the event.
+ * The moment measured against is `canceled_at` — Stripe's own record of WHEN the client
+ * asked to cancel, which is exactly what the promise is about. `eventCreated` is only the
+ * fallback for a shape that carries no `canceled_at` (a reverted cancellation).
+ *
+ * Neither is wall-clock time, deliberately: a Stripe retry hours later must not recompute a
+ * different day number than the delivery it retries. And `canceled_at` is the ONLY one of
+ * the two that a test clock simulates — measured directly, `event.created` stays pinned to
+ * real time even for a customer on a clock advanced nine days (probed 2026-08-25), so
+ * measuring from the event would have silently reported "Day 1" for every scenario and made
+ * the before/after-7-days tests indistinguishable.
  */
-export function guaranteeNote(subscription: Stripe.Subscription, nowUnix: number): string {
-  const elapsed = nowUnix - subscription.start_date;
+export function guaranteeNote(subscription: Stripe.Subscription, eventCreated: number): string {
+  const requestedAt = subscription.canceled_at ?? eventCreated;
+  const elapsed = requestedAt - subscription.start_date;
   const day = Math.floor(elapsed / 86_400) + 1; // signup day is day 1, not day 0
   // `<=` so a cancellation at exactly 7x24h still counts. "Within your first 7 days" is a
   // promise made to a paying client; the boundary should not be resolved against them.
