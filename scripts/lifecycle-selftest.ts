@@ -13,9 +13,12 @@
 import type Stripe from "stripe";
 import {
   accessEndsOn,
+  clientLine,
   guaranteeNote,
   isCancellationRequested,
   isCancellationReverted,
+  refundHowTo,
+  stripeCustomerUrl,
 } from "../src/lib/onboarding/lifecycle";
 
 const DAY = 86_400;
@@ -70,6 +73,18 @@ console.log("\n── fecha de fin de acceso ──");
 check("usa cancel_at cuando está", accessEndsOn(sub({ cancel_at: START + 12 * DAY })), "2025-06-27");
 check("cae al current_period_end del item", accessEndsOn(sub()), "2025-07-15");
 check("sin ninguno, texto de fallback", accessEndsOn(sub({ items: { data: [{ quantity: 1, price: { unit_amount: 9900 } }] } })), "the end of the current period");
+
+console.log("\n── identidad y enlaces de la alerta ──");
+check("nombre + email + plan", clientLine("Bruno Maurino", "b@acme.com", "cus_1", "Standard"), "Bruno Maurino <b@acme.com> (Standard)");
+check("sin email no inventa <>", clientLine("Bruno Maurino", "", "cus_1", "Pro"), "Bruno Maurino (Pro)");
+check("sin plan no inventa ()", clientLine("Bruno Maurino", "b@acme.com", "cus_1", null), "Bruno Maurino <b@acme.com>");
+check("customer borrado: lo dice en vez de mostrar el id pelado",
+  clientLine("cus_V8aCvN0XtL5nT8", "", "cus_V8aCvN0XtL5nT8", "Standard").includes("the Stripe customer was deleted"), true);
+check("customer borrado: igual conserva el id", clientLine("cus_9", "", "cus_9", null).startsWith("cus_9"), true);
+check("link de test lleva /test/", stripeCustomerUrl("cus_9", false), "https://dashboard.stripe.com/test/customers/cus_9");
+check("link live NO lleva /test/", stripeCustomerUrl("cus_9", true), "https://dashboard.stripe.com/customers/cus_9");
+check("los pasos de reembolso incluyen el link correcto", refundHowTo("cus_9", true).includes("https://dashboard.stripe.com/customers/cus_9"), true);
+check("los pasos de reembolso son 3", refundHowTo("cus_9", true).split("\n").length, 4);
 
 console.log(failures ? `\n⛔ ${failures} fallaron` : "\n✅ todo verde");
 process.exit(failures ? 1 : 0);

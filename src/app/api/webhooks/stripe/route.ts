@@ -7,9 +7,12 @@ import { copyBoard } from "@/lib/onboarding/trello";
 import { sendWelcomeEmail } from "@/lib/onboarding/email";
 import {
   accessEndsOn,
+  clientLine,
   guaranteeNote,
   isCancellationRequested,
   isCancellationReverted,
+  refundHowTo,
+  stripeCustomerUrl,
 } from "@/lib/onboarding/lifecycle";
 
 // Must stay strictly BELOW LEASE_SECONDS — pins the platform's actual execution ceiling
@@ -90,6 +93,15 @@ type SubscriptionLifecycleEvent =
   | Stripe.CustomerSubscriptionDeletedEvent
   | Stripe.CustomerSubscriptionUpdatedEvent
   | Stripe.CustomerSubscriptionPausedEvent;
+
+/** Display name of the plan a subscription is on, or null when its price is not one of
+ * ours (a legacy or manually-created price). Alerts read better with it and stay correct
+ * without it. */
+function planLabel(subscription: Stripe.Subscription): string | null {
+  const priceId = subscription.items.data[0]?.price.id;
+  const plan = priceId ? planForPriceId(priceId) : null;
+  return plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : null;
+}
 
 /** Shared by every subscription-lifecycle handler below. */
 async function resolveClient(
@@ -185,10 +197,18 @@ async function handleLifecycleEvent(
     // one later retry that could have sent the accurate version.
     if (!record.alertSent) {
       const cardNote = record.cardId
-        ? "revoke-access card created on the ops board."
-        : "revoke-access card creation FAILED — needs manual follow-up.";
+        ? "Revoke-access card created on the ops board."
+        : "Revoke-access card creation FAILED — needs manual follow-up.";
       try {
-        await alertFounder(`Client ${action}: ${clientName} — ${cardNote}`);
+        await alertFounder(
+          [
+            `Client ${action}: ${clientLine(clientName, email, customerId, planLabel(subscription))}`,
+            `Subscription ${subscription.id}`,
+            stripeCustomerUrl(customerId, event.livemode),
+            "",
+            cardNote,
+          ].join("\n")
+        );
         await persistStep(eventId, leaseUntil, { alertSent: true });
         record = { ...record, alertSent: true };
       } catch (err) {
@@ -259,11 +279,30 @@ async function handleCancellationIntent(
   const leaseUntil = reserveResult.record.lease_until;
   const record = reserveResult.record;
 
+  const who = clientLine(clientName, email, customerId, planLabel(subscription));
+  const link = stripeCustomerUrl(customerId, event.livemode);
+  const note = guaranteeNote(subscription, event.created);
   const message =
     intent === "requested"
-      ? `Cancellation requested: ${clientName} — access stays live until ${accessEndsOn(subscription)}. ` +
-        guaranteeNote(subscription, event.created)
-      : `Cancellation reverted: ${clientName} — the subscription is active again. Do NOT revoke access.`;
+      ? [
+          `Cancellation requested: ${who}`,
+          `Access stays live until ${accessEndsOn(subscription)} — do NOT revoke before then.`,
+          "",
+          note,
+          // Only when something is actually owed: click steps under "no refund owed" would
+          // read as an instruction to refund anyway.
+          ...(note.includes("INSIDE") ? ["", refundHowTo(customerId, event.livemode)] : []),
+          "",
+          `Subscription ${subscription.id}`,
+          link,
+        ].join("\n")
+      : [
+          `Cancellation reverted: ${who}`,
+          "The subscription is active again. Do NOT revoke access.",
+          "",
+          `Subscription ${subscription.id}`,
+          link,
+        ].join("\n");
 
   try {
     if (!record.alertSent) {

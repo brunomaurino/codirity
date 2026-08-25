@@ -35,7 +35,10 @@ export async function alertFounder(message: string): Promise<void> {
   await transporter.sendMail({
     from: `"Codirity Ops" <${user}>`,
     to,
-    subject: "Codirity onboarding alert",
+    // Every alert used to arrive as the same "Codirity onboarding alert", so a new client,
+    // a cancellation and a partial failure were indistinguishable without opening them.
+    // The first line of every message is already its headline — promote it.
+    subject: `Codirity — ${message.split("\n")[0].slice(0, 120)}`,
     text: message,
   });
 }

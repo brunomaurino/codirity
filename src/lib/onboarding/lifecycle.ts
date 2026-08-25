@@ -96,3 +96,37 @@ export function accessEndsOn(subscription: Stripe.Subscription): string {
   return unix ? new Date(unix * 1000).toISOString().slice(0, 10) : "the end of the current period";
 }
 
+/** Deep link straight to the client in the Stripe dashboard. `livemode` comes off the event,
+ * so a test-mode alert never hands over a link that 404s in the live dashboard. */
+export function stripeCustomerUrl(customerId: string, livemode: boolean): string {
+  return `https://dashboard.stripe.com/${livemode ? "" : "test/"}customers/${customerId}`;
+}
+
+/**
+ * Identity line for an alert. The customer lookup returns nothing when the Stripe customer
+ * record has been DELETED (its deleted form carries no name or email), which is how a real
+ * alert once arrived reading only "Client cancelled: cus_V8aCvN0XtL5nT8". Saying so beats a
+ * bare id: the founder then knows the name is unrecoverable rather than wondering whether
+ * the alert is broken.
+ */
+export function clientLine(clientName: string, email: string, customerId: string, plan: string | null): string {
+  const planPart = plan ? ` (${plan})` : "";
+  if (!email && clientName === customerId) {
+    return `${customerId}${planPart} — no name or email on record (the Stripe customer was deleted)`;
+  }
+  return `${clientName}${email ? ` <${email}>` : ""}${planPart}`;
+}
+
+/**
+ * The refund is MANUAL — Stripe issues nothing on its own when a subscription is cancelled.
+ * Spelling out the click path is the difference between an alert that informs and one that
+ * can be acted on without first going to look up how.
+ */
+export function refundHowTo(customerId: string, livemode: boolean): string {
+  return [
+    "To refund:",
+    `  1. ${stripeCustomerUrl(customerId, livemode)}`,
+    "  2. Open the FIRST payment of this subscription (Payments tab, oldest).",
+    "  3. Refund → Partial refund → enter the amount above.",
+  ].join("\n");
+}
