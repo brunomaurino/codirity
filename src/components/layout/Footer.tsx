@@ -128,6 +128,12 @@ export function Footer() {
               >
                 Privacy Policy
               </Link>
+              <Link
+                href="/terms"
+                className="text-sm text-chalk-dim transition-colors duration-300 hover:text-chalk"
+              >
+                Terms of Service
+              </Link>
             </div>
           </div>
         </div>
