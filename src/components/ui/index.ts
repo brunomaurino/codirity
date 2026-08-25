@@ -10,3 +10,4 @@ export type { SelectProps, SelectOption } from "./Select";
 export { TrackedLink } from "./TrackedLink";
 export { CalPopupButton } from "./CalPopupButton";
 export { Toaster } from "./Toaster";
+export { Logo } from "./Logo";
