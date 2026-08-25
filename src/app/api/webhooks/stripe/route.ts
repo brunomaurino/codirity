@@ -5,6 +5,12 @@ import { planForPriceId, type PlanId } from "@/lib/onboarding/plans";
 import { alertFounder, createCheckin, createRevokeAccessCard } from "@/lib/onboarding/ops";
 import { copyBoard } from "@/lib/onboarding/trello";
 import { sendWelcomeEmail } from "@/lib/onboarding/email";
+import {
+  accessEndsOn,
+  guaranteeNote,
+  isCancellationRequested,
+  isCancellationReverted,
+} from "@/lib/onboarding/lifecycle";
 
 // Must stay strictly BELOW LEASE_SECONDS — pins the platform's actual execution ceiling
 // instead of relying on a comment. Vercel's own defaults (and Fluid Compute's up to 300s)
@@ -85,6 +91,34 @@ type SubscriptionLifecycleEvent =
   | Stripe.CustomerSubscriptionUpdatedEvent
   | Stripe.CustomerSubscriptionPausedEvent;
 
+/** Shared by every subscription-lifecycle handler below. */
+async function resolveClient(
+  stripe: Stripe,
+  customerId: string
+): Promise<{ email: string; name: string | null; clientName: string }> {
+  let email = "";
+  let name: string | null = null;
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!("deleted" in customer && customer.deleted)) {
+      email = customer.email ?? "";
+      name = customer.name ?? null;
+    }
+  } catch (err) {
+    // sanitizedErrorTag, not detailedErrorTag: this is a raw Stripe SDK error, outside the
+    // doc-audited set below (trelloRequest/Resend/createTrackedCard's own hand-authored,
+    // pre-sanitized messages) — a StripeAuthenticationError from a rotated
+    // STRIPE_SECRET_KEY embeds a partially-redacted key fragment in `.message`.
+    console.error("onboarding webhook: customer lookup failed for a lifecycle event", sanitizedErrorTag(err));
+  }
+  // Unlike the signup flow's harder terminal case (missing email/customerId entirely),
+  // customerId is ALWAYS present here (it comes off the event itself, not a lookup), so
+  // this fallback chain can never bottom out empty — worst case the founder sees a raw
+  // Stripe customer id instead of a name, still enough to trace the client via the
+  // dashboard.
+  return { email, name, clientName: name?.trim() || email || customerId };
+}
+
 /**
  * Handles the three lifecycle-event shapes (§3.5, Appendix E): cancellation
  * (`customer.subscription.deleted`), a billing-portal pause
@@ -108,27 +142,7 @@ async function handleLifecycleEvent(
   // PRIMARY per the brief: look up the customer directly rather than trusting the
   // Bundle-1 store, which is keyed by the SIGNUP event's id (not queryable by customer)
   // and is therefore only ever a best-effort association, never authoritative here.
-  let email = "";
-  let name: string | null = null;
-  try {
-    const customer = await stripe.customers.retrieve(customerId);
-    if (!("deleted" in customer && customer.deleted)) {
-      email = customer.email ?? "";
-      name = customer.name ?? null;
-    }
-  } catch (err) {
-    // sanitizedErrorTag, not detailedErrorTag: this is a raw Stripe SDK error, outside the
-    // doc-audited set below (trelloRequest/Resend/createTrackedCard's own hand-authored,
-    // pre-sanitized messages) — a StripeAuthenticationError from a rotated
-    // STRIPE_SECRET_KEY embeds a partially-redacted key fragment in `.message`.
-    console.error("onboarding webhook: customer lookup failed for a lifecycle event", sanitizedErrorTag(err));
-  }
-  // Unlike the signup flow's harder terminal case (missing email/customerId entirely),
-  // customerId is ALWAYS present here (it comes off the event itself, not a lookup), so
-  // this fallback chain can never bottom out empty — worst case the founder sees a raw
-  // Stripe customer id instead of a name, still enough to trace the client via the
-  // dashboard.
-  const clientName = name?.trim() || email || customerId;
+  const { email, name, clientName } = await resolveClient(stripe, customerId);
 
   const reserveResult = await reserveEvent(
     eventId,
@@ -211,6 +225,66 @@ async function handleLifecycleEvent(
   }
 }
 
+/**
+ * Alert-only handler for the two cancel_at_period_end transitions. Deliberately creates NO
+ * revoke-access card: the subscription is still paid and live, and revoking a paying
+ * client's access weeks early would be the worst failure available here. The revoke card
+ * stays on `customer.subscription.deleted`, where access genuinely ends.
+ *
+ * Reuses `alertSent` and the same reserve/lease discipline as every other handler, so a
+ * Stripe retry re-sends nothing.
+ */
+async function handleCancellationIntent(
+  stripe: Stripe,
+  event: Stripe.CustomerSubscriptionUpdatedEvent,
+  intent: "requested" | "reverted"
+): Promise<NextResponse> {
+  const subscription = event.data.object;
+  const eventId = event.id;
+  const customerId =
+    typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+  const { email, name, clientName } = await resolveClient(stripe, customerId);
+
+  const reserveResult = await reserveEvent(
+    eventId,
+    { customerId, email, name, plan: null, subscriptionId: subscription.id },
+    LEASE_SECONDS
+  );
+  if (reserveResult.outcome === "done") {
+    return NextResponse.json({ received: true }, { status: 200 });
+  }
+  if (reserveResult.outcome === "lease-valid") {
+    return NextResponse.json({ error: "event reservation in progress" }, { status: 503 });
+  }
+  const leaseUntil = reserveResult.record.lease_until;
+  const record = reserveResult.record;
+
+  const message =
+    intent === "requested"
+      ? `Cancellation requested: ${clientName} — access stays live until ${accessEndsOn(subscription)}. ` +
+        guaranteeNote(subscription, event.created)
+      : `Cancellation reverted: ${clientName} — the subscription is active again. Do NOT revoke access.`;
+
+  try {
+    if (!record.alertSent) {
+      await alertFounder(message);
+      await persistStep(eventId, leaseUntil, { alertSent: true });
+    }
+    await persistStep(eventId, leaseUntil, { status: "done" });
+    console.log("onboarding webhook: cancellation intent handled", { eventId, intent });
+    return NextResponse.json({ received: true }, { status: 200 });
+  } catch (err) {
+    if (err instanceof LeaseLostError) {
+      console.error("onboarding webhook: lost lease fence on a cancellation intent", { eventId });
+    } else {
+      console.error("onboarding webhook: cancellation-intent alert failed", sanitizedErrorTag(err));
+    }
+    // Non-2xx so Stripe retries: an unsent cancellation alert is exactly the one this flow
+    // cannot afford to drop, since the guarantee window keeps closing while it is missing.
+    return NextResponse.json({ error: "processing incomplete" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   // Read the RAW body first — req.json() would parse-and-mutate it, breaking
   // Stripe's signature verification (§1.2).
@@ -250,6 +324,14 @@ export async function POST(req: NextRequest) {
   // are the only three shapes this route acts on besides a completed checkout.
   if (event.type === "customer.subscription.deleted") {
     return handleLifecycleEvent(stripe, event, "cancelled");
+  }
+  // Before the pause check: these are disjoint `.updated` shapes (cancel_at_period_end vs
+  // pause_collection), but reading them in lifecycle order keeps the dispatch honest.
+  if (isCancellationRequested(event)) {
+    return handleCancellationIntent(stripe, event, "requested");
+  }
+  if (isCancellationReverted(event)) {
+    return handleCancellationIntent(stripe, event, "reverted");
   }
   if (event.type === "customer.subscription.paused" || isPortalPauseTransition(event)) {
     return handleLifecycleEvent(stripe, event, "paused");
