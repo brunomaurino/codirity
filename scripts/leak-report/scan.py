@@ -559,17 +559,30 @@ def render(domain: str, res: dict, findings: list[dict]) -> str:
               f"HTTP {sm['probe_status']}, so this site serves soft 404s and a 200 proves nothing. "
               "Do not claim broken pages here — lead with a different check.", ""]
 
-    if not findings:
-        L += ["**No findings.** Do not send a Tier A wedge to this account: drop it to Tier B or "
-              "cut it from the list. A wedge with nothing in it is worse than no email.", ""]
-        return "\n".join(L)
+    # Severity 3 is real but it does not earn a reply. "Your content pages are missing
+    # og:image" is not a sentence that gets a founder on a call, and promoting one to the
+    # wedge slot would mass-produce weak emails — which is how a wedge campaign decays
+    # into ordinary cold outbound. Observed on the first live batch: 4 of the first 6
+    # domains had metadata-only findings.
+    strong = [x for x in findings if x["severity"] <= 2]
 
-    lead = findings[0]
-    L += ["## The wedge", "",
-          f"**Subject:** {lead['subject'].replace('{domain}', domain)}", "",
-          f"**Opener:** {lead['headline']}. {lead['detail']}", "",
-          f"_Hold the remaining {max(0, len(findings) - 1)} finding(s) for the day-3 follow-up. "
-          "Never send them all at once._", "", "---", ""]
+    if not strong:
+        why = ("No findings." if not findings else
+               f"Only low-severity findings ({', '.join(sorted({x['check'] for x in findings}))}).")
+        L += [f"**{why} Not a Tier A account.** Drop it to Tier B or cut it. A wedge that opens "
+              "with weak news is worse than no email — it spends the one first impression you get.", ""]
+        if findings:
+            L += ["_Low-severity findings are still listed below: they are useful as the day-3 "
+                  "follow-up on an account that earned a reply some other way._", ""]
+        else:
+            return "\n".join(L)
+    else:
+        lead = strong[0]
+        L += ["## The wedge", "",
+              f"**Subject:** {lead['subject'].replace('{domain}', domain)}", "",
+              f"**Opener:** {lead['headline']}. {lead['detail']}", "",
+              f"_Hold the remaining {max(0, len(findings) - 1)} finding(s) for the day-3 follow-up. "
+              "Never send them all at once._", "", "---", ""]
 
     L += ["## All findings", ""]
     for i, x in enumerate(findings, 1):

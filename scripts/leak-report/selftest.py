@@ -199,6 +199,26 @@ def main() -> int:
                   for f in findings4),
           [f["headline"] for f in findings4])
 
+    print("\n[pass 4] a metadata-only account must NOT qualify as Tier A\n")
+    blank = {"sitemap": {"checked": 5, "total_in_sitemap": 5, "soft_404": False, "probe_status": 404,
+                         "throttled": 0, "unreliable": False, "unconfirmed": [], "dead": [],
+                         "server_errors": [], "redirect_chains": [], "insecure": [],
+                         "redirects_to_home": []},
+             "sitemaps": ["x"], "ssr": {}, "checkout": {"ctas": []}, "metadata": [], "psi": None}
+    weak = [{"severity": 3, "check": "metadata", "headline": "h", "subject": "s",
+             "detail": "d", "evidence": ["e"]}]
+    weak_out = S.render("weak.com", blank, weak)
+    check("metadata-only account is refused as Tier A", "Not a Tier A account" in weak_out)
+    check("no wedge is offered for it", "## The wedge" not in weak_out)
+    check("the weak finding is still listed for the follow-up", "day-3 follow-up" in weak_out)
+
+    strong = [{"severity": 1, "check": "ssr", "headline": "h", "subject": "s",
+               "detail": "d", "evidence": ["e"]}] + weak
+    strong_out = S.render("strong.com", blank, strong)
+    check("a strong finding still produces a wedge", "## The wedge" in strong_out)
+    check("the wedge uses the strong finding, not the weak one",
+          strong_out.split("**Opener:**")[1].split("\n")[0].strip().startswith("h"))
+
     print(f"\n{'ALL CHECKS ARMED' if not failures else str(len(failures)) + ' FAILING'}: "
           f"{len(failures)} failure(s)\n")
     return 1 if failures else 0
