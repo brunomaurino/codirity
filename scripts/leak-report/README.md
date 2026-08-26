@@ -30,22 +30,36 @@ day-3 follow-up. **Never send them all at once** — the follow-up needs its own
 
 If a domain produces **no findings**, do not send it a Tier A wedge. Drop it to Tier B or cut it.
 
-## The three guards (this is the part that matters)
+## The guards (this is the part that matters)
 
-The whole campaign rests on the finding being true. A false accusation in a cold email is worse
-than no email, so the scanner refuses to claim things it cannot stand behind:
+The whole campaign rests on the finding being true **and** being about what we say it is about. A
+false accusation in a cold email is worse than no email, so the scanner refuses to claim what it
+cannot stand behind. Every one of these was added after watching it get something wrong:
+
+**Is the claim true?**
 
 1. **Soft-404 probe.** Before trusting any 404, it requests a URL that cannot exist. If the site
-   answers 200, its 404s are soft, a 200 proves nothing, and the entire sitemap claim is suppressed
-   with a warning rather than reported.
+   answers 200, its 404s are soft, a 200 proves nothing, and the entire sitemap claim is suppressed.
 2. **Serial re-verification.** Every dead or 5xx URL is re-checked alone, 1.5s later. Only a repeat
    failure is reportable. A site wobbling under our own scan does not become a finding.
-3. **Throttle detection.** If more than 10% of requests come back 429/503, the site is rate-limiting
-   us and status findings are suppressed entirely. Re-run with `--slow`.
+3. **Throttle detection.** More than 10% 429/503 means the site is rate-limiting us; status findings
+   are suppressed. Re-run with `--slow`. *(edairymarket.com threw 24 × 429 at `--max-urls 40`.)*
 
-Guard 3 exists because edairymarket.com rate-limited this scanner at 80 URLs. At `--max-urls 40` it
-threw 24 × 429 and the report correctly refused to say anything about broken pages; at
-`--max-urls 25 --slow` it came back genuinely clean.
+**Did we measure enough to say it?**
+
+4. **Coverage floor.** Under 25% coverage on a site with 100+ URLs, the report returns
+   *inconclusive* instead of a verdict. "No findings" at 0.5% coverage is not a clean bill of health.
+5. **Random sampling.** The head of a sitemap is the homepage and top nav — the best-maintained URLs
+   a site has. Sampling them first made the scanner near-blind: the first live batch covered 0.50%
+   of 107,717 URLs and reported 1 Tier A account. Random sampling at 800 found 5.
+
+**Is the claim about the right thing?**
+
+6. **Newsletter and social links are not checkouts.** A `href="#"` newsletter button matched on the
+   word "subscribe" and produced "your pricing CTA does not reach a checkout" — false, about a form
+   that works fine.
+7. **410 Gone is not 404.** A 410 is a deliberate takedown. Reporting it as a broken page accuses a
+   founder of a bug they made on purpose; the real defect is the sitemap still listing it.
 
 ## Self-test
 
@@ -53,8 +67,15 @@ threw 24 × 429 and the report correctly refused to say anything about broken pa
 python3 selftest.py
 ```
 
-22 assertions over three passes against a local server with deliberately injected defects: every
-check watched firing on a known defect, then both suppression guards watched refusing to fire on a
-soft-404 site, a flaky 500, and a throttling site. It found three real bugs on its first run
-(redirects invisible because urlopen follows them silently, and `href="#"` CTAs matching no URL
-pattern). A check that has never failed is not a check — run this after any edit to `scan.py`.
+38 assertions over five passes against a local server with deliberately injected defects: every
+check watched firing on a known defect, then every suppression guard watched refusing to fire — on
+a soft-404 site, a flaky 500, a throttling site, a thin sample, and a metadata-only account.
+
+It found three real bugs on its first run: redirects were invisible because `urlopen` follows them
+silently, and `href="#"` CTAs matched no URL pattern because they are not URLs. Guards 4-7 came
+later, from the first live batch — each one from a claim that was about to be wrong in an email.
+
+A check that has never failed is not a check. Run this after any edit to `scan.py`.
+
+`rerender.py` replays saved measurements through the current ranking, so changing the rules does not
+cost 20 prospects another scan.
