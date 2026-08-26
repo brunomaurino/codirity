@@ -49,3 +49,7 @@ docs/**/codirity-logo-directions.html
 
 # pre-sales scan output — prospect data never goes in a PUBLIC repo
 /leads/
+
+# python bytecode
+__pycache__/
+*.pyc
