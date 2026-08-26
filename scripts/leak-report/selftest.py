@@ -11,6 +11,7 @@ finding it must not make. A check that has never failed is not a check.
 
 from __future__ import annotations
 
+import json
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -199,7 +200,29 @@ def main() -> int:
                   for f in findings4),
           [f["headline"] for f in findings4])
 
-    print("\n[pass 4] a metadata-only account must NOT qualify as Tier A\n")
+    print("\n[pass 4] thin coverage must read as INCONCLUSIVE, not clean\n")
+    thin = {"sitemap": {"checked": 30, "total_in_sitemap": 59377, "soft_404": False,
+                        "probe_status": 404, "throttled": 0, "unreliable": False,
+                        "coverage": 30 / 59377, "unconfirmed": [], "dead": [],
+                        "server_errors": [], "redirect_chains": [], "insecure": [],
+                        "redirects_to_home": []},
+            "sitemaps": ["x"], "ssr": {}, "checkout": {"ctas": []}, "metadata": [], "psi": None}
+    thin_out = S.render("thin.com", thin, [])
+    check("a 0.05% sample is called inconclusive", "Inconclusive" in thin_out)
+    check("it does not claim the account is clean", "No findings." not in thin_out)
+    check("it names the re-run that would settle it", "--max-urls" in thin_out)
+
+    wide = json.loads(json.dumps(thin))
+    wide["sitemap"].update(checked=800, total_in_sitemap=1000, coverage=0.8)
+    wide_out = S.render("wide.com", wide, [])
+    check("a 80% sample with nothing found IS a verdict", "Not a Tier A account" in wide_out)
+
+    small = json.loads(json.dumps(thin))
+    small["sitemap"].update(checked=30, total_in_sitemap=40, coverage=0.75)
+    check("a small site is judged, not excused",
+          "Not a Tier A account" in S.render("small.com", small, []))
+
+    print("\n[pass 5] a metadata-only account must NOT qualify as Tier A\n")
     blank = {"sitemap": {"checked": 5, "total_in_sitemap": 5, "soft_404": False, "probe_status": 404,
                          "throttled": 0, "unreliable": False, "unconfirmed": [], "dead": [],
                          "server_errors": [], "redirect_chains": [], "insecure": [],

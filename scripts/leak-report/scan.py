@@ -282,7 +282,11 @@ def soft_404_probe(base: str) -> tuple[bool, int | None]:
 
 def check_sitemap(base: str, urls: list[str], cap: int) -> dict:
     soft, probe_status = soft_404_probe(base)
-    sample = urls[:cap]
+    # RANDOM, not urls[:cap]. The head of a sitemap is the homepage and the top nav: the
+    # most-maintained URLs a site has. Sampling them first made the scanner near-blind —
+    # the first live batch covered 0.50% of 107,717 URLs, all from the healthy end, and
+    # reported 20 of 21 domains as clean. Rot lives in the long tail.
+    sample = random.sample(urls, min(cap, len(urls))) if urls else []
     results = []
 
     def one(u: str) -> dict:
@@ -328,6 +332,7 @@ def check_sitemap(base: str, urls: list[str], cap: int) -> dict:
         "checked": len(results), "total_in_sitemap": len(urls),
         "soft_404": soft, "probe_status": probe_status,
         "throttled": len(throttled), "unreliable": unreliable,
+        "coverage": (len(results) / len(urls)) if urls else 0.0,
         "unconfirmed": [x for x in candidates if not x.get("confirmed")],
         "dead": dead, "server_errors": errors, "redirect_chains": chains,
         "insecure": insecure, "redirects_to_home": home_redirects,
@@ -545,7 +550,8 @@ def build_findings(res: dict) -> list[dict]:
 def render(domain: str, res: dict, findings: list[dict]) -> str:
     sm = res["sitemap"]
     L = [f"# Leak Report — {domain}", ""]
-    L.append(f"Scanned {sm['checked']} of {sm['total_in_sitemap']} sitemap URLs. "
+    L.append(f"Scanned {sm['checked']} of {sm['total_in_sitemap']:,} sitemap URLs "
+             f"({sm.get('coverage', 0) * 100:.1f}%, sampled at random). "
              f"Sitemaps found: {len(res['sitemaps'])}.")
     L.append("")
 
@@ -565,6 +571,23 @@ def render(domain: str, res: dict, findings: list[dict]) -> str:
     # into ordinary cold outbound. Observed on the first live batch: 4 of the first 6
     # domains had metadata-only findings.
     strong = [x for x in findings if x["severity"] <= 2]
+
+    cov = sm.get("coverage", 0.0)
+    thin = cov < 0.25 and sm["total_in_sitemap"] > 100
+
+    if not strong and thin:
+        L += [f"**Inconclusive, not a verdict.** Only {sm['checked']} of "
+              f"{sm['total_in_sitemap']:,} sitemap URLs were checked ({cov * 100:.1f}%). "
+              "Finding nothing in a sample this thin says nothing about the site — the "
+              f"eDairyMarket case study found 27 of 273 by checking the whole catalogue. "
+              f"Re-run with `--max-urls {min(sm['total_in_sitemap'], 1000)}` before deciding "
+              "this account is clean.", ""]
+        if findings:
+            L += ["Low-severity findings so far:", ""]
+            for x in findings:
+                L.append(f"- {x['headline']} ({x['check']})")
+            L.append("")
+        return "\n".join(L)
 
     if not strong:
         why = ("No findings." if not findings else
