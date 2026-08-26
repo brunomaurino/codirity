@@ -62,7 +62,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if p == "/sitemap.xml":
             locs = ["/", "/ok", "/dead", "/boom", "/chain1", "/to-home", "/pricing",
-                    "/post-no-meta", "/flaky"]
+                    "/post-no-meta", "/flaky", "/gone"]
             body = ('<?xml version="1.0" encoding="UTF-8"?><urlset>'
                     + "".join(f"<url><loc>{host}{u}</loc></url>" for u in locs)
                     + "</urlset>")
@@ -105,6 +105,10 @@ class Handler(BaseHTTPRequestHandler):
             # INJECTED DEFECT: no description, no OG, no JSON-LD.
             return self._send(200, "<html><head><title>Post</title></head><body>"
                                    + ("words " * 200) + "</body></html>")
+
+        if p == "/gone":
+            # Deliberately removed. Must NOT be reported as "returns 404".
+            return self._send(410, "gone")
 
         if p == "/boom":
             return self._send(500, "kaboom")  # INJECTED DEFECT: 5xx
@@ -152,7 +156,11 @@ def main() -> int:
 
     check("soft-404 guard stays OFF on a site with real 404s", sm["soft_404"] is False, sm["probe_status"])
     check("404 in sitemap detected", any("404" in h for h in by), sorted(by))
-    check("exactly the one injected dead URL", len(sm["dead"]) == 1, [x["url"] for x in sm["dead"]])
+    check("both injected dead URLs found (one 404, one 410)",
+          sorted(x["status"] for x in sm["dead"]) == [404, 410],
+          [(x["url"], x["status"]) for x in sm["dead"]])
+    check("the 404 claim counts only the 404",
+          any("1 of" in h and "return 404" in h for h in by), sorted(by))
     check("5xx detected", len(sm["server_errors"]) == 1, sm["server_errors"])
     check("2-hop redirect chain detected", len(sm["redirect_chains"]) >= 1, sm["redirect_chains"])
     check("redirect-to-homepage detected", len(sm["redirects_to_home"]) >= 1, sm["redirects_to_home"])
@@ -171,6 +179,11 @@ def main() -> int:
           not any("github" in c["text"].lower() for c in ctas),
           [c["text"] for c in ctas])
     check("metadata gaps found", "metadata" in kinds, sorted(kinds))
+    heads = " | ".join(by)
+    check("a 410 is reported as Gone-but-still-listed, not as a 404",
+          any("410 Gone but still listed" in h for h in by), heads)
+    check("the 410 is not counted into the 404 claim",
+          all("2 of" not in h for h in by if "return 404" in h), heads)
     check("checkout finding is ranked first", findings and findings[0]["check"] == "checkout",
           findings[0]["check"] if findings else None)
     check("wedge subject is non-empty", bool(findings and findings[0]["subject"]))

@@ -472,14 +472,33 @@ def build_findings(res: dict) -> list[dict]:
 
     status_claims_ok = not sm["soft_404"] and not sm.get("unreliable")
     if sm["dead"] and status_claims_ok:
-        n, total = len(sm["dead"]), sm["checked"]
-        f.append({
-            "severity": 1, "check": "sitemap",
-            "headline": f"{n} of {total} URLs in the sitemap return 404",
-            "subject": f"{n} of your {total} pages return 404",
-            "detail": "Still listed in the sitemap Google crawls, so crawl budget is being spent on them.",
-            "evidence": [x["url"] for x in sm["dead"][:12]],
-        })
+        # 404 and 410 are not the same accusation. A 410 is Gone: the site DELIBERATELY
+        # removed the page. Telling a founder "18 of your pages are broken" when they
+        # took them down on purpose is a wrong claim wearing a right number. The real
+        # defect in that case is the sitemap still advertising them.
+        gone = [x for x in sm["dead"] if x["status"] == 410]
+        broken = [x for x in sm["dead"] if x["status"] == 404]
+        total = sm["checked"]
+        if broken:
+            n = len(broken)
+            f.append({
+                "severity": 1, "check": "sitemap",
+                "headline": f"{n} of {total} URLs in the sitemap return 404",
+                "subject": f"{n} of your {total} pages return 404",
+                "detail": "Still listed in the sitemap Google crawls, so crawl budget is "
+                          "being spent on them.",
+                "evidence": [x["url"] for x in broken[:12]],
+            })
+        if gone:
+            n = len(gone)
+            f.append({
+                "severity": 1, "check": "sitemap",
+                "headline": f"{n} of {total} sitemap URLs are 410 Gone but still listed",
+                "subject": f"Your sitemap still lists {n} pages you removed",
+                "detail": "410 means these were taken down on purpose, so the pages are not "
+                          "the problem — the sitemap still sending Google to them is.",
+                "evidence": [x["url"] for x in gone[:12]],
+            })
     if sm["server_errors"] and status_claims_ok:
         f.append({
             "severity": 1, "check": "sitemap",

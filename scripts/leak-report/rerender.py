@@ -22,9 +22,16 @@ import scan as S  # noqa: E402
 
 def rerender(d: Path) -> str:
     raw = json.loads((d / "raw.json").read_text())
-    res, findings = raw["result"], raw["findings"]
+    res = raw["result"]
+    # Re-DERIVE the findings, don't reuse the saved ones. build_findings() is a pure
+    # function of the measurement, so a change to ranking or wording has to be replayed
+    # through it — otherwise this rewrites the report around stale conclusions, which is
+    # exactly what it happened to do the first time it was used.
+    findings = S.build_findings(res)
     report = S.render(res.get("domain", d.name), res, findings)
     (d / "report.md").write_text(report)
+    raw["findings"] = findings
+    (d / "raw.json").write_text(json.dumps(raw, indent=2, default=str))
     strong = [f for f in findings if f["severity"] <= 2]
     return ("TIER A  " + strong[0]["subject"][:58]) if strong else \
            ("—       " + (f"{len(findings)} low-severity only" if findings else "no findings"))
