@@ -60,6 +60,16 @@ CTA_TEXT_PAT = re.compile(
     r"select plan|upgrade|book a (call|demo)|try (it )?free|start trial)\b",
     re.I,
 )
+# A newsletter signup is not a checkout. Prior Labs' "Subscribe to the Newsletter" button
+# is `href="#"` — perfectly normal for a JS-handled form — and it matched CTA_TEXT_PAT on
+# the word "subscribe". The report then said "your pricing CTA does not reach a checkout",
+# which is false and is precisely the email that costs the campaign its credibility. A
+# claim being TRUE is not enough; it has to be about the thing we say it is about.
+NOT_CTA_PAT = re.compile(
+    r"\b(newsletter|updates|mailing list|rss|podcast|follow us|blog|"
+    r"cookie|privacy|terms|careers|jobs|docs|documentation|github|discord|slack)\b",
+    re.I,
+)
 _print_lock = threading.Lock()
 
 
@@ -375,6 +385,8 @@ def check_checkout(base: str, pricing_url: str | None) -> dict:
         # Match on the href OR the label. A `href="#"` Get-started button matches no
         # URL pattern, and it is the single most valuable finding on the page.
         if not (CTA_PAT.search(href) or CTA_TEXT_PAT.search(text)):
+            continue
+        if NOT_CTA_PAT.search(text) or NOT_CTA_PAT.search(href):
             continue
         absolute = urllib.parse.urljoin(target, href)
         key = absolute + "|" + text

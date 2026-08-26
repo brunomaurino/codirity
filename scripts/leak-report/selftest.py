@@ -83,6 +83,9 @@ class Handler(BaseHTTPRequestHandler):
                 '<meta name="description" content="plans"></head><body>'
                 "<p>" + ("Real server-rendered pricing copy. " * 40) + "</p>"
                 '<a href="#">Get started</a>'
+                # NOT a defect: a newsletter form handled in JS. Must never be reported.
+                '<a href="#">Subscribe to the Newsletter</a>'
+                '<a href="#">Follow us on GitHub</a>'
                 '<a href="https://buy.stripe.com/test_abc123">Subscribe</a>'
                 f'<a href="{host}/signup">Sign up</a>'
                 "</body></html>")
@@ -161,6 +164,12 @@ def main() -> int:
     check('CTA href="#" caught', any('href="#"' in c["verdict"] for c in ctas), ctas)
     check("Stripe TEST mode caught", any("TEST mode" in c["verdict"] for c in ctas), ctas)
     check("working CTA not flagged", any(c["verdict"] == "ok" for c in ctas), ctas)
+    check("newsletter signup is NOT reported as a broken checkout",
+          not any("newsletter" in c["text"].lower() for c in ctas),
+          [c["text"] for c in ctas])
+    check("a GitHub/social link is NOT reported as a broken checkout",
+          not any("github" in c["text"].lower() for c in ctas),
+          [c["text"] for c in ctas])
     check("metadata gaps found", "metadata" in kinds, sorted(kinds))
     check("checkout finding is ranked first", findings and findings[0]["check"] == "checkout",
           findings[0]["check"] if findings else None)
