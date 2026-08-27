@@ -20,7 +20,6 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.561.0",
     "next": "16.0.10",
-    "nodemailer": "^7.0.11",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "resend": "^6.20.0",
