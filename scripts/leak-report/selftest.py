@@ -88,6 +88,10 @@ class Handler(BaseHTTPRequestHandler):
                 '<a href="#">Follow us on GitHub</a>'
                 '<a href="https://buy.stripe.com/test_abc123">Subscribe</a>'
                 f'<a href="{host}/signup">Sign up</a>'
+                # None of these three are defects. Must never reach a report.
+                '<a href="javascript:;">Get Started</a>'
+                f'<a href="{host}/blocked">Start free trial</a>'
+                f'<a href="{host}/moved">Book a demo</a>'
                 "</body></html>")
 
         if p == "/signup":
@@ -105,6 +109,11 @@ class Handler(BaseHTTPRequestHandler):
             # INJECTED DEFECT: no description, no OG, no JSON-LD.
             return self._send(200, "<html><head><title>Post</title></head><body>"
                                    + ("words " * 200) + "</body></html>")
+
+        if p == "/blocked":
+            return self._send(403, "bot protection")   # NOT a defect
+        if p == "/moved":
+            return self._send(302, "", loc=f"{host}/ok")  # NOT a defect
 
         if p == "/gone":
             # Deliberately removed. Must NOT be reported as "returns 404".
@@ -160,7 +169,7 @@ def main() -> int:
           sorted(x["status"] for x in sm["dead"]) == [404, 410],
           [(x["url"], x["status"]) for x in sm["dead"]])
     check("the 404 claim counts only the 404",
-          any("1 of" in h and "return 404" in h for h in by), sorted(by))
+          any(h.startswith("1 of ") and "404" in h and "410" not in h for h in by), sorted(by))
     check("5xx detected", len(sm["server_errors"]) == 1, sm["server_errors"])
     check("2-hop redirect chain detected", len(sm["redirect_chains"]) >= 1, sm["redirect_chains"])
     check("redirect-to-homepage detected", len(sm["redirects_to_home"]) >= 1, sm["redirects_to_home"])
@@ -169,9 +178,25 @@ def main() -> int:
     check("SSR: pricing NOT flagged (it renders)", res["ssr"]["pricing"]["empty_without_js"] is False,
           res["ssr"]["pricing"].get("visible_chars"))
     ctas = res["checkout"]["ctas"]
-    check('CTA href="#" caught', any('href="#"' in c["verdict"] for c in ctas), ctas)
     check("Stripe TEST mode caught", any("TEST mode" in c["verdict"] for c in ctas), ctas)
     check("working CTA not flagged", any(c["verdict"] == "ok" for c in ctas), ctas)
+    broken = [c for c in ctas if c["verdict"].startswith("broken")]
+    check("a 403 (bot protection) is NOT called broken",
+          not any("/blocked" in c["url"] for c in broken), [c["url"] for c in broken])
+    check("a 302 (working redirect) is NOT called broken",
+          not any("/moved" in c["url"] for c in broken), [c["url"] for c in broken])
+    check("javascript: is NOT called broken",
+          not any(c["href"].startswith("javascript:") for c in broken), [c["href"] for c in broken])
+    check('href="#" is recorded as unverifiable, never as broken',
+          any(c["href"] == "#" and "unverifiable" in c["verdict"] for c in ctas)
+          and not any(c["href"] == "#" for c in broken), [c["verdict"] for c in ctas])
+    check("no checkout finding is raised when nothing is truly dead",
+          not any(f["check"] == "checkout" for f in findings), [f["check"] for f in findings])
+    check("subject lines carry no unreplaced placeholder",
+          not any("{domain}" in f["subject"] for f in findings), [f["subject"] for f in findings])
+    check("a count of 1 is not pluralised",
+          not any(" 1 pages " in f["subject"] or f["subject"].startswith("1 pages ")
+                  for f in findings), [f["subject"] for f in findings])
     check("newsletter signup is NOT reported as a broken checkout",
           not any("newsletter" in c["text"].lower() for c in ctas),
           [c["text"] for c in ctas])
@@ -184,9 +209,21 @@ def main() -> int:
           any("410 Gone but still listed" in h for h in by), heads)
     check("the 410 is not counted into the 404 claim",
           all("2 of" not in h for h in by if "return 404" in h), heads)
-    check("checkout finding is ranked first", findings and findings[0]["check"] == "checkout",
+    check("the 404 finding leads now that no CTA is truly dead",
+          bool(findings) and findings[0]["check"] == "sitemap", 
           findings[0]["check"] if findings else None)
     check("wedge subject is non-empty", bool(findings and findings[0]["subject"]))
+    one404 = [f for f in findings if f["check"] == "sitemap" and f["headline"].startswith("1 of ")]
+    check("a single dead URL is LOW, not a headline wedge",
+          bool(one404) and all(f["severity"] == 3 for f in one404),
+          [(f["headline"], f["severity"]) for f in one404])
+    many = dict(blank_sm := {})
+    check("four dead URLs DO rank as a wedge",
+          S.build_findings({"sitemap": {"checked": 100, "total_in_sitemap": 100, "soft_404": False,
+              "probe_status": 404, "throttled": 0, "unreliable": False, "coverage": 1.0,
+              "unconfirmed": [], "dead": [{"url": f"u{i}", "status": 404} for i in range(4)],
+              "server_errors": [], "redirect_chains": [], "insecure": [], "redirects_to_home": []},
+              "ssr": {}, "checkout": {"ctas": []}, "metadata": [], "psi": None})[0]["severity"] == 1)
 
     print("\n[pass 2] soft 404s — the 404 claim must be SUPPRESSED\n")
     SOFT_404 = True
@@ -196,7 +233,8 @@ def main() -> int:
     check("no 404 finding is made", not any(f["check"] == "sitemap" and "404" in f["headline"]
                                             for f in findings2),
           [f["headline"] for f in findings2])
-    check("other checks still work under soft-404", any(f["check"] == "checkout" for f in findings2),
+    check("other checks still work under soft-404",
+          {"ssr", "metadata"} <= {f["check"] for f in findings2},
           [f["check"] for f in findings2])
 
     print("\n[pass 3] a flaky 500 and a throttling site — findings must be SUPPRESSED\n")

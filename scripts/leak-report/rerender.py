@@ -20,9 +20,32 @@ sys.path.insert(0, str(Path(__file__).parent))
 import scan as S  # noqa: E402
 
 
+def _normalise_ctas(res: dict) -> None:
+    """Recompute CTA verdicts from the stored status code.
+
+    The verdict is decided at scan time, so a rule change to what counts as broken
+    cannot reach an old raw.json through build_findings() alone. Recomputing from the
+    stored status keeps this honest: it re-reads the measurement, it does not re-measure.
+    """
+    for c in res.get("checkout", {}).get("ctas", []):
+        href = (c.get("href") or "").strip()
+        st = c.get("status")
+        if href in ("#", "") or href.lower().startswith("javascript:"):
+            c["verdict"] = "unverifiable: JS-handled or dead, check in a browser"
+        elif "TEST mode" in c.get("verdict", ""):
+            continue
+        elif st in (404, 410) or (st and 500 <= st < 600):
+            c["verdict"] = f"broken: HTTP {st}"
+        elif st == 200:
+            c["verdict"] = "ok"
+        else:
+            c["verdict"] = f"not a defect: HTTP {st}"
+
+
 def rerender(d: Path) -> str:
     raw = json.loads((d / "raw.json").read_text())
     res = raw["result"]
+    _normalise_ctas(res)
     # Re-DERIVE the findings, don't reuse the saved ones. build_findings() is a pure
     # function of the measurement, so a change to ranking or wording has to be replayed
     # through it — otherwise this rewrites the report around stale conclusions, which is

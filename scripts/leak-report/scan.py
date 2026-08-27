@@ -73,6 +73,10 @@ NOT_CTA_PAT = re.compile(
 _print_lock = threading.Lock()
 
 
+def plural(n: int, one: str, many: str) -> str:
+    return one if n == 1 else many
+
+
 def log(msg: str) -> None:
     with _print_lock:
         print(msg, file=sys.stderr, flush=True)
@@ -395,13 +399,26 @@ def check_checkout(base: str, pricing_url: str | None) -> dict:
         seen.add(key)
         item = {"href": href, "text": text[:40], "url": absolute}
         if href.strip() in ("#", "") or href.strip().lower().startswith("javascript:"):
-            item.update(status=None, verdict='dead: href="%s"' % href.strip())
+            # NOT reportable. level.io's "Start free trial", "Book a demo" and "Get started
+            # for free" are all href="#" and all work: Webflow binds them by data-w-id and
+            # they open modals. Static HTML cannot distinguish a dead button from a
+            # JS-handled one, so this is recorded for a human to click, never claimed.
+            item.update(status=None, verdict="unverifiable: JS-handled or dead, check in a browser")
         elif "buy.stripe.com/test_" in absolute or "checkout.stripe.com/test" in absolute:
             item.update(status=None, verdict="Stripe TEST mode: does not charge a real card")
         else:
             cr = head_or_get(absolute)
             item["status"] = cr.status
-            item["verdict"] = "ok" if cr.status == 200 else f"broken: HTTP {cr.status}"
+            # Only a genuine dead end is a defect. 403 is bot protection (rho.co,
+            # justworks.com both answer 403 to a script and fine to a browser), 429 is
+            # us hammering them, and a 3xx is a working redirect. Reporting any of those
+            # as "your checkout is broken" is a false accusation.
+            if cr.status in (404, 410) or (cr.status and 500 <= cr.status < 600):
+                item["verdict"] = f"broken: HTTP {cr.status}"
+            elif cr.status == 200:
+                item["verdict"] = "ok"
+            else:
+                item["verdict"] = f"not a defect: HTTP {cr.status}"
         ctas.append(item)
         if len(ctas) >= 12:
             break
@@ -482,9 +499,14 @@ def build_findings(res: dict) -> list[dict]:
         if broken:
             n = len(broken)
             f.append({
-                "severity": 1, "check": "sitemap",
-                "headline": f"{n} of {total} URLs in the sitemap return 404",
-                "subject": f"{n} of your {total} pages return 404",
+                # Magnitude IS the severity here. "17 of 258" opens a conversation;
+                # "1 of 213" does not, and ranking them the same sends weak openers to
+                # accounts that deserved none. Live batch: 13 of 24 qualifying accounts
+                # rested on a single dead URL.
+                "severity": 1 if n >= 4 else (2 if n >= 2 else 3), "check": "sitemap",
+                "headline": f"{n} of {total} URLs in the sitemap "
+                            f"{plural(n, 'returns', 'return')} 404",
+                "subject": f"{n} of your {total} {plural(n, 'pages returns', 'pages return')} 404",
                 "detail": "Still listed in the sitemap Google crawls, so crawl budget is "
                           "being spent on them.",
                 "evidence": [x["url"] for x in broken[:12]],
@@ -492,9 +514,11 @@ def build_findings(res: dict) -> list[dict]:
         if gone:
             n = len(gone)
             f.append({
-                "severity": 1, "check": "sitemap",
-                "headline": f"{n} of {total} sitemap URLs are 410 Gone but still listed",
-                "subject": f"Your sitemap still lists {n} pages you removed",
+                "severity": 1 if n >= 4 else (2 if n >= 2 else 3), "check": "sitemap",
+                "headline": f"{n} of {total} sitemap URLs "
+                            f"{plural(n, 'is', 'are')} 410 Gone but still listed",
+                "subject": f"Your sitemap still lists {n} "
+                           f"{plural(n, 'page', 'pages')} you removed",
                 "detail": "410 means these were taken down on purpose, so the pages are not "
                           "the problem — the sitemap still sending Google to them is.",
                 "evidence": [x["url"] for x in gone[:12]],
@@ -502,8 +526,10 @@ def build_findings(res: dict) -> list[dict]:
     if sm["server_errors"] and status_claims_ok:
         f.append({
             "severity": 1, "check": "sitemap",
-            "headline": f"{len(sm['server_errors'])} URLs return a 5xx",
-            "subject": f"{len(sm['server_errors'])} pages on {'{domain}'} are erroring right now",
+            "headline": f"{len(sm['server_errors'])} "
+                        f"{plural(len(sm['server_errors']), 'URL returns', 'URLs return')} a 5xx",
+            "subject": f"{len(sm['server_errors'])} "
+                       f"{plural(len(sm['server_errors']), 'page is', 'pages are')} erroring right now",
             "detail": "Server errors on pages the site itself advertises.",
             "evidence": [f"{x['url']} → {x['status']}" for x in sm["server_errors"][:12]],
         })
@@ -519,12 +545,13 @@ def build_findings(res: dict) -> list[dict]:
                 "evidence": [d["url"]],
             })
 
-    broken = [c for c in res["checkout"].get("ctas", []) if c["verdict"] != "ok"]
+    broken = [c for c in res["checkout"].get("ctas", []) if c["verdict"].startswith("broken")]
     if broken:
         f.append({
             "severity": 0, "check": "checkout",
-            "headline": f"{len(broken)} checkout/CTA link(s) do not work",
-            "subject": "Your pricing CTA does not reach a checkout",
+            "headline": f"{len(broken)} checkout/CTA {plural(len(broken), 'link leads', 'links lead')} nowhere",
+            "subject": "Your " + plural(len(broken), "pricing CTA does", "pricing CTAs do")
+                       + " not reach a checkout",
             "detail": "A pricing page that advertises a price and cannot take the money.",
             "evidence": [f"{c['href']} → {c['verdict']}" for c in broken[:8]],
         })
@@ -539,8 +566,12 @@ def build_findings(res: dict) -> list[dict]:
         })
     if sm["redirects_to_home"]:
         f.append({
-            "severity": 2, "check": "sitemap",
-            "headline": f"{len(sm['redirects_to_home'])} sitemap URLs redirect to the homepage",
+            "severity": 1 if len(sm["redirects_to_home"]) >= 4
+                        else (2 if len(sm["redirects_to_home"]) >= 2 else 3),
+            "check": "sitemap",
+            "headline": f"{len(sm['redirects_to_home'])} sitemap "
+                        f"{plural(len(sm['redirects_to_home']), 'URL redirects', 'URLs redirect')} "
+                        "to the homepage",
             "subject": "Sitemap URLs quietly redirecting to your homepage",
             "detail": "Google treats a redirect-to-home as a soft 404 and drops the page.",
             "evidence": [x["url"] for x in sm["redirects_to_home"][:8]],
