@@ -1,39 +1,26 @@
-import nodemailer from "nodemailer";
+import { sendMail } from "../mail";
 import { requiredEnv } from "./env";
 import { trelloRequest, EVENT_MARKER_PREFIX } from "./trello";
 
 const OPS_LIST_NAME = "To Do";
 
 /**
- * Founder alert — via the EXISTING nodemailer/SMTP setup already used by
- * api/contact/route.ts, not Resend and not a Slack webhook. The operator chose email over
- * Slack for O4; reusing the already-verified SMTP transporter avoids depending on the
- * still-missing RESEND_API_KEY for a plain internal alert that doesn't need React Email
- * templating at all.
+ * Founder alert. The operator chose email over Slack for O4.
+ *
+ * This used to relay through the same nodemailer/SMTP transport as the contact form, with
+ * a comment explaining that reusing it avoided depending on a then-missing
+ * RESEND_API_KEY. That reasoning has expired twice over: the key is configured (the
+ * welcome email sends on it), and the domain's mailbox is moving to a plan with no SMTP
+ * access at all, so there is no credentialed relay left to reuse.
+ *
+ * The send deadline the SMTP version carried lives on inside lib/mail.ts, for the reason
+ * its comment recorded: a hung send must not block the steps queued behind it on every
+ * webhook retry.
  */
 export async function alertFounder(message: string): Promise<void> {
-  const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port = parseInt(process.env.SMTP_PORT || "587", 10);
-  const user = requiredEnv("SMTP_USER");
-  const pass = requiredEnv("SMTP_PASSWORD");
   const to = requiredEnv("FOUNDER_ALERT_EMAIL");
 
-  // Explicit, well-under-maxDuration timeouts: an unbounded nodemailer connection can hang
-  // up to its OS-level socket default (well past this route's 60s budget), which would
-  // block every step queued after the alert on each retry instead of failing fast and
-  // letting them proceed independently.
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: false,
-    auth: { user, pass },
-    connectionTimeout: 10_000,
-    greetingTimeout: 10_000,
-    socketTimeout: 10_000,
-  });
-
-  await transporter.sendMail({
-    from: `"Codirity Ops" <${user}>`,
+  await sendMail({
     to,
     // Every alert used to arrive as the same "Codirity onboarding alert", so a new client,
     // a cancellation and a partial failure were indistinguishable without opening them.

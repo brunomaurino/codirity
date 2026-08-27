@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { sendMail } from "@/lib/mail";
 import { CONTACT_EMAIL } from "@/config/offer";
 
 interface ContactFormData {
@@ -39,17 +39,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Create transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
 
     // Sanitize inputs for HTML
     const sanitize = (str: string) =>
@@ -110,12 +99,31 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    // Send email
-    await transporter.sendMail({
-      from: `"Codirity Contact" <${process.env.SMTP_USER}>`,
-      to: RECIPIENTS.join(", "),
+    // Plain-text twin of the HTML above. Not optional: an HTML-only message raises spam
+    // score, and this one has to reach the founder's inbox reliably — it is the only
+    // route a prospect who is not ready to check out has to reach anyone.
+    const textContent = [
+      "New contact form submission",
+      "",
+      `Name:    ${firstName} ${lastName}`,
+      `Email:   ${email}`,
+      ...(body.company ? [`Company: ${body.company}`] : []),
+      ...(body.service ? [`Service: ${body.service}`] : []),
+      "",
+      "Message:",
+      message,
+      "",
+      "Sent from the Codirity website contact form.",
+    ].join("\n");
+
+    // Resend, not SMTP: the domain's mailbox has no SMTP access, and the old transport
+    // authenticated as a personal Gmail account. `replyTo` is what makes this useful —
+    // hitting Reply answers the person who filled the form, not the sending address.
+    await sendMail({
+      to: RECIPIENTS,
       replyTo: email,
       subject: `New Contact Form: ${firstName} ${lastName}`,
+      text: textContent,
       html: htmlContent,
     });
 
