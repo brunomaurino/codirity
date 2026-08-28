@@ -47,8 +47,13 @@ next-env.d.ts
 # Re-seed it from the .dc.html artboards — docs/logo-explore/README.md.
 docs/**/codirity-logo-directions.html
 
-# pre-sales scan output — prospect data never goes in a PUBLIC repo
-/leads/
+# pre-sales scan output — prospect data (other companies' names and the
+# defects found on their sites) NEVER goes in this PUBLIC repo; it belongs in
+# ~/br-brain/WIKI/clients/. Unanchored so it matches at any depth: scan.py's
+# --out defaults to ./leads/<domain> relative to the CWD, so a run from inside
+# scripts/leak-report/ (as its README documents) writes there, not at the root.
+leads/
+scripts/leak-report/leads/
 
 # python bytecode
 __pycache__/
