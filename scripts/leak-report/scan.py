@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import html as html_entities
 import json
 import random
 import re
@@ -270,7 +271,12 @@ def sitemap_urls(base: str) -> tuple[list[str], list[str]]:
             continue
         seen_maps.append(sm)
         text = r.body.decode("utf-8", errors="replace")
-        locs = re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", text, re.I)
+        # <loc> holds XML-escaped text: an apostrophe is "&apos;", an ampersand
+        # "&amp;". Requesting the escaped form asks for a URL that does not exist,
+        # and the 404 that comes back is OUR bug being reported as THEIR defect.
+        # Caught live: 12 of 136 URLs reported "dead", all 12 alive unescaped.
+        locs = [html_entities.unescape(m)
+                for m in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", text, re.I)]
         if re.search(r"<sitemapindex", text, re.I):
             queue.extend(locs)
         else:

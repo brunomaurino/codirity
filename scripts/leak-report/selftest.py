@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import sys
 import threading
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -62,7 +63,10 @@ class Handler(BaseHTTPRequestHandler):
 
         if p == "/sitemap.xml":
             locs = ["/", "/ok", "/dead", "/boom", "/chain1", "/to-home", "/pricing",
-                    "/post-no-meta", "/flaky", "/gone"]
+                    "/post-no-meta", "/flaky", "/gone",
+                    # NOT a defect: <loc> is XML, so this apostrophe arrives as "&apos;".
+                    # Request it literally and the 404 you get back is your own bug.
+                    "/it&apos;s-fine"]
             body = ('<?xml version="1.0" encoding="UTF-8"?><urlset>'
                     + "".join(f"<url><loc>{host}{u}</loc></url>" for u in locs)
                     + "</urlset>")
@@ -108,6 +112,13 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/post-no-meta":
             # INJECTED DEFECT: no description, no OG, no JSON-LD.
             return self._send(200, "<html><head><title>Post</title></head><body>"
+                                   + ("words " * 200) + "</body></html>")
+
+        if urllib.parse.unquote(p) == "/it's-fine":
+            # Alive at the UNESCAPED path only. Must never reach the report.
+            return self._send(200, "<html><head><title>Fine</title>"
+                                   '<meta name="description" content="d">'
+                                   '<meta property="og:image" content="i"></head><body>'
                                    + ("words " * 200) + "</body></html>")
 
         if p == "/blocked":
@@ -168,6 +179,9 @@ def main() -> int:
     check("both injected dead URLs found (one 404, one 410)",
           sorted(x["status"] for x in sm["dead"]) == [404, 410],
           [(x["url"], x["status"]) for x in sm["dead"]])
+    check("an XML-escaped &apos; in <loc> is unescaped, not reported dead",
+          not any("apos" in x["url"] for x in sm["dead"] + sm["server_errors"]),
+          [x["url"] for x in sm["dead"] + sm["server_errors"]])
     check("the 404 claim counts only the 404",
           any(h.startswith("1 of ") and "404" in h and "410" not in h for h in by), sorted(by))
     check("5xx detected", len(sm["server_errors"]) == 1, sm["server_errors"])
