@@ -268,10 +268,12 @@ export const BRAND = "Codirity";
 /** ISO 4217 currency for all prices — used by Service.offers structured data (Bundle E). */
 export const CURRENCY = "USD";
 export const LEGAL_ENTITY = "BOMAU LLC";
-// Interim address: the codirity.com Google Workspace mailbox is inactive, so support@
-// would bounce. Every public mailto + the contact form's delivery inbox read from
-// HERE — flip this one line back to support@codirity.com when the Workspace is live.
-export const CONTACT_EMAIL = "brunomaurino27@gmail.com";
+// Every public mailto + the contact form's delivery inbox read from HERE. The address
+// is live again: the dead Google Workspace was replaced by a Zoho mailbox on 2026-08-27
+// (root MX -> mx{,2,3}.zoho.com, SPF via GoDaddy's _spfm merge -> include:zohomail.com).
+// Resend authenticates on send.codirity.com and resend._domainkey, different names, so
+// sending was never affected by the receiving side being down.
+export const CONTACT_EMAIL = "support@codirity.com";
 /** Cal.com link (namespace/event) used by CalPopupButton. */
 export const CAL_LINK = "support-codirity-lz8rjc/30min";
 /**
