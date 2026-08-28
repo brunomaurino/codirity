@@ -6,11 +6,11 @@ import { requiredEnv } from "./env";
 import { WelcomeEmail, WELCOME_EMAIL_SUBJECT } from "./email-template";
 
 // Resend only sends from a DNS-verified domain, so the FROM stays on codirity.com —
-// gmail.com can never be verified as a sender there. That mailbox is currently
-// inactive, which is exactly why REPLY_TO points at the live inbox: a client hitting
-// Reply reaches Bruno, not a dead Workspace address.
+// gmail.com can never be verified as a sender there. FROM and REPLY_TO are now the same
+// mailbox: support@ receives again since the Zoho cutover, so a client hitting Reply
+// reaches a real inbox instead of the founder's personal Gmail.
 const FROM_ADDRESS = "Codirity <support@codirity.com>";
-const REPLY_TO_ADDRESS = "brunomaurino27@gmail.com";
+const REPLY_TO_ADDRESS = "support@codirity.com";
 
 function requiredTierName(id: "standard" | "pro"): string {
   const tier = tiers.find((t) => t.id === id);

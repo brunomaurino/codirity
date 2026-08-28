@@ -12,9 +12,9 @@ interface ContactFormData {
 }
 
 // One inbox, and it is the same address the site publishes (offer.ts CONTACT_EMAIL) —
-// so the "write to us" link and the form land in the same place. The three
-// @codirity.com addresses that used to be here all sit on the inactive Workspace, so
-// every one of them would bounce — and a rejected RCPT TO can fail the whole send.
+// so the "write to us" link and the form land in the same place. Kept as ONE address:
+// a rejected RCPT TO can fail the whole send, so extra @codirity.com aliases only get
+// added here once each one is provisioned in Zoho and proven to accept mail.
 const RECIPIENTS = [CONTACT_EMAIL];
 
 export async function POST(request: NextRequest) {
