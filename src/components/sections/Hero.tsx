@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { CalPopupButton, TrackedLink } from "@/components/ui";
-import { hero, tiers, CAL_LINK, BOOKING_ENABLED } from "@/config/offer";
+import { hero, tiers, CAL_LINK, BOOKING_ENABLED, TRUST_LINE } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 // v4 hero (Bundle W1) — docs/redesign-v4/approved-mockup.html is the contract.
@@ -61,7 +61,7 @@ export function Hero() {
     >
       <div className="wrap-v4 w-full">
         <p className="label" style={{ marginBottom: "28px" }}>
-          {hero.trustLine}
+          {TRUST_LINE}
         </p>
         <div className="hero-grid">
           <h1 className="display d-xl">

@@ -194,7 +194,6 @@ export interface HeroContent {
   primaryCta: LinkCta;
   /** Secondary CTA opens the Cal.com popup (no href — uses calLink). */
   secondaryCta: Cta;
-  trustLine: string;
 }
 
 /** Header copy (eyebrow label + title + optional description) for a marketing section. */
@@ -310,7 +309,6 @@ export const hero: HeroContent = {
   // Duration-neutral: the configured Cal event (CAL_LINK) is a 30-minute call, so a
   // "15-min" label would understate the actual booking. Kept short and low-friction.
   secondaryCta: { label: "Book an intro call" },
-  trustLine: "Built by engineers from Globant & Ualá",
 };
 
 export const sections: SectionsContent = {
@@ -462,6 +460,15 @@ export const guarantee: Guarantee = {
     "Cancel within your first 7 days on a new subscription and get 50% back, no questions asked.",
 };
 
+/** The hero eyebrow + footer descriptor. It replaced "Built by engineers from
+ *  Globant & Ualá" (2026-08-28): the site no longer trades on third-party
+ *  employer names, and risk reversal sells harder than pedigree above the fold.
+ *  DERIVED from `guarantee` — the same two figures the terms band and the Terms
+ *  page render, so they cannot drift (the RESPONSE_TIME_CLAIM precedent). It
+ *  lives below `guarantee` rather than inside `hero` for that reason: `hero` is
+ *  initialised earlier in this module and could not read it. */
+export const TRUST_LINE = `Cancel in your first ${guarantee.days} days — get ${guarantee.refundPct}% back.`;
+
 export const included: string[] = [
   "Process & workflow automation",
   "Custom internal tools & dashboards",
@@ -523,8 +530,12 @@ export const faq: FaqItem[] = [
     // Promoted to the founder block — see FOUNDER_FAQ_INDEX. Keep it first, or
     // move the index with it.
     question: "Who does the work?",
+    // No employer names since 2026-08-28 (same change that removed the hero
+    // trust line): "years in fintech and enterprise software" is the same fact
+    // stated without trading on third-party brands. The second sentence is the
+    // load-bearing one anyway — direct access is what an agency cannot match.
     answer:
-      "A senior engineer with years at companies like Globant and Ualá, working AI-accelerated. You work directly with the person building your systems — no account managers, no offshore hand-offs.",
+      "A senior engineer with years in fintech and enterprise software, working AI-accelerated. You work directly with the person building your systems — no account managers, no offshore hand-offs.",
   },
   {
     question: "How fast will I get my work?",
