@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local-only agent worktrees: full copies of the repo plus third-party
+    // code, excluded from git via .git/info/exclude. Linting them buries any
+    // real finding from src/ under thousands of irrelevant problems.
+    ".claude/worktrees/**",
   ]),
 ]);
 
