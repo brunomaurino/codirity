@@ -32,7 +32,7 @@ const apfel = localFont({
 // longer contradicts the page.
 const SITE_TITLE = "Codirity — Your AI & automation team, on subscription";
 const SITE_DESCRIPTION =
-  "Your AI & automation team, on subscription. Unlimited requests, senior engineering, and AI-accelerated delivery for one flat monthly rate — pause or cancel anytime. Built by engineers from Globant & Ualá.";
+  "Your AI & automation team, on subscription. Unlimited requests, senior engineering, and AI-accelerated delivery for one flat monthly rate — pause or cancel anytime.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),

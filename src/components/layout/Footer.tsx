@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TrackedLink } from "@/components/ui";
-import { BRAND, LEGAL_ENTITY, CONTACT_EMAIL, hero } from "@/config/offer";
+import { BRAND, LEGAL_ENTITY, CONTACT_EMAIL, TRUST_LINE } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
 // The footer (Bundle W6) — the continuation of the closing dark band, and the
@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils";
 //      development that transforms businesses and accelerates growth." Every
 //      clause of that is the register §4 exists to keep off the site — it makes
 //      a promise about the READER's outcome that nothing on the page supports.
-//      Replaced with `hero.trustLine`, which is a checkable fact.
+//      Replaced with `TRUST_LINE`, a checkable fact. (That line named two
+//      third-party employers until 2026-08-28; it now states the guarantee.)
 //   2. Four invented "service" categories — Process Automation, System
 //      Development, AI Integration, Legacy Modernization — none of which appear
 //      in offer.ts, all four linking to the SAME anchor. That is the same
@@ -67,7 +68,7 @@ export function Footer() {
               <span>{BRAND}</span>
               <span className="h-2.5 w-2.5 rounded-full bg-mint" aria-hidden="true" />
             </Link>
-            <p className="lede max-w-xs">{hero.trustLine}</p>
+            <p className="lede max-w-xs">{TRUST_LINE}</p>
             <div className="mt-7 flex gap-3">
               {socialLinks.map((social) => (
                 <a
