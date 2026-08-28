@@ -7,6 +7,7 @@ verifiable defects on their own site, so the first email carries a fact instead 
 python3 scan.py acme.com                      # writes leads/acme-com/report.md + raw.json
 python3 scan.py acme.com --slow               # for sites that rate-limit (see below)
 python3 scan.py acme.com --max-urls 500       # default 300
+python3 scan.py acme.com --recheck-cap 800    # default 200 — raise it on a very broken site
 python3 scan.py acme.com --psi-key $KEY       # optional Core Web Vitals
 ```
 
@@ -49,16 +50,22 @@ cannot stand behind. Every one of these was added after watching it get somethin
 
 4. **Coverage floor.** Under 25% coverage on a site with 100+ URLs, the report returns
    *inconclusive* instead of a verdict. "No findings" at 0.5% coverage is not a clean bill of health.
-5. **Random sampling.** The head of a sitemap is the homepage and top nav — the best-maintained URLs
+5. **No silent cap.** Serial re-verification stops at `--recheck-cap` (200). Whatever it does not
+   reach is carried as *unverified* and extrapolated from at the rate the re-checked sample actually
+   confirmed at — never dropped, and the headline says "at least". *(A bare `[:40]` used to delete
+   the remainder: trytrata.com, 795 dead of 800, and trychannel3.com, 414, both reported "40 of
+   800" on 2026-08-27. Two unrelated domains printing the identical number is the only reason it
+   was caught.)*
+6. **Random sampling.** The head of a sitemap is the homepage and top nav — the best-maintained URLs
    a site has. Sampling them first made the scanner near-blind: the first live batch covered 0.50%
    of 107,717 URLs and reported 1 Tier A account. Random sampling at 800 found 5.
 
 **Is the claim about the right thing?**
 
-6. **Newsletter and social links are not checkouts.** A `href="#"` newsletter button matched on the
+7. **Newsletter and social links are not checkouts.** A `href="#"` newsletter button matched on the
    word "subscribe" and produced "your pricing CTA does not reach a checkout" — false, about a form
    that works fine.
-7. **410 Gone is not 404.** A 410 is a deliberate takedown. Reporting it as a broken page accuses a
+8. **410 Gone is not 404.** A 410 is a deliberate takedown. Reporting it as a broken page accuses a
    founder of a bug they made on purpose; the real defect is the sitemap still listing it.
 
 ## Self-test

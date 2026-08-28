@@ -42,10 +42,30 @@ def _normalise_ctas(res: dict) -> None:
             c["verdict"] = f"not a defect: HTTP {st}"
 
 
+def _pre_cap_fix(res: dict) -> str | None:
+    """Was this scanned before the re-verification cap stopped truncating silently?
+
+    Until 2026-08-27 the scanner re-checked `candidates[:40]` and DELETED the rest, so any
+    scan of that era is capped at 40 confirmed status findings and its raw.json holds no
+    record of how many suspects there really were. That number is not recoverable from the
+    file — only a re-scan gets it — so the only honest thing rerender can do is refuse to
+    let the wrong number pass unremarked.
+    """
+    sm = res.get("sitemap", {})
+    if "suspects" in sm:
+        return None
+    seen = len(sm.get("dead", [])) + len(sm.get("server_errors", [])) + len(sm.get("unconfirmed", []))
+    if seen >= 40:
+        return ("counts capped at 40 by the pre-fix scanner — RE-SCAN, the real number is higher")
+    return None
+
+
 def rerender(d: Path) -> str:
     raw = json.loads((d / "raw.json").read_text())
     res = raw["result"]
     _normalise_ctas(res)
+    if stale := _pre_cap_fix(res):
+        print(f"  ⚠️  {d.name}: {stale}", file=sys.stderr)
     # Re-DERIVE the findings, don't reuse the saved ones. build_findings() is a pure
     # function of the measurement, so a change to ranking or wording has to be replayed
     # through it — otherwise this rewrites the report around stale conclusions, which is

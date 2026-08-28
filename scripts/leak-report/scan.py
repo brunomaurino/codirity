@@ -12,6 +12,7 @@ dependency that can rot.
 
     python3 scan.py acme.com
     python3 scan.py acme.com --max-urls 500 --out ~/leads/acme
+    python3 scan.py acme.com --recheck-cap 800   # a site with hundreds of dead URLs
 
 Checks (1-3 are defects Codirity has personally shipped and fixed, which is why they
 are the ones worth leading with):
@@ -51,6 +52,12 @@ TIMEOUT = 12
 WORKERS = 4
 DELAY = (0.05, 0.35)
 THROTTLE_CODES = (429, 503)
+# Re-verification is serial and 1.5s apart, so it cannot cover an unbounded number of
+# suspects. This is a POLITENESS/RUNTIME ceiling, never a claim: whatever it leaves out is
+# reported as unverified and extrapolated from, never dropped. It used to be a bare `[:40]`
+# and 2026-08-27 caught it — trytrata.com (795 dead of 800) and trychannel3.com (414) BOTH
+# reported "40 of 800", the identical number being the only reason anyone noticed.
+RECHECK_CAP = 200
 CTA_PAT = re.compile(
     r"(buy\.stripe\.com|checkout\.stripe\.com|/checkout|/signup|/sign-up|/subscribe|/get-started|/start|/trial|/pricing)",
     re.I,
@@ -294,7 +301,7 @@ def soft_404_probe(base: str) -> tuple[bool, int | None]:
 # ---------------------------------------------------------------- checks
 
 
-def check_sitemap(base: str, urls: list[str], cap: int) -> dict:
+def check_sitemap(base: str, urls: list[str], cap: int, recheck_cap: int = RECHECK_CAP) -> dict:
     soft, probe_status = soft_404_probe(base)
     # RANDOM, not urls[:cap]. The head of a sitemap is the homepage and the top nav: the
     # most-maintained URLs a site has. Sampling them first made the scanner near-blind —
@@ -329,9 +336,21 @@ def check_sitemap(base: str, urls: list[str], cap: int) -> dict:
 
     candidates = [x for x in results
                   if x["status"] in (404, 410) or (x["status"] is not None and 500 <= x["status"] < 600)]
+    suspects = len(candidates)
+    # The slice is a fair sub-sample, not the head of the sitemap: `results` follows
+    # `sample`, which is already random.sample(). That is what makes extrapolating from
+    # the re-checked portion honest rather than a guess.
+    rechecked, skipped = candidates[:recheck_cap], candidates[recheck_cap:]
     if candidates:
-        log(f"→ re-verifying {len(candidates)} negative(s) serially")
-        candidates = [reverify(x) for x in candidates[:40]]
+        log(f"→ re-verifying {len(rechecked)} of {suspects} negative(s) serially"
+            + (f" — {len(skipped)} over --recheck-cap {recheck_cap}, carried as UNVERIFIED "
+               "(not as clean, and not dropped)" if skipped else ""))
+        rechecked = [reverify(x) for x in rechecked]
+        for x in skipped:
+            x["recheck_status"] = None
+            x["confirmed"] = False
+            x["not_rechecked"] = True
+        candidates = rechecked + skipped
 
     dead = [x for x in candidates if x["status"] in (404, 410) and x.get("confirmed")]
     errors = [x for x in candidates
@@ -347,6 +366,10 @@ def check_sitemap(base: str, urls: list[str], cap: int) -> dict:
         "soft_404": soft, "probe_status": probe_status,
         "throttled": len(throttled), "unreliable": unreliable,
         "coverage": (len(results) / len(urls)) if urls else 0.0,
+        # suspects/rechecked/recheck_cap/not_rechecked exist so the REPORT can say what the
+        # cap hid. A count that silently means "or more" is a wrong number, not a cautious one.
+        "suspects": suspects, "rechecked": len(rechecked), "recheck_cap": recheck_cap,
+        "not_rechecked": skipped,
         "unconfirmed": [x for x in candidates if not x.get("confirmed")],
         "dead": dead, "server_errors": errors, "redirect_chains": chains,
         "insecure": insecure, "redirects_to_home": home_redirects,
@@ -482,6 +505,34 @@ def find_pricing(urls: list[str], base: str) -> str | None:
     return None
 
 
+def capped(sm: dict, statuses: tuple[int, ...], confirmed: list[dict]) -> dict:
+    """What the re-verification cap hid for one class of status code.
+
+    `confirmed` is what was PROVEN by a repeat failure — a floor, not the site's number,
+    once the cap bit. The suspects never re-checked are extrapolated at the rate the
+    re-checked ones actually confirmed at, which is legitimate only because the re-checked
+    ones are a random sub-sample of the suspects (see check_sitemap).
+
+    Old raw.json files predate these keys; there `skipped` is 0 and every string below
+    collapses to exactly what the report used to say, so rerender.py stays truthful about
+    scans whose real counts are no longer recoverable.
+    """
+    skipped = [x for x in (sm.get("not_rechecked") or []) if x.get("status") in statuses]
+    flaky = [x for x in sm.get("unconfirmed", [])
+             if x.get("status") in statuses and not x.get("not_rechecked")]
+    n, s_, r = len(confirmed), len(skipped), len(confirmed) + len(flaky)
+    est = round(n / r * (r + s_)) if (s_ and r) else n
+    return {
+        "n": n, "skipped": s_, "est": est,
+        "least": "At least " if s_ else "",
+        "note": (f" This is a floor, not the total: {n} of {r} re-checked "
+                 f"{plural(r, 'suspect', 'suspects')} failed twice, and {s_} further "
+                 f"{plural(s_, 'suspect was', 'suspects were')} found but never re-checked "
+                 f"(--recheck-cap {sm.get('recheck_cap', '?')}), so the real number is "
+                 f"nearer {est}.") if s_ else "",
+    }
+
+
 def build_findings(res: dict) -> list[dict]:
     """Ranked, each with the subject line it would earn. Severity: the cost to THEM."""
     f: list[dict] = []
@@ -497,40 +548,46 @@ def build_findings(res: dict) -> list[dict]:
         broken = [x for x in sm["dead"] if x["status"] == 404]
         total = sm["checked"]
         if broken:
-            n = len(broken)
+            c = capped(sm, (404,), broken)
+            n, m = c["n"], max(c["n"], c["est"])
             f.append({
                 # Magnitude IS the severity here. "17 of 258" opens a conversation;
                 # "1 of 213" does not, and ranking them the same sends weak openers to
                 # accounts that deserved none. Live batch: 13 of 24 qualifying accounts
-                # rested on a single dead URL.
-                "severity": 1 if n >= 4 else (2 if n >= 2 else 3), "check": "sitemap",
-                "headline": f"{n} of {total} URLs in the sitemap "
+                # rested on a single dead URL. Rank on the ESTIMATE: a capped scan must
+                # never rank an account lower than the evidence it actually collected.
+                "severity": 1 if m >= 4 else (2 if m >= 2 else 3), "check": "sitemap",
+                "headline": f"{c['least']}{n} of {total} URLs in the sitemap "
                             f"{plural(n, 'returns', 'return')} 404",
-                "subject": f"{n} of your {total} {plural(n, 'pages returns', 'pages return')} 404",
+                "subject": f"{c['least']}{n} of your {total} "
+                           f"{plural(n, 'pages returns', 'pages return')} 404",
                 "detail": "Still listed in the sitemap Google crawls, so crawl budget is "
-                          "being spent on them.",
+                          "being spent on them." + c["note"],
                 "evidence": [x["url"] for x in broken[:12]],
             })
         if gone:
-            n = len(gone)
+            c = capped(sm, (410,), gone)
+            n, m = c["n"], max(c["n"], c["est"])
             f.append({
-                "severity": 1 if n >= 4 else (2 if n >= 2 else 3), "check": "sitemap",
-                "headline": f"{n} of {total} sitemap URLs "
+                "severity": 1 if m >= 4 else (2 if m >= 2 else 3), "check": "sitemap",
+                "headline": f"{c['least']}{n} of {total} sitemap URLs "
                             f"{plural(n, 'is', 'are')} 410 Gone but still listed",
-                "subject": f"Your sitemap still lists {n} "
+                "subject": f"Your sitemap still lists {'at least ' if c['skipped'] else ''}{n} "
                            f"{plural(n, 'page', 'pages')} you removed",
                 "detail": "410 means these were taken down on purpose, so the pages are not "
-                          "the problem — the sitemap still sending Google to them is.",
+                          "the problem — the sitemap still sending Google to them is." + c["note"],
                 "evidence": [x["url"] for x in gone[:12]],
             })
     if sm["server_errors"] and status_claims_ok:
+        c = capped(sm, tuple(range(500, 600)), sm["server_errors"])
+        n = c["n"]
         f.append({
             "severity": 1, "check": "sitemap",
-            "headline": f"{len(sm['server_errors'])} "
-                        f"{plural(len(sm['server_errors']), 'URL returns', 'URLs return')} a 5xx",
-            "subject": f"{len(sm['server_errors'])} "
-                       f"{plural(len(sm['server_errors']), 'page is', 'pages are')} erroring right now",
-            "detail": "Server errors on pages the site itself advertises.",
+            "headline": f"{c['least']}{n} "
+                        f"{plural(n, 'URL returns', 'URLs return')} a 5xx",
+            "subject": f"{'At least ' if c['skipped'] else ''}{n} "
+                       f"{plural(n, 'page is', 'pages are')} erroring right now",
+            "detail": "Server errors on pages the site itself advertises." + c["note"],
             "evidence": [f"{x['url']} → {x['status']}" for x in sm["server_errors"][:12]],
         })
 
@@ -617,6 +674,13 @@ def render(domain: str, res: dict, findings: list[dict]) -> str:
              f"Sitemaps found: {len(res['sitemaps'])}.")
     L.append("")
 
+    skipped = sm.get("not_rechecked") or []
+    if skipped:
+        L += [f"> ⚠️  **Re-verification hit its cap.** {sm.get('suspects', 0)} sampled URLs came "
+              f"back 404/410/5xx. {sm.get('rechecked', 0)} of them were re-checked serially and "
+              f"{len(skipped)} were not, so every status count below is a FLOOR, not this site's "
+              f"total. Re-run with `--recheck-cap {sm.get('suspects', 0)}` for the whole number.", ""]
+
     if sm.get("unreliable"):
         L += [f"> ⚠️  **Status findings suppressed.** {sm['throttled']} of {sm['checked']} requests came "
               "back 429/503, so this site was rate-limiting the scan. A 5xx under our own load is not "
@@ -698,7 +762,8 @@ def render(domain: str, res: dict, findings: list[dict]) -> str:
 # ---------------------------------------------------------------- main
 
 
-def scan(domain: str, cap: int, psi_key: str | None) -> tuple[dict, list[dict], str]:
+def scan(domain: str, cap: int, psi_key: str | None,
+         recheck_cap: int = RECHECK_CAP) -> tuple[dict, list[dict], str]:
     base, home = canonical_base(normalize(domain))
     log(f"→ {base} (HTTP {home.status})")
     if home.status is None:
@@ -711,7 +776,7 @@ def scan(domain: str, cap: int, psi_key: str | None) -> tuple[dict, list[dict], 
 
     res = {
         "domain": domain, "base": base, "sitemaps": maps,
-        "sitemap": check_sitemap(base, urls, cap),
+        "sitemap": check_sitemap(base, urls, cap, recheck_cap),
         "ssr": check_ssr(base, pricing),
         "checkout": check_checkout(base, pricing),
         "metadata": check_metadata([u for u in urls if u != base][:40]),
@@ -725,6 +790,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="The Leak Report — pre-sales site scanner")
     ap.add_argument("domain")
     ap.add_argument("--max-urls", type=int, default=300, help="sitemap URLs to verify (default 300)")
+    ap.add_argument("--recheck-cap", type=int, default=RECHECK_CAP,
+                    help=f"negatives to re-verify serially at 1.5s each (default {RECHECK_CAP}); "
+                         "the rest are reported as unverified, never as clean")
     ap.add_argument("--out", default=None, help="directory for the report (default: ./leads/<domain>)")
     ap.add_argument("--psi-key", default=None, help="PageSpeed Insights API key (free, optional)")
     ap.add_argument("--slow", action="store_true",
@@ -737,7 +805,7 @@ def main() -> None:
         WORKERS, DELAY = 1, (0.8, 1.6)
         log("→ slow mode: 1 worker")
 
-    res, findings, report = scan(a.domain, a.max_urls, a.psi_key)
+    res, findings, report = scan(a.domain, a.max_urls, a.psi_key, a.recheck_cap)
 
     slug = re.sub(r"[^a-z0-9]+", "-", a.domain.lower()).strip("-")
     out = Path(a.out) if a.out else Path("leads") / slug

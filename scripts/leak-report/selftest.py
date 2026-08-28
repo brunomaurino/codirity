@@ -22,6 +22,7 @@ import scan as S  # noqa: E402
 
 SOFT_404 = False   # flipped by the second pass
 THROTTLE = False   # flipped by the third pass
+MANY_DEAD = 0      # pass 6: this many extra /rot-N URLs, all 404, to overrun the recheck cap
 HITS: dict[str, int] = {}  # per-path request counter, for the flaky-500 route
 
 
@@ -63,6 +64,8 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/sitemap.xml":
             locs = ["/", "/ok", "/dead", "/boom", "/chain1", "/to-home", "/pricing",
                     "/post-no-meta", "/flaky", "/gone"]
+            # INJECTED DEFECT (pass 6): more dead URLs than re-verification will re-check.
+            locs += [f"/rot-{i}" for i in range(MANY_DEAD)]
             body = ('<?xml version="1.0" encoding="UTF-8"?><urlset>'
                     + "".join(f"<url><loc>{host}{u}</loc></url>" for u in locs)
                     + "</urlset>")
@@ -136,20 +139,21 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, "not found")
 
 
-def run_pass(label: str) -> tuple[dict, list[dict]]:
+def run_pass(label: str, recheck_cap: int = S.RECHECK_CAP) -> tuple[dict, list[dict]]:
     HITS.clear()  # per-pass: the flaky route must fail its FIRST contact in every pass
     srv = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     port = srv.server_address[1]
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     try:
-        res, findings, _ = S.scan(f"http://127.0.0.1:{port}", cap=50, psi_key=None)
+        res, findings, _ = S.scan(f"http://127.0.0.1:{port}", cap=50, psi_key=None,
+                                  recheck_cap=recheck_cap)
     finally:
         srv.shutdown()
     return res, findings
 
 
 def main() -> int:
-    global SOFT_404, THROTTLE
+    global SOFT_404, THROTTLE, MANY_DEAD
     failures: list[str] = []
 
     def check(name: str, cond: bool, got: object = "") -> None:
@@ -301,6 +305,103 @@ def main() -> int:
     check("a strong finding still produces a wedge", "## The wedge" in strong_out)
     check("the wedge uses the strong finding, not the weak one",
           strong_out.split("**Opener:**")[1].split("\n")[0].strip().startswith("h"))
+
+    print("\n[pass 6] more dead URLs than the recheck cap — the count must not be the CAP\n")
+    # The bug this pass exists for: `candidates[:40]` silently truncated, so trytrata.com
+    # (795 dead of 800) and trychannel3.com (414) both reported "40 of 800" on 2026-08-27.
+    # Two unrelated domains printing the identical number is the ONLY reason it surfaced.
+    SOFT_404 = THROTTLE = False   # pass 3 left the throttle on; a 429 is not a 404
+    MANY_DEAD = 60
+    res6, findings6 = run_pass("many-dead", recheck_cap=5)
+    MANY_DEAD = 0
+    sm6 = res6["sitemap"]
+    report6 = S.render("rotten.com", res6, findings6)
+    d404 = next((f for f in findings6 if f["check"] == "sitemap" and "404" in f["headline"]), None)
+
+    check("the cap actually bit in this pass", sm6["suspects"] > sm6["rechecked"] == 5,
+          f"{sm6['rechecked']} re-checked of {sm6['suspects']} suspects")
+    check("the un-rechecked remainder is CARRIED, not dropped",
+          len(sm6["not_rechecked"]) == sm6["suspects"] - sm6["rechecked"],
+          f"{len(sm6['not_rechecked'])} carried, {sm6['suspects'] - sm6['rechecked']} expected")
+    check("no suspect vanishes from the result entirely",
+          len(sm6["dead"]) + len(sm6["server_errors"]) + len(sm6["unconfirmed"]) == sm6["suspects"],
+          f"{len(sm6['dead'])}+{len(sm6['server_errors'])}+{len(sm6['unconfirmed'])} "
+          f"vs {sm6['suspects']}")
+    check("every un-rechecked URL is marked unverified, not confirmed",
+          all(x.get("not_rechecked") and not x.get("confirmed") for x in sm6["not_rechecked"])
+          and all(x in sm6["unconfirmed"] for x in sm6["not_rechecked"]))
+    check("the 404 finding is still raised", d404 is not None,
+          [f["headline"] for f in findings6])
+    check("the reported count is not silently the cap",
+          bool(d404) and not d404["headline"].startswith(f"{sm6['rechecked']} of "),
+          d404["headline"] if d404 else None)
+    check("the headline says it is a floor",
+          bool(d404) and d404["headline"].startswith("At least "),
+          d404["headline"] if d404 else None)
+    check("the detail names the suspects that were never re-checked",
+          bool(d404) and "never re-checked" in d404["detail"] and "nearer" in d404["detail"],
+          d404["detail"] if d404 else None)
+    check("the report itself discloses the cap", "Re-verification hit its cap" in report6
+          and "--recheck-cap" in report6)
+
+    # And the live bug in its exact numbers, through the pure function: 40 confirmed of 795
+    # suspects on an 800-URL sample must never render as a flat "40 of 800".
+    live = {"sitemap": {"checked": 800, "total_in_sitemap": 800, "soft_404": False,
+                        "probe_status": 404, "throttled": 0, "unreliable": False, "coverage": 1.0,
+                        "recheck_cap": 40, "suspects": 795, "rechecked": 40,
+                        "dead": [{"url": f"d{i}", "status": 404} for i in range(40)],
+                        "not_rechecked": [{"url": f"n{i}", "status": 404, "not_rechecked": True}
+                                          for i in range(755)],
+                        "unconfirmed": [{"url": f"n{i}", "status": 404, "not_rechecked": True}
+                                        for i in range(755)],
+                        "server_errors": [], "redirect_chains": [], "insecure": [],
+                        "redirects_to_home": []},
+            "sitemaps": ["x"], "ssr": {}, "checkout": {"ctas": []}, "metadata": [], "psi": None}
+    lf = S.build_findings(live)[0]
+    check("trytrata.com's 795 dead URLs no longer report as '40 of 800'",
+          lf["headline"] != "40 of 800 URLs in the sitemap return 404"
+          and lf["subject"] != "40 of your 800 pages return 404",
+          (lf["headline"], lf["subject"]))
+    check("it extrapolates to the real magnitude (795), not the cap",
+          "795" in lf["detail"], lf["detail"])
+    check("the wedge subject warns it is a lower bound", lf["subject"].startswith("At least "),
+          lf["subject"])
+
+    # A cap must never rank an account BELOW the evidence it collected. 1 confirmed of 3
+    # re-checked with 100 suspects left over is a wedge; the flat count of 1 it used to
+    # produce is a LOW that never gets sent.
+    scarce = json.loads(json.dumps(live))
+    scarce["sitemap"].update(
+        recheck_cap=3, suspects=103, rechecked=3,
+        dead=[{"url": "d0", "status": 404}],
+        not_rechecked=[{"url": f"n{i}", "status": 404, "not_rechecked": True} for i in range(100)],
+        unconfirmed=[{"url": f"n{i}", "status": 404, "not_rechecked": True} for i in range(100)]
+                    + [{"url": f"f{i}", "status": 404} for i in range(2)])
+    sf = S.build_findings(scarce)[0]
+    check("a capped scan is not ranked LOW on evidence that points to a wedge",
+          sf["severity"] == 1, (sf["headline"], sf["severity"]))
+
+    # Backwards compatibility: an old raw.json has none of these keys. rerender.py must not
+    # start hedging counts that were never capped.
+    old = json.loads(json.dumps(live))
+    for k in ("recheck_cap", "suspects", "rechecked", "not_rechecked"):
+        old["sitemap"].pop(k)
+    old["sitemap"]["unconfirmed"] = []
+    of = S.build_findings(old)[0]
+    check("an uncapped (or pre-cap) scan still reads as a flat count",
+          of["headline"] == "40 of 800 URLs in the sitemap return 404"
+          and "floor" not in of["detail"], (of["headline"], of["detail"]))
+
+    # rerender.py's pre-fix detector: the last line of defence against re-shipping the
+    # 94-domain batch's capped numbers. It is load-bearing, so it gets an assertion.
+    import rerender as R
+    check("a pre-fix raw.json is flagged for re-scan, not silently re-rendered",
+          bool(R._pre_cap_fix(old)) and "RE-SCAN" in R._pre_cap_fix(old), R._pre_cap_fix(old))
+    check("a post-fix raw.json is not flagged", R._pre_cap_fix(live) is None, R._pre_cap_fix(live))
+    small_old = json.loads(json.dumps(old))
+    small_old["sitemap"]["dead"] = [{"url": "d0", "status": 404}]
+    check("a small pre-fix scan that never hit the cap is not flagged",
+          R._pre_cap_fix(small_old) is None, R._pre_cap_fix(small_old))
 
     print(f"\n{'ALL CHECKS ARMED' if not failures else str(len(failures)) + ' FAILING'}: "
           f"{len(failures)} failure(s)\n")
