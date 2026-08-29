@@ -1665,10 +1665,24 @@ body {
   .q-track,
   .q-task,
   .stat-big,
-  .declined .svc-name .strike,
-  .faq details::details-content {
+  .declined .svc-name .strike {
     animation: none !important;
     transition: none !important;
+  }
+  /* OWN rule, never appended to the shared list above: one unsupported
+     selector invalidates an entire plain selector list, so ::details-content
+     would silently kill every reduced-motion pin in browsers without it (and
+     the w3/w5 gates anchor on the list ending at `.strike{`). */
+  .faq details::details-content {
+    transition: none !important;
+  }
+  /* The mobile menu keeps only its opacity transition (cross-fade in place,
+     no slide). Duration/easing stay inherited from the Tailwind utility.
+     Declared HERE and not as a `motion-reduce:` variant in Header.tsx — the
+     variant would compile into a second reduced-motion @media block at the
+     Tailwind import, and the motion gates read only the first match. */
+  .mobile-menu {
+    transition-property: opacity !important;
   }
   /* Drawn, not mid-draw: killing the transition alone would freeze the strike
      at zero width — the same "kill the motion, strand the content" defect as a

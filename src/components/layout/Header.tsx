@@ -168,10 +168,14 @@ export function Header() {
           "fixed inset-x-0 top-[72px]",
           "bg-white border-b border-[var(--border)]",
           "shadow-lg",
-          // Under reduced motion the slide drops out and only opacity
-          // transitions — the panel cross-fades in place (apple-design §11).
+          // Reduced motion (cross-fade, no slide) lives in globals'
+          // prefers-reduced-motion block via .mobile-menu, NOT a
+          // `motion-reduce:` utility: that variant emits a SECOND
+          // reduced-motion @media at the Tailwind import, and the w3/w5
+          // gates read only the FIRST matching block — every pin in the
+          // globals block would go unverified (gates failed exactly so).
+          "mobile-menu",
           "transition-[opacity,translate] duration-300 ease-[var(--transition-smooth)]",
-          "motion-reduce:transition-[opacity]",
           isMobileMenuOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 -translate-y-4 pointer-events-none"
