@@ -58,3 +58,11 @@ scripts/leak-report/leads/
 # python bytecode
 __pycache__/
 *.pyc
+
+# `npx skills add` output. Agent skills belong in the GLOBAL ~/.claude/skills/,
+# not here: a bare `skills add` run from this repo defaults to project scope and
+# drops these three paths, which are third-party prompt content with no place in
+# a public repo. Install with `-g`.
+.agents/
+.claude/skills/
+skills-lock.json
