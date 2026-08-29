@@ -1502,6 +1502,22 @@ body {
   .faq details[open] summary::after {
     transform: rotate(45deg);
   }
+  /* Fluid open/close via ::details-content — pure CSS, so the JSON-LD parity
+     and no-JS rationale for native <details> is untouched. Browsers without
+     interpolate-size (or ::details-content) keep today's instant toggle;
+     content-visibility needs allow-discrete so the answer stays painted
+     through the closing transition. */
+  .faq details::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    interpolate-size: allow-keywords;
+    transition:
+      block-size 0.35s var(--ease),
+      content-visibility 0.35s allow-discrete;
+  }
+  .faq details[open]::details-content {
+    block-size: auto;
+  }
   .faq details p {
     margin-top: 0;
     margin-bottom: 20px;
@@ -1649,7 +1665,8 @@ body {
   .q-track,
   .q-task,
   .stat-big,
-  .declined .svc-name .strike {
+  .declined .svc-name .strike,
+  .faq details::details-content {
     animation: none !important;
     transition: none !important;
   }

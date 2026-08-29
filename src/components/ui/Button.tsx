@@ -7,7 +7,10 @@ const buttonVariants = cva(
     "inline-flex items-center justify-center gap-2",
     "font-medium",
     "rounded-full",
-    "transition-all duration-300",
+    // transform-only transition, and the press is INSTANT (duration-0) —
+    // pointer-down must respond on the same frame; only the release eases.
+    "transition-transform duration-300",
+    "active:translate-y-0 active:scale-[0.97] active:duration-0",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
     "disabled:pointer-events-none disabled:opacity-50",
   ],

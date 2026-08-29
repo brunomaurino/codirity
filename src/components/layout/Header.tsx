@@ -53,7 +53,10 @@ export function Header() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-400",
+        // Explicit property list: transition-all also animated backdrop-filter,
+        // which isn't compositor-friendly — the blur now switches instantly
+        // under the bg fade, where it's imperceptible.
+        "fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color,box-shadow,color,padding] duration-400",
         "px-4 py-5 md:px-8 lg:px-16",
         // v4 W1 (battery-corrected): tone tracks the GROUND via the hero
         // sentinel IO — transparent chalk while the dark hero is under the
@@ -119,7 +122,8 @@ export function Header() {
               !overDark
                 ? "text-gray-700 border border-gray-200 hover:border-brand hover:text-brand hover:bg-brand-pale"
                 : "text-chalk border border-[var(--rule)] hover:border-mint hover:text-mint",
-              "transition-all duration-300 cursor-pointer"
+              "transition-[color,border-color,background-color,scale] duration-300 cursor-pointer",
+              "active:scale-[0.97] active:duration-0"
             )}
           >
             Book a call
@@ -133,8 +137,9 @@ export function Header() {
               !overDark
                 ? "bg-brand-fill text-white hover:bg-brand-fill-dark hover:shadow-brand"
                 : "bg-mint text-ground",
-              "transition-all duration-300",
-              "hover:-translate-y-0.5"
+              "transition-[translate,scale,background-color,box-shadow] duration-300",
+              "hover:-translate-y-0.5",
+              "active:translate-y-0 active:scale-[0.97] active:duration-0"
             )}
           >
             {hero.primaryCta.label}
@@ -145,7 +150,7 @@ export function Header() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="lg:hidden p-2 -mr-2"
+          className="lg:hidden p-2 -mr-2 transition-transform duration-200 active:scale-90 active:duration-0"
           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
           {isMobileMenuOpen ? (
@@ -163,7 +168,10 @@ export function Header() {
           "fixed inset-x-0 top-[72px]",
           "bg-white border-b border-[var(--border)]",
           "shadow-lg",
-          "transition-all duration-300 ease-[var(--transition-smooth)]",
+          // Under reduced motion the slide drops out and only opacity
+          // transitions — the panel cross-fades in place (apple-design §11).
+          "transition-[opacity,translate] duration-300 ease-[var(--transition-smooth)]",
+          "motion-reduce:transition-[opacity]",
           isMobileMenuOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 -translate-y-4 pointer-events-none"
@@ -180,7 +188,8 @@ export function Header() {
                     "block py-3 px-4 rounded-xl",
                     "text-gray-700 text-lg font-medium",
                     "transition-colors duration-200",
-                    "hover:bg-gray-50 hover:text-gray-900"
+                    "hover:bg-gray-50 hover:text-gray-900",
+                    "active:bg-gray-100 active:duration-0"
                   )}
                 >
                   {link.label}
@@ -199,7 +208,8 @@ export function Header() {
                 "w-full px-6 py-4 rounded-full",
                 "text-gray-700 border border-gray-200",
                 "font-medium text-base",
-                "transition-all duration-300 cursor-pointer"
+                "transition-transform duration-300 cursor-pointer",
+                "active:scale-[0.98] active:duration-0"
               )}
             >
               Book a call
@@ -213,8 +223,9 @@ export function Header() {
                 "w-full px-6 py-4 rounded-full",
                 "bg-brand-fill text-white",
                 "font-medium text-base",
-                "transition-all duration-300",
-                "hover:bg-brand-fill-dark"
+                "transition-[scale,background-color] duration-300",
+                "hover:bg-brand-fill-dark",
+                "active:scale-[0.98] active:duration-0"
               )}
             >
               {hero.primaryCta.label}
