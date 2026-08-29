@@ -69,6 +69,7 @@ export function Faq() {
               "inline-flex items-center justify-center rounded-full",
               "border border-[var(--ink-dim)] px-7 py-3.5 text-[15px] font-medium",
               "text-ink transition-transform duration-300 hover:-translate-y-0.5",
+              "active:translate-y-0 active:scale-[0.97] active:duration-0",
               "cursor-pointer"
             )}
           >
