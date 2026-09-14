@@ -50,9 +50,12 @@ export default function Home() {
               and the review caught that): FIVE of its six promises are already
               made by `hero.subhead` — "Unlimited requests, senior engineering,
               and AI-accelerated delivery — for one flat monthly rate. Pause or
-              cancel anytime." The sixth, "Scales with you", is the terms band's
-              Pro row ("Two active tasks, running in parallel") and the
-              what-counts-as-a-task FAQ. Two of the six titles were also
+              cancel anytime." The sixth, "Scales with you", used to live in the
+              terms band's Pro row ("Two active tasks, running in parallel");
+              with the offer down to ONE price (2026-09-14) that row is gone and
+              the claim is not made anywhere — deliberately, since a single-tier
+              subscription does not scale in tiers. The what-counts-as-a-task FAQ
+              still states the active-task limit. Two of the six titles were also
               character-identical to `tiers[].features`, though that array is
               not itself rendered, so it proves nothing on its own.
               What DID go with it: the anti-hourly framing — "no hourly billing

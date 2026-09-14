@@ -19,23 +19,23 @@ base = open(ORIG, encoding="utf-8").read()
 MUTATIONS = {
     # v3's actual failure: a fabricated feature spliced into real copy.
     "substitution": lambda s: s.replace(
-        'term-note">Two active tasks, running in parallel.',
-        'term-note">Two active tasks, running in parallel with guest carts.',
+        'term-note">One active task at a time.',
+        'term-note">One active task at a time, with guest carts.',
         1,
     ),
     # a price drifting away from offer.ts
     "figure-drift": lambda s: s.replace(
-        'term-v term-n"><span class="cur">$</span>6,995',
-        'term-v term-n"><span class="cur">$</span>6,950',
+        'term-v term-n"><span class="cur">$</span>3,995',
+        'term-v term-n"><span class="cur">$</span>3,950',
         1,
     ),
     # the eyebrow promising more numbers than the band renders
     "eyebrow-count": lambda s: s.replace(
-        "The whole offer, in four numbers", "The whole offer, in five numbers", 1
+        "The whole offer, in two numbers", "The whole offer, in five numbers", 1
     ),
     # a whole row silently dropping out
     "row-dropped": lambda s: re.sub(
-        r'<div class="term" style="--i:3"[^>]*>.*?</div>', "", s, count=1, flags=re.S
+        r'<div class="term" style="--i:1"[^>]*>.*?</div>', "", s, count=1, flags=re.S
     ),
 }
 

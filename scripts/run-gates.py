@@ -14,10 +14,10 @@ Three of these need a rendered page, so this builds and serves the site itself
 rather than asking the caller to remember. Pass --skip-build to reuse an
 existing .next and a server you already have up on $PORT.
 
-Fifteen of the sixteen scripts run here. `w2-killswitch-check.py` is the
-exception and is deliberately hand-only: it needs `foundingRate.active` flipped
-to false and the site re-rendered, which is a config change no test run should
-make on its own.
+All sixteen scripts run here. `w2-killswitch-check.py` used to be hand-only
+because it needed `foundingRate.active` flipped to false; that flag is false in
+the shipped config since 2026-09-14 (one flat price), so it now runs against the
+same rendered page as the rest and guards the retirement against a regression.
 
 Exit code is the number of failing gates, so CI fails loudly and a human can
 see how much is broken at a glance.
@@ -44,6 +44,7 @@ GATES: list[tuple[str, list[str]]] = [
     ("w2  terms band — copy vs mockup, both directions", ["python3", "scripts/w2-copy-gate.py", "{page}"]),
     ("w2  terms band — copy gate SELF-TEST", ["python3", "scripts/w2-copy-gate-selftest.py", "{page}"]),
     ("w2  terms band — compiled CSS contracts", ["python3", "scripts/w2-css-gate.py"]),
+    ("w2  founding rate — retired, stranded nowhere", ["python3", "scripts/w2-killswitch-check.py", "{page}"]),
     ("w3  queue scene — copy vs mockup", ["python3", "scripts/w3-copy-gate.py", "{page}"]),
     ("w3  queue scene — motion contracts", ["python3", "scripts/w3-motion-gate.py"]),
     ("w3  queue scene — motion gate SELF-TEST", ["python3", "scripts/w3-motion-gate-selftest.py", "{page}"]),

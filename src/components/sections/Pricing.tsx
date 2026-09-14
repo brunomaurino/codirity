@@ -7,6 +7,7 @@ import { PricingViewedTracker } from "./PricingViewedTracker";
 // raised-capital numbers, this page puts the price and the terms at the 99px
 // tier, because for a subscription those ARE the numbers.
 //
+// The band is TWO numbers since 2026-09-14 — the one price and the guarantee.
 // EVERY figure, label, note and CTA composes from offer.ts. The founding row is
 // GATED on foundingRate.active and interpolates slots/price/cta, so flipping the
 // documented kill-switch removes the row, its checkout CTA, the FAQ entry and
@@ -40,14 +41,13 @@ type Row = {
   cta?: {
     label: string;
     href: string;
-    event: "checkout_click_standard" | "checkout_click_pro" | "checkout_click_founding";
+    event: "checkout_click_standard" | "checkout_click_founding";
   };
 };
 
 const standard = tiers[0];
-const pro = tiers[1];
 
-// The band spells small counts out in prose ("The first five", "in four
+// The band spells small counts out in prose ("The first five", "in two
 // numbers") while rendering them as digits in labels ("Founding — 5 seats"),
 // exactly as the approved mockup does. Declared ABOVE ROWS: the rows read it
 // during module evaluation, so a later `const` would hit the temporal dead zone.
@@ -64,16 +64,6 @@ const ROWS: Row[] = [
     brass: true,
     note: standard.note,
     cta: { label: standard.cta, href: standard.stripeUrl, event: "checkout_click_standard" },
-  },
-  {
-    key: "pro",
-    label: pro.name,
-    cur: "$",
-    num: pro.price.replace("$", ""),
-    unit: pro.period,
-    brass: true,
-    note: pro.note,
-    cta: { label: pro.cta, href: pro.stripeUrl, event: "checkout_click_pro" },
   },
   {
     key: "guarantee",
