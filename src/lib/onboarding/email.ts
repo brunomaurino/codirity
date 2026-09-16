@@ -12,20 +12,21 @@ import { WelcomeEmail, WELCOME_EMAIL_SUBJECT } from "./email-template";
 const FROM_ADDRESS = "Codirity <support@codirity.com>";
 const REPLY_TO_ADDRESS = "support@codirity.com";
 
-function requiredTierName(id: "standard" | "pro"): string {
+function requiredTierName(id: "standard"): string {
   const tier = tiers.find((t) => t.id === id);
   if (!tier) throw new Error(`PLAN_DISPLAY_NAMES: '${id}' tier missing from offer.ts`);
   return tier.name;
 }
 
-// Derived from src/config/offer.ts (the HANDOFF's canonical source) for standard/pro,
-// mirroring trello.ts's activeTasksNoteFor() — a future tier-name change in offer.ts then
-// desyncs this at compile/runtime-obviously time, not silently. Founding has no Tier entry
-// in offer.ts (foundingRate is a separate rate object with no `name` field), so it's
-// hardcoded to match the HANDOFF's own "Standard / Pro / Founding" casing.
+// The live plan's name is DERIVED from src/config/offer.ts (the HANDOFF's canonical
+// source), mirroring trello.ts's activeTasksNoteFor() — a tier-name change there desyncs
+// this obviously, not silently. `pro` and `founding` are RETIRED plans (2026-09-14: one
+// flat price) with no Tier entry left to read, so their names are literals: a
+// subscription bought before that date still resolves through plans.ts and must still
+// receive a welcome email that names the plan it actually pays for.
 const PLAN_DISPLAY_NAMES: Record<PlanId, string> = {
   standard: requiredTierName("standard"),
-  pro: requiredTierName("pro"),
+  pro: "Pro",
   founding: "Founding",
 };
 

@@ -90,10 +90,10 @@ export default function TermsOfService() {
               </h2>
               <div className="space-y-4">
                 <p>
-                  Codirity is a monthly software-engineering subscription. You add requests to a private board; we deliver them one at a time (or in parallel, depending on your plan) until you pause or cancel. There is no contract term, no minimum commitment, and no per-project quote.
+                  Codirity is a monthly software-engineering subscription. You add requests to a private board; we deliver them one at a time until you pause or cancel. There is no contract term, no minimum commitment, and no per-project quote.
                 </p>
                 <p>
-                  Each plan sets how many tasks are <em>active</em> at once, not how many you may request. Requests behind the active ones are unlimited and stay queued in the order you set.
+                  The subscription sets how many tasks are <em>active</em> at once, not how many you may request. Requests behind the active ones are unlimited and stay queued in the order you set.
                 </p>
                 <div className="bg-gray-50 rounded-2xl p-6 space-y-4">
                   {tiers.map((tier) => (

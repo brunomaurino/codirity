@@ -54,9 +54,8 @@ function lowerFirst(s: string): string {
 /**
  * Derived from src/config/offer.ts — the HANDOFF's designated canonical source for tier
  * copy — rather than a hardcoded duplicate, so a future change to offer.ts's task-limit
- * wording can't silently desync from new client boards. Founding has no separate tier in
- * offer.ts (it's a price-only variant layered on the Pro task limit, per foundingRate's
- * shape), so it explicitly maps to the "pro" tier's copy. The exhaustive switch + `never`
+ * wording can't silently desync from new client boards. `pro` and `founding` are retired
+ * plans with no tier left in offer.ts and carry their own literal below. The exhaustive switch + `never`
  * check means a future PlanId addition fails to COMPILE here instead of silently
  * defaulting to the wrong copy.
  */
@@ -69,9 +68,11 @@ function activeTasksNoteFor(plan: PlanId): string {
     }
     case "pro":
     case "founding": {
-      const tier = tiers.find((t) => t.id === "pro");
-      if (!tier) throw new Error("activeTasksNoteFor: 'pro' tier missing from offer.ts");
-      return lowerFirst(tier.tasks);
+      // RETIRED plans (2026-09-14: one flat price). offer.ts no longer carries a Pro
+      // tier to derive this from, so the two-task copy is a literal here — an existing
+      // subscription on those price ids must still get a board that states the limit
+      // it actually pays for. Deleting these cases would silently downgrade it.
+      return "two active tasks at a time";
     }
     default: {
       const exhaustiveCheck: never = plan;

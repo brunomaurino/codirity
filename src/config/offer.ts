@@ -19,7 +19,7 @@ function stripeLink(value: string | undefined): string {
 }
 
 export interface Tier {
-  id: "standard" | "pro";
+  id: "standard";
   name: string;
   /** Display price, e.g. "$3,995". */
   price: string;
@@ -393,6 +393,12 @@ export const queue: QueueContent = {
   note: "An illustrative queue — you scroll, we ship. Not a client board.",
 };
 
+/** ONE tier since 2026-09-14 (Bruno): a single flat price for everyone. The Pro
+ *  tier ($6,995/mo, two active tasks) was removed from the offer and the
+ *  `foundingRate` kill-switch flipped off in the same change, so the terms band
+ *  renders two numbers — the price and the guarantee. The onboarding path still
+ *  RESOLVES the retired `pro`/`founding` plans (see `plans.ts`): a subscription
+ *  bought before this date must still get its board and its welcome email. */
 export const tiers: Tier[] = [
   {
     id: "standard",
@@ -413,30 +419,13 @@ export const tiers: Tier[] = [
     stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_STANDARD),
     cta: "Get started",
   },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$6,995",
-    priceAmount: 6995,
-    period: "/mo",
-    tasks: "Two active tasks at a time",
-    note: "Two active tasks, running in parallel. Priority delivery.",
-    // Active-task limit lives in `tasks` (not repeated here); Priority delivery is
-    // the Pro-only differentiator and stays in the list.
-    features: [
-      "Priority delivery",
-      "Unlimited requests & revisions",
-      "AI-accelerated senior engineering",
-      "Async delivery, tracked in Trello",
-      "Pause or cancel anytime",
-    ],
-    stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_PRO),
-    cta: "Get started",
-  },
 ];
 
 export const foundingRate: FoundingRate = {
-  active: true,
+  // OFF since 2026-09-14: one flat price for everyone. Flipping this back to
+  // true restores the row, its checkout CTA and the FAQ entry together — the
+  // switch still works, it is simply not part of the offer any more.
+  active: false,
   price: "$2,995/mo",
   priceAmount: 2995,
   slots: 5,
@@ -545,7 +534,7 @@ export const faq: FaqItem[] = [
   {
     question: "What counts as one task?",
     answer:
-      "A task is a single focused piece of work — an automation, an integration, a tool, or a fix. We work one active task at a time on Standard and two on Pro, moving to the next as soon as one ships.",
+      "A task is a single focused piece of work — an automation, an integration, a tool, or a fix. We work one active task at a time, moving to the next as soon as one ships.",
   },
   {
     question: "What if I don't like the result?",
@@ -590,9 +579,8 @@ export const faq: FaqItem[] = [
           // Deliberately NOT framed as a capacity cap. `foundingRate` is a launch
           // PRICE promo, not a limit on how many clients we take, and the earlier
           // draft of this answer ("one engineer works one queue, one task at a
-          // time... we cap how many queues exist") both invented that cap and
-          // contradicted the Pro tier's two-active-tasks promise two entries
-          // above it. Also found in Phase 4/5 review.
+          // time... we cap how many queues exist") invented that cap. Found in
+          // Phase 4/5 review. Unrendered while `active` is false.
           answer: `It's a launch price, not a waiting list. The first ${foundingRate.slots} subscriptions keep ${foundingRate.price} for as long as they stay on it; after that the rate is the one listed above. The work is identical either way — same queue, same delivery.`,
         },
       ]
