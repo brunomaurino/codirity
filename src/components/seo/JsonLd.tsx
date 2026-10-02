@@ -1,5 +1,5 @@
 import { SITE_NAME, SOCIAL_LINKS, getSiteUrl } from "@/lib/site";
-import { BRAND, CURRENCY, faq, tiers } from "@/config/offer";
+import { BRAND, CURRENCY, faq, hero, tiers } from "@/config/offer";
 
 /** Serializes a schema.org object into a server-rendered JSON-LD <script>. */
 function JsonLdScript({ data }: { data: Record<string, unknown> }) {
@@ -47,8 +47,10 @@ export function ServiceJsonLd() {
       data={{
         "@context": "https://schema.org",
         "@type": "Service",
-        name: `${BRAND} — AI & automation, on subscription`,
-        serviceType: "AI & automation engineering",
+        name: `${BRAND} — Software development & AI automation subscription`,
+        serviceType: "Software development and AI automation subscription",
+        description: hero.subhead,
+        areaServed: "Worldwide",
         url: base,
         provider: {
           "@type": "Organization",

@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, getSiteUrl } from "@/lib/site";
+import { tiers } from "@/config/offer";
 import "./globals.css";
 
 // Redesign v4 ("The Number That Doesn't Move"): ONE family for everything —
@@ -30,9 +31,14 @@ const apfel = localFont({
 // model (Bundle C hero + Bundle D pricing), so the title/description/OG match it. This
 // closes the positioning-neutral deferral from Bundle A — the OG card scrapers cache no
 // longer contradicts the page.
-const SITE_TITLE = "Codirity — Your AI & automation team, on subscription";
-const SITE_DESCRIPTION =
-  "Your AI & automation team, on subscription. Unlimited requests, senior engineering, and AI-accelerated delivery for one flat monthly rate — pause or cancel anytime.";
+//
+// 2026-10-02 keyword pass: nobody searches "AI & automation team, on
+// subscription" (no Google Autocomplete suggestions). The title and description
+// now lead with the phrases buyers DO type — "software development
+// subscription" and "AI automation subscription" — while the on-page H1 keeps
+// the approved mockup's wording. The price is read from offer.ts, never typed.
+const SITE_TITLE = "Codirity — Software Development & AI Automation Subscription";
+const SITE_DESCRIPTION = `A software development and AI automation subscription for startups and small teams: senior engineering, unlimited requests, ${tiers[0].price}${tiers[0].period} flat. Pause or cancel anytime.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),

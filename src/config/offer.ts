@@ -302,7 +302,7 @@ export const RESPONSE_TIME_CLAIM = "We reply within 24 hours";
 export const hero: HeroContent = {
   headline: "Your AI & automation team, on subscription.",
   subhead:
-    "Unlimited requests, senior engineering, and AI-accelerated delivery — for one flat monthly rate. Pause or cancel anytime.",
+    "Unlimited software development and AI automation requests, built by a senior engineer and delivered AI-accelerated — for one flat monthly rate. Pause or cancel anytime.",
   // "#terms" since W2 renamed the section; a full-height "#pricing" alias
   // layer inside the band keeps old inbound links and the tracker working.
   primaryCta: { label: "See pricing", href: "#terms" },
@@ -459,10 +459,12 @@ export const guarantee: Guarantee = {
 export const TRUST_LINE = `Cancel in your first ${guarantee.days} days — get ${guarantee.refundPct}% back.`;
 
 export const included: string[] = [
+  "Web apps, MVPs & SaaS features",
   "Process & workflow automation",
   "Custom internal tools & dashboards",
   "AI integrations (LLMs, chatbots, agents)",
   "API & third-party integrations",
+  "Stripe billing & subscriptions",
   "Data pipelines, scripts & migrations",
   "Legacy system modernization",
   "Ongoing fixes & iterative improvements",
@@ -487,7 +489,7 @@ export const howItWorks: HowItWorksStep[] = [
     number: "02",
     title: "Request",
     description:
-      "Add tasks to your queue. We work them one (or two) at a time and deliver async.",
+      "Add tasks to your queue. We work them one at a time and deliver async.",
   },
   {
     number: "03",
@@ -548,8 +550,12 @@ export const faq: FaqItem[] = [
   },
   {
     question: "Why not just hire someone?",
-    answer:
-      "If you have forty hours a week of engineering work, hire — we'll tell you so on the call. If you have five or fifteen, a full-time salary is the expensive way to get them, and you're still doing the recruiting.",
+    // Figures are the US Bureau of Labor Statistics', checked 2026-10-02:
+    // median software-developer wage $135,980 (OOH, May 2025) and benefits =
+    // 30% of private-industry employer cost (ECEC, June 2026), so wage / 0.70
+    // ≈ $194k. Re-check both when BLS publishes a new year. The subscription's
+    // yearly figure is DERIVED from tiers[0] so it cannot drift from the price.
+    answer: `If you have forty hours a week of engineering work, hire — we'll tell you so on the call. If you have five or fifteen, a full-time salary is the expensive way to get them: the median US software developer earns $135,980 a year (BLS), and benefits put the employer's cost near $195,000 before recruiting. A year of the subscription is $${(tiers[0].priceAmount * 12).toLocaleString("en-US")}, with no hiring process and nothing to unwind if you stop.`,
   },
   {
     question: "Who actually writes the code, you or the AI?",
@@ -565,6 +571,35 @@ export const faq: FaqItem[] = [
     question: "What if something breaks a month later?",
     answer:
       "Add a card. Fixes to things we built are requests like any other, and ongoing fixes are part of the subscription. We don't ship what we can't maintain — it's why the list of what we don't do is short and specific.",
+  },
+  // 2026-10-02 keyword pass: the five entries below answer the questions buyers
+  // ask about development subscriptions (competitor FAQs, Google Autocomplete).
+  // Appended AFTER OWNERSHIP_FAQ_INDEX on purpose — inserting above it would
+  // shift the promoted entry.
+  {
+    question: "What does \"unlimited requests\" mean?",
+    answer:
+      "There is no cap on how many requests you add to your board. We work them one active task at a time, in the order you set, and start the next as soon as one ships. Big requests are split into milestones, so a large build never blocks the queue for weeks without anything shipping.",
+  },
+  {
+    question: "What if I don't know exactly what I need built?",
+    answer:
+      "Describe the problem, not the solution — \"our team re-types every invoice into the CRM\" is a fine first card. We'll turn it into a scoped task, or tell you it's something you shouldn't build at all.",
+  },
+  {
+    question: "Can you work on our existing codebase?",
+    answer:
+      "Yes. One of our current clients is a marketplace that has run since 2003, which we're rebuilding in place without losing the search traffic it still serves. We work in your repos and your cloud accounts, not a copy of them.",
+  },
+  {
+    question: "What technologies do you work with?",
+    answer:
+      "Mostly TypeScript: Next.js, React, Node and NestJS, Stripe for billing, AWS for infrastructure, and LLM APIs for AI features and agents. If your stack is something else, ask — we'll say plainly whether we're the right fit.",
+  },
+  {
+    question: "Is this like Designjoy, but for development?",
+    answer:
+      "Same model, different craft: a flat monthly subscription, an unlimited queue, one task at a time, pause or cancel anytime. Design subscriptions ship designs; we ship working software — automations, integrations, internal tools, and AI features.",
   },
   // Gated on `foundingRate.active`, and the number and price are read from that
   // object rather than written into the prose. Both are required, not tidiness:
