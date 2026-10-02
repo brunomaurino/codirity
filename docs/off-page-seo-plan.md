@@ -26,6 +26,8 @@ Source for the channel list: `~/br-brain/WIKI/clients/_channels-2026-08-27-traff
 
 ## Phase 1 — free directory listings (one afternoon, permanent links)
 
+All the copy, logos and field answers are in [directory-listing-kit.md](directory-listing-kit.md).
+
 | # | Where | Cost | Status |
 |---|---|---|---|
 | 1 | Clutch — free profile | $0 | todo |
@@ -33,8 +35,8 @@ Source for the channel list: `~/br-brain/WIKI/clients/_channels-2026-08-27-traff
 | 3 | UpCity — free basic profile | $0 | todo |
 | 4 | productizedhq.com — exact category ("flat-price agencies") | unverified | todo |
 | 5 | productizehub.com, productizedagencies.com | unverified | todo |
-| 6 | Product Hunt product page — confirm it links to `www` | $0 | todo |
-| 7 | LinkedIn company page and X profile — confirm the website field is `www` | $0 | todo |
+| 6 | Product Hunt product page — links to the bare domain; change to `www` | $0 | todo |
+| 7 | LinkedIn company page links to the bare domain; change to `www`. X already links to `www` | $0 | LinkedIn todo, X done |
 
 Clutch and GoodFirms rank for "software development agency" searches on their own.
 A listing there is both a backlink and a second page that can appear in results.
