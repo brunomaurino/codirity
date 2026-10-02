@@ -417,7 +417,9 @@ export const tiers: Tier[] = [
       "Pause or cancel anytime",
     ],
     stripeUrl: stripeLink(process.env.NEXT_PUBLIC_STRIPE_LINK_STANDARD),
-    cta: "Get started",
+    // "Get started" said nothing about what happens next. The subscription's
+    // first act IS opening a queue (howItWorks 01), so the button names it.
+    cta: "Start your queue",
   },
 ];
 
