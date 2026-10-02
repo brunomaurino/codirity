@@ -48,9 +48,9 @@ export default function Home() {
             - `Benefits` is GONE, which is why the approved mockup has no such
               section. Precisely (the first draft of this comment overstated it
               and the review caught that): FIVE of its six promises are already
-              made by `hero.subhead` — "Unlimited requests, senior engineering,
-              and AI-accelerated delivery — for one flat monthly rate. Pause or
-              cancel anytime." The sixth, "Scales with you", used to live in the
+              made by `hero.subhead` — unlimited requests, senior engineering,
+              AI-accelerated delivery, one flat monthly rate, pause or cancel
+              anytime. The sixth, "Scales with you", used to live in the
               terms band's Pro row ("Two active tasks, running in parallel");
               with the offer down to ONE price (2026-09-14) that row is gone and
               the claim is not made anywhere — deliberately, since a single-tier
