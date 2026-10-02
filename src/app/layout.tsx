@@ -38,7 +38,9 @@ const apfel = localFont({
 // subscription" and "AI automation subscription" — while the on-page H1 keeps
 // the approved mockup's wording. The price is read from offer.ts, never typed.
 const SITE_TITLE = "Codirity — Software Development & AI Automation Subscription";
-const SITE_DESCRIPTION = `A software development and AI automation subscription for startups and small teams: senior engineering, unlimited requests, ${tiers[0].price}${tiers[0].period} flat. Pause or cancel anytime.`;
+// Kept under ~155 characters so Google shows it whole instead of truncating
+// the end (the 2026-10-02 audit measured 164).
+const SITE_DESCRIPTION = `Software development and AI automation subscription for startups: senior engineers, unlimited requests, ${tiers[0].price}${tiers[0].period} flat. Pause or cancel anytime.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
