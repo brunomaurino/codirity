@@ -1,4 +1,4 @@
-import { included, notIncluded, sections } from "@/config/offer";
+import { included, comingSoon, notIncluded, sections } from "@/config/offer";
 
 // What we build (Bundle W5, v4 treatment) — one full-width ruled list on paper.
 //
@@ -31,6 +31,13 @@ export function Services() {
           {included.map((item) => (
             <li key={item}>
               <span className="svc-name">{item}</span>
+            </li>
+          ))}
+          {/* Not offered yet, and not a refusal either: no strike, its own tag. */}
+          {comingSoon.map((item) => (
+            <li key={item} className="soon">
+              <span className="svc-name">{item}</span>
+              <span className="svc-no">coming soon</span>
             </li>
           ))}
           {notIncluded.map((item, i) => (

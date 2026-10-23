@@ -462,6 +462,7 @@ export const TRUST_LINE = `Cancel in your first ${guarantee.days} days — get $
 
 export const included: string[] = [
   "Web apps, MVPs & SaaS features",
+  "Marketing sites & landing pages",
   "Process & workflow automation",
   "Custom internal tools & dashboards",
   "AI integrations (LLMs, chatbots, agents)",
@@ -474,11 +475,15 @@ export const included: string[] = [
 
 export const notIncluded: string[] = [
   "Native mobile apps",
-  "Brand & marketing design",
   "Ongoing manual data entry or operations staffing",
   "Hardware or on-site IT",
   "Work that needs a dedicated full-time team",
 ];
+
+/** Shown in the services list with a "coming soon" tag instead of the strike:
+ *  not offered today, but no longer a refusal (Bruno, 2026-10-23). Moving an
+ *  item to `included` is the day it ships, not before. */
+export const comingSoon: string[] = ["Brand, marketing & design"];
 
 export const howItWorks: HowItWorksStep[] = [
   {
@@ -630,7 +635,7 @@ export const faq: FaqItem[] = [
   {
     question: "What don't you do?",
     answer:
-      "We focus on AI, automation, and custom systems. We don't do native mobile apps, brand or marketing design, or staffing for manual operations. If we're not the right fit, we'll tell you.",
+      "We focus on AI, automation, custom systems, and the sites they run on. We don't do native mobile apps or staffing for manual operations. Brand, marketing and design services are coming soon. If we're not the right fit, we'll tell you.",
   },
 ];
 

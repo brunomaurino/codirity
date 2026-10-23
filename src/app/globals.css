@@ -1377,6 +1377,9 @@ body {
     text-transform: uppercase;
     white-space: nowrap;
   }
+  .svc-list li.soon .svc-name {
+    color: var(--ink-dim);
+  }
   .svc-list li.declined .svc-name {
     color: var(--ink-faint);
   }

@@ -26,13 +26,15 @@ page = open(PAGE, encoding="utf-8").read()
 facts = json.loads(
     subprocess.run(
         ["npx", "tsx", "-e",
-         "import {included, notIncluded, howItWorks, faq} from './src/config/offer';"
-         "process.stdout.write(JSON.stringify({included, notIncluded, howItWorks, faq}))"],
+         "import {included, comingSoon, notIncluded, howItWorks, faq} from './src/config/offer';"
+         "process.stdout.write(JSON.stringify({included, comingSoon, notIncluded, howItWorks, faq}))"],
         capture_output=True, text=True, check=True,
     ).stdout
 )
 included = facts["included"]
 not_included = facts["notIncluded"]
+coming_soon = facts["comingSoon"]
+all_rows = included + coming_soon + not_included
 how = facts["howItWorks"]
 faq = facts["faq"]
 
@@ -52,14 +54,28 @@ for m in re.finditer(r'<span class="svc-name"[^>]*>(.*?)</li>', page, re.S):
     inner = re.sub(r'<span class="svc-no".*?</span>', "", m.group(1), flags=re.S)
     rows.append(squash(inner))
 
-for want in included + not_included:
+for want in all_rows:
     if want not in rows:
         fails.append(f"services: MISSING (or reworded) {want!r}")
 for got in rows:
-    if got not in included + not_included:
+    if got not in all_rows:
         fails.append(f"services: EXTRA row not in offer.ts: {got!r}")
-if len(rows) != len(included) + len(not_included):
-    fails.append(f"services: {len(rows)} rows render, offer.ts has {len(included) + len(not_included)}")
+if len(rows) != len(all_rows):
+    fails.append(f"services: {len(rows)} rows render, offer.ts has {len(all_rows)}")
+
+# The COMING-SOON rows must be exactly comingSoon[], each saying so in words and
+# never struck — a strike there would state a refusal the copy does not make.
+soon = []
+for m in re.finditer(r'<li class="soon"[^>]*>(.*?)</li>', page, re.S):
+    block = m.group(1)
+    name = squash(re.sub(r'<span class="svc-no".*?</span>', "", block, flags=re.S))
+    soon.append(name)
+    if "coming soon" not in squash(block):
+        fails.append(f"coming-soon row {name!r} does not say 'coming soon'")
+    if 'class="strike"' in block:
+        fails.append(f"coming-soon row {name!r} is struck")
+if soon != coming_soon:
+    fails.append(f"coming-soon rows are {soon}, expected exactly comingSoon {coming_soon}")
 
 # The DECLINED rows must be exactly notIncluded[], each with its strike and the
 # words "we say no" — the refusal stated, never implied by styling alone.
