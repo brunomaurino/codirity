@@ -779,6 +779,11 @@ export const clients: ClientEntry[] = [
  *  The turnaround is a real commitment to every requester, stated ONCE. */
 export const AUDIT_TURNAROUND = "2 business days";
 
+/** The page count the copy promises. Every audit runs
+ *  `scan.py <domain> --max-urls 1000` — the scanner's default (300) samples,
+ *  and a sample is not what "up to 1,000 pages" says. Keep the two together. */
+export const AUDIT_MAX_PAGES = "1,000";
+
 export interface AuditStageOption {
   value: string;
   label: string;
@@ -806,26 +811,26 @@ export interface AuditContent {
 export const audit: AuditContent = {
   label: "Free site leak audit",
   headline: "We find what's broken on your site. Free.",
-  lede: `Send us your URL. We crawl every page in your sitemap and check the paths that cost you money, then email you a short written report within ${AUDIT_TURNAROUND}. No call needed.`,
+  lede: `Send us your URL. We check up to ${AUDIT_MAX_PAGES} pages from your sitemap and the paths that cost you money, then email you a short written report within ${AUDIT_TURNAROUND}. No call needed.`,
   cta: "Get the free audit",
   fit: "Works best on sites with 50 or more pages. Small sites rarely have enough surface to hide anything.",
   checksLabel: "What we check",
   checks: [
     {
       title: "Pages that 404 while Google still crawls them",
-      body: "Every URL in your sitemap, requested live. Dead pages, redirect chains, and pages that quietly bounce to the homepage.",
+      body: `Up to ${AUDIT_MAX_PAGES} URLs from your sitemap, requested live. Dead pages, redirect chains, and pages that quietly bounce to the homepage.`,
     },
     {
       title: "A checkout that can't take money",
-      body: "Pricing buttons that point nowhere, payment links still in test mode, or a buy flow that breaks before the card form.",
+      body: "Payment links still in test mode, and pricing buttons that lead to a dead page.",
     },
     {
       title: "Content crawlers can't see",
-      body: "Whether your pages render without JavaScript. If they don't, search engines and link previews get an empty page.",
+      body: "Whether your home and pricing pages render without JavaScript. If they don't, search engines and link previews get an empty page.",
     },
     {
       title: "Missing titles, descriptions and previews",
-      body: "The metadata that decides how your pages show up in Google and when someone shares a link.",
+      body: "Checked on a sample of your pages: the metadata that decides how they show up in Google and when someone shares a link.",
     },
   ],
   stepsLabel: "How it works",

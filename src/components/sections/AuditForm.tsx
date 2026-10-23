@@ -13,7 +13,7 @@ interface FormData {
   website: string;
   stage: string;
   message: string;
-  fax: string;
+  hp_note: string;
 }
 
 const initialFormData: FormData = {
@@ -22,7 +22,7 @@ const initialFormData: FormData = {
   website: "",
   stage: "",
   message: "",
-  fax: "",
+  hp_note: "",
 };
 
 const ATTRIBUTION_KEYS = [
@@ -112,7 +112,7 @@ export function AuditForm() {
   if (sentTo) {
     return (
       <div role="status" className="flex flex-col gap-4">
-        <CheckCircle2 className="h-8 w-8 stroke-mint" aria-hidden="true" />
+        <CheckCircle2 className="h-8 w-8 stroke-chalk-dim" aria-hidden="true" />
         <h3 className="display d-md">Got it.</h3>
         <p className="lede">
           The report goes to {sentTo} within {AUDIT_TURNAROUND}. If anything is
@@ -197,14 +197,16 @@ export function AuditForm() {
 
         {/* Honeypot: off-screen and out of the tab order, so only a bot fills it. */}
         <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
-          <label htmlFor="fax">Fax</label>
+          {/* Named and labelled so no autofill heuristic maps it to a contact
+              field (a "fax" honeypot gets filled by phone autofill). */}
+          <label htmlFor="hp_note">Leave this empty</label>
           <input
-            id="fax"
-            name="fax"
+            id="hp_note"
+            name="hp_note"
             type="text"
             tabIndex={-1}
-            autoComplete="off"
-            value={formData.fax}
+            autoComplete="new-password"
+            value={formData.hp_note}
             onChange={handleChange}
           />
         </div>
@@ -226,7 +228,7 @@ export function AuditForm() {
         </div>
 
         <p className="flex items-center justify-center gap-2 mt-4 text-sm text-chalk-dim">
-          <Lock className="w-4 h-4 stroke-mint" />
+          <Lock className="w-4 h-4 stroke-chalk-dim" />
           We use your details for this audit only. No mailing list.
         </p>
       </form>

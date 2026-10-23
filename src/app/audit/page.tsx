@@ -18,7 +18,15 @@ export const metadata: Metadata = {
 
 // The proof is the real eDairyMarket finding, read from offer.ts rather than
 // restated here, so the number cannot drift from the case study on the home page.
-const proof = caseStudies.find((s) => s.name === "eDairyMarket");
+// Throws at build time if the study is ever renamed, instead of the proof block
+// silently disappearing — the w4 facts gate only covers the home page.
+const proof = (() => {
+  const study = caseStudies.find((s) => s.name === "eDairyMarket");
+  if (!study?.stat) {
+    throw new Error("/audit: the eDairyMarket case study (with its stat) is missing from offer.ts");
+  }
+  return { ...study, stat: study.stat };
+})();
 
 export default function AuditPage() {
   return (
@@ -61,29 +69,27 @@ export default function AuditPage() {
             </p>
           </div>
 
-          {proof?.stat && (
-            <div className="mt-16 border-t border-[var(--rule)] pt-8 md:mt-24">
-              <p className="label" style={{ marginBottom: "16px" }}>
-                {proof.name}
-              </p>
-              <p className="display d-md">
-                <span className="text-brass">{proof.stat.value}</span>{" "}
-                {proof.stat.of}
-              </p>
-              {/* headlineLines is the rest of `headline` after the stat — the
-                  w4 facts gate holds that invariant, so the figure is not
-                  printed twice. */}
-              <p className="lede mt-4" style={{ maxWidth: "52ch" }}>
-                {proof.headlineLines.join(" ")}
-              </p>
-            </div>
-          )}
+          <div className="mt-16 border-t border-[var(--rule)] pt-8 md:mt-24">
+            <p className="label" style={{ marginBottom: "16px" }}>
+              {proof.name}
+            </p>
+            <p className="display d-md">
+              <span className="text-brass">{proof.stat.value}</span>{" "}
+              {proof.stat.of}
+            </p>
+            {/* headlineLines is the rest of `headline` after the stat — the
+                w4 facts gate holds that invariant, so the figure is not
+                printed twice. */}
+            <p className="lede mt-4" style={{ maxWidth: "52ch" }}>
+              {proof.headlineLines.join(" ")}
+            </p>
+          </div>
         </div>
       </section>
 
       <div className="band band-dl" aria-hidden="true" />
 
-      <section data-ground="light" className="paper relative pb-16 md:pb-24 lg:pb-28">
+      <section data-ground="light" className="paper relative py-16 md:py-24 lg:py-28">
         <div className="wrap-v4">
           <h2 className="label label-ink rv fade" style={{ marginBottom: "clamp(24px, 3vw, 44px)" }}>
             {audit.checksLabel}
@@ -130,7 +136,7 @@ export default function AuditPage() {
       <section
         id="request"
         data-ground="dark"
-        className="relative bg-ground text-chalk pb-16 md:pb-24 lg:pb-28"
+        className="relative bg-ground text-chalk py-16 md:py-24 lg:py-28"
       >
         <div className="wrap-v4">
           <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">

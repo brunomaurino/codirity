@@ -9,7 +9,7 @@ interface AuditRequestData {
   stage: string;
   message?: string;
   /** Honeypot. Hidden from people, filled in by form-spamming bots. */
-  fax?: string;
+  hp_note?: string;
   /** Where the visitor came from, read off the landing URL by the form. */
   attribution?: Record<string, unknown>;
 }
@@ -55,11 +55,22 @@ function normalizeWebsite(raw: string): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: AuditRequestData = await request.json();
+    let body: AuditRequestData;
+    try {
+      body = await request.json();
+    } catch {
+      body = null as unknown as AuditRequestData;
+    }
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
 
     // Honeypot tripped: answer exactly like a success so the bot learns nothing,
     // and send nothing.
-    if (body.fax) {
+    if (body.hp_note) {
+      // Logged so a silent drop rate stays observable: if a real browser's
+      // autofill ever starts filling this, it shows up here, not as lost leads.
+      console.warn("Audit request dropped by honeypot");
       return NextResponse.json({ success: true });
     }
 
