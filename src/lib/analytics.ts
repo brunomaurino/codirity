@@ -44,6 +44,11 @@ export type AnalyticsEvent =
   | "contact_form_submitted"
   | "contact_form_success"
   | "contact_form_error"
+  // Free audit request (/audit, the paid-search landing). `audit_form_success`
+  // is the conversion imported into Google Ads.
+  | "audit_form_submitted"
+  | "audit_form_success"
+  | "audit_form_error"
   // Other direct lead signals
   | "email_click"
   | "faq_opened";

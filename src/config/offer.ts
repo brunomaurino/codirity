@@ -772,6 +772,94 @@ export const clients: ClientEntry[] = [
   },
 ];
 
+/** The /audit landing page — the paid-search entry point (2026-10-23). The
+ *  checks listed here are exactly what `scripts/leak-report/scan.py` runs
+ *  (sitemap responses, SSR, checkout links, metadata); a check added to the
+ *  page without a scanner check behind it is a promise nobody can deliver.
+ *  The turnaround is a real commitment to every requester, stated ONCE. */
+export const AUDIT_TURNAROUND = "2 business days";
+
+export interface AuditStageOption {
+  value: string;
+  label: string;
+}
+
+export interface AuditContent {
+  label: string;
+  headline: string;
+  lede: string;
+  cta: string;
+  fit: string;
+  checksLabel: string;
+  checks: { title: string; body: string }[];
+  stepsLabel: string;
+  steps: { number: string; title: string; description: string }[];
+  formTitle: string;
+  formLede: string;
+  /** Fixed enum, shared by the form and the API — the only field forwarded to
+   *  analytics, so it must never carry free text. */
+  stages: AuditStageOption[];
+  afterLabel: string;
+  after: string;
+}
+
+export const audit: AuditContent = {
+  label: "Free site leak audit",
+  headline: "We find what's broken on your site. Free.",
+  lede: `Send us your URL. We crawl every page in your sitemap and check the paths that cost you money, then email you a short written report within ${AUDIT_TURNAROUND}. No call needed.`,
+  cta: "Get the free audit",
+  fit: "Works best on sites with 50 or more pages. Small sites rarely have enough surface to hide anything.",
+  checksLabel: "What we check",
+  checks: [
+    {
+      title: "Pages that 404 while Google still crawls them",
+      body: "Every URL in your sitemap, requested live. Dead pages, redirect chains, and pages that quietly bounce to the homepage.",
+    },
+    {
+      title: "A checkout that can't take money",
+      body: "Pricing buttons that point nowhere, payment links still in test mode, or a buy flow that breaks before the card form.",
+    },
+    {
+      title: "Content crawlers can't see",
+      body: "Whether your pages render without JavaScript. If they don't, search engines and link previews get an empty page.",
+    },
+    {
+      title: "Missing titles, descriptions and previews",
+      body: "The metadata that decides how your pages show up in Google and when someone shares a link.",
+    },
+  ],
+  stepsLabel: "How it works",
+  steps: [
+    {
+      number: "01",
+      title: "You send the URL",
+      description: "One form, about a minute. No call and no sales deck.",
+    },
+    {
+      number: "02",
+      title: "We scan and check",
+      description: "Each finding is checked against the live page before it goes in the report. If we can't prove it, we leave it out.",
+    },
+    {
+      number: "03",
+      title: "You get the report",
+      description: `By email, within ${AUDIT_TURNAROUND}. It's yours to keep, whether or not you ever work with us.`,
+    },
+  ],
+  formTitle: "Request your audit",
+  formLede: `We reply within ${AUDIT_TURNAROUND} with the report, or to tell you the site was too small to say anything useful.`,
+  stages: [
+    { value: "pre-seed", label: "Pre-seed or idea stage" },
+    { value: "seed", label: "Seed" },
+    { value: "series-a", label: "Series A" },
+    { value: "series-b-plus", label: "Series B or later" },
+    { value: "bootstrapped", label: "Bootstrapped or profitable" },
+    { value: "other", label: "Agency, nonprofit or other" },
+  ],
+  afterLabel: "After the report",
+  after: `Fix the findings yourself, or hand them to us. That's what the subscription is for: ${tiers[0].price}${tiers[0].period} flat, pause or cancel anytime.`,
+};
+
 export const offer: Offer = {
   brand: BRAND,
   legalEntity: LEGAL_ENTITY,
