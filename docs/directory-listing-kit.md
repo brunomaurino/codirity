@@ -55,22 +55,24 @@ costs more trust than it earns.
 ## Services (pick the directory's closest categories)
 
 1. Web apps, MVPs & SaaS features
-2. Process & workflow automation
-3. Custom internal tools & dashboards
-4. AI integrations (LLMs, chatbots, agents)
-5. API & third-party integrations
-6. Stripe billing & subscriptions
-7. Data pipelines, scripts & migrations
-8. Legacy system modernization
-9. Ongoing fixes & iterative improvements
+2. Marketing sites & landing pages
+3. Process & workflow automation
+4. Custom internal tools & dashboards
+5. AI integrations (LLMs, chatbots, agents)
+6. API & third-party integrations
+7. Stripe billing & subscriptions
+8. Data pipelines, scripts & migrations
+9. Legacy system modernization
+10. Ongoing fixes & iterative improvements
 
 Closest standard directory categories: Custom Software Development, Web
-Development, AI Development, Artificial Intelligence, Automation / RPA, API
+Development, Web Design, AI Development, Artificial Intelligence, Automation / RPA, API
 Development, Software Integration, Application Modernization.
 
-**Not offered (do not tick):** native mobile apps, brand or marketing design,
+**Not offered (do not tick):** native mobile apps,
 staffing for manual operations, hardware or on-site IT, work that needs a
-dedicated full-time team.
+dedicated full-time team. Brand, marketing and design are listed on the site as
+"coming soon": do not tick them until they ship.
 
 ## Tech stack / skills
 

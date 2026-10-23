@@ -55,6 +55,15 @@ def _drop_pin(css, media_keyword):
 
 
 PAGE_MUTATIONS = {
+    # ---- the coming-soon row (2026-10-23): struck, or its tag dropped ----
+    "coming-soon-row-struck": lambda p: p.replace(
+        '<li class="soon"><span class="svc-name">Brand, marketing &amp; design</span>',
+        '<li class="soon"><span class="svc-name"><span class="strike">Brand, marketing &amp; design</span></span>',
+        1,
+    ),
+    "coming-soon-tag-dropped": lambda p: p.replace(
+        '<span class="svc-no">coming soon</span>', "", 1
+    ),
     # ---- the two v3 actually shipped ----
     "v3-paraphrased-service-row": lambda p: p.replace(
         "Data pipelines, scripts &amp; migrations",

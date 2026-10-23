@@ -23,13 +23,15 @@ import { cn } from "@/lib/utils";
 // `font-mono` is gone with it (retired since v3 V0; v4 is ONE family), as is
 // the white/opacity soup in favour of the fixed ground tokens.
 
+// Root-relative for the same reason as the header's links: the footer renders
+// on /audit and /privacy too, where a bare hash has nothing to land on.
 const nav = [
-  { href: "#services", label: "What we build" },
-  { href: "#process", label: "How it works" },
-  { href: "#terms", label: "Pricing" },
-  { href: "#work", label: "Clients" },
-  { href: "#about", label: "Who does the work" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#services", label: "What we build" },
+  { href: "/#process", label: "How it works" },
+  { href: "/#terms", label: "Pricing" },
+  { href: "/#work", label: "Clients" },
+  { href: "/#about", label: "Who does the work" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 const socialLinks = [

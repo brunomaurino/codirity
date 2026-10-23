@@ -7,11 +7,15 @@ import { CalPopupButton, Logo } from "@/components/ui";
 import { hero, CAL_LINK, BOOKING_ENABLED } from "@/config/offer";
 import { cn } from "@/lib/utils";
 
+// Root-relative ("/#services", not "#services"): the header renders on every
+// route, and on /audit or /privacy a bare hash points at a section that page
+// does not have. On the home page the two behave the same.
 const navLinks = [
-  { href: "#services", label: "Services" },
-  { href: "#process", label: "Process" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#services", label: "Services" },
+  { href: "/#process", label: "Process" },
+  { href: "/#contact", label: "Contact" },
 ];
+const pricingHref = `/${hero.primaryCta.href}`;
 
 export function Header() {
   // overDark: is the DARK hero still under the header band? This replaces the
@@ -130,7 +134,7 @@ export function Header() {
           </CalPopupButton>
           )}
           <Link
-            href={hero.primaryCta.href}
+            href={pricingHref}
             className={cn(
               "btn-pill inline-flex items-center gap-2",
               "px-5 py-2.5 text-sm font-medium",
@@ -220,7 +224,7 @@ export function Header() {
             </CalPopupButton>
             )}
             <Link
-              href={hero.primaryCta.href}
+              href={pricingHref}
               onClick={() => setIsMobileMenuOpen(false)}
               className={cn(
                 "flex items-center justify-center gap-2",

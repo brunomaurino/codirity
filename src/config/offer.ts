@@ -462,6 +462,7 @@ export const TRUST_LINE = `Cancel in your first ${guarantee.days} days — get $
 
 export const included: string[] = [
   "Web apps, MVPs & SaaS features",
+  "Marketing sites & landing pages",
   "Process & workflow automation",
   "Custom internal tools & dashboards",
   "AI integrations (LLMs, chatbots, agents)",
@@ -474,11 +475,15 @@ export const included: string[] = [
 
 export const notIncluded: string[] = [
   "Native mobile apps",
-  "Brand & marketing design",
   "Ongoing manual data entry or operations staffing",
   "Hardware or on-site IT",
   "Work that needs a dedicated full-time team",
 ];
+
+/** Shown in the services list with a "coming soon" tag instead of the strike:
+ *  not offered today, but no longer a refusal (Bruno, 2026-10-23). Moving an
+ *  item to `included` is the day it ships, not before. */
+export const comingSoon: string[] = ["Brand, marketing & design"];
 
 export const howItWorks: HowItWorksStep[] = [
   {
@@ -630,7 +635,7 @@ export const faq: FaqItem[] = [
   {
     question: "What don't you do?",
     answer:
-      "We focus on AI, automation, and custom systems. We don't do native mobile apps, brand or marketing design, or staffing for manual operations. If we're not the right fit, we'll tell you.",
+      "We focus on AI, automation, custom systems, and the sites they run on. We don't do native mobile apps or staffing for manual operations. Brand, marketing and design services are coming soon. If we're not the right fit, we'll tell you.",
   },
 ];
 
@@ -771,6 +776,99 @@ export const clients: ClientEntry[] = [
       "An outfit-scoring iOS app we're building pre-launch — camera, scoring, paywall — one queue item at a time, the same way every other request comes through.",
   },
 ];
+
+/** The /audit landing page — the paid-search entry point (2026-10-23). The
+ *  checks listed here are exactly what `scripts/leak-report/scan.py` runs
+ *  (sitemap responses, SSR, checkout links, metadata); a check added to the
+ *  page without a scanner check behind it is a promise nobody can deliver.
+ *  The turnaround is a real commitment to every requester, stated ONCE. */
+export const AUDIT_TURNAROUND = "2 business days";
+
+/** The page count the copy promises. Every audit runs
+ *  `scan.py <domain> --max-urls 1000` — the scanner's default (300) samples,
+ *  and a sample is not what "up to 1,000 pages" says. Keep the two together. */
+export const AUDIT_MAX_PAGES = "1,000";
+
+export interface AuditStageOption {
+  value: string;
+  label: string;
+}
+
+export interface AuditContent {
+  label: string;
+  headline: string;
+  lede: string;
+  cta: string;
+  fit: string;
+  checksLabel: string;
+  checks: { title: string; body: string }[];
+  stepsLabel: string;
+  steps: { number: string; title: string; description: string }[];
+  formTitle: string;
+  formLede: string;
+  /** Fixed enum, shared by the form and the API — the only field forwarded to
+   *  analytics, so it must never carry free text. */
+  stages: AuditStageOption[];
+  afterLabel: string;
+  after: string;
+}
+
+export const audit: AuditContent = {
+  label: "Free site leak audit",
+  headline: "We find what's broken on your site. Free.",
+  lede: `Send us your URL. We check up to ${AUDIT_MAX_PAGES} pages from your sitemap and the paths that cost you money, then email you a short written report within ${AUDIT_TURNAROUND}. No call needed.`,
+  cta: "Get the free audit",
+  fit: "Works best on sites with 50 or more pages. Small sites rarely have enough surface to hide anything.",
+  checksLabel: "What we check",
+  checks: [
+    {
+      title: "Pages that 404 while Google still crawls them",
+      body: `Up to ${AUDIT_MAX_PAGES} URLs from your sitemap, requested live. Dead pages, redirect chains, and pages that quietly bounce to the homepage.`,
+    },
+    {
+      title: "A checkout that can't take money",
+      body: "Payment links still in test mode, and pricing buttons that lead to a dead page.",
+    },
+    {
+      title: "Content crawlers can't see",
+      body: "Whether your home and pricing pages render without JavaScript. If they don't, search engines and link previews get an empty page.",
+    },
+    {
+      title: "Missing titles, descriptions and previews",
+      body: "Checked on a sample of your pages: the metadata that decides how they show up in Google and when someone shares a link.",
+    },
+  ],
+  stepsLabel: "How it works",
+  steps: [
+    {
+      number: "01",
+      title: "You send the URL",
+      description: "One form, about a minute. No call and no sales deck.",
+    },
+    {
+      number: "02",
+      title: "We scan and check",
+      description: "Each finding is checked against the live page before it goes in the report. If we can't prove it, we leave it out.",
+    },
+    {
+      number: "03",
+      title: "You get the report",
+      description: `By email, within ${AUDIT_TURNAROUND}. It's yours to keep, whether or not you ever work with us.`,
+    },
+  ],
+  formTitle: "Request your audit",
+  formLede: `We reply within ${AUDIT_TURNAROUND} with the report, or to tell you the site was too small to say anything useful.`,
+  stages: [
+    { value: "pre-seed", label: "Pre-seed or idea stage" },
+    { value: "seed", label: "Seed" },
+    { value: "series-a", label: "Series A" },
+    { value: "series-b-plus", label: "Series B or later" },
+    { value: "bootstrapped", label: "Bootstrapped or profitable" },
+    { value: "other", label: "Agency, nonprofit or other" },
+  ],
+  afterLabel: "After the report",
+  after: `Fix the findings yourself, or hand them to us. That's what the subscription is for: ${tiers[0].price}${tiers[0].period} flat, pause or cancel anytime.`,
+};
 
 export const offer: Offer = {
   brand: BRAND,
