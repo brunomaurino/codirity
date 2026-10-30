@@ -25,8 +25,8 @@ MUTATIONS = {
     ),
     # a price drifting away from offer.ts
     "figure-drift": lambda s: s.replace(
-        'term-v term-n"><span class="cur">$</span>3,995',
-        'term-v term-n"><span class="cur">$</span>3,950',
+        'term-v term-n"><span class="cur">$</span>800',
+        'term-v term-n"><span class="cur">$</span>850',
         1,
     ),
     # the eyebrow promising more numbers than the band renders
