@@ -21,7 +21,7 @@ function stripeLink(value: string | undefined): string {
 export interface Tier {
   id: "standard";
   name: string;
-  /** Display price, e.g. "$3,995". */
+  /** Display price, e.g. "$800". */
   price: string;
   /** Machine-readable monthly amount (no symbol/separator), for Service.offers JSON-LD. */
   priceAmount: number;
@@ -393,7 +393,9 @@ export const queue: QueueContent = {
   note: "An illustrative queue — you scroll, we ship. Not a client board.",
 };
 
-/** ONE tier since 2026-09-14 (Bruno): a single flat price for everyone. The Pro
+/** ONE tier since 2026-09-14 (Bruno): a single flat price for everyone. Repriced
+ *  from $3,995 to $800/mo on 2026-10-30 (Bruno): $3,995 read as too expensive for an
+ *  agency with no public track record yet; the methodology is unchanged. The Pro
  *  tier ($6,995/mo, two active tasks) was removed from the offer and the
  *  `foundingRate` kill-switch flipped off in the same change, so the terms band
  *  renders two numbers — the price and the guarantee. The onboarding path still
@@ -403,8 +405,8 @@ export const tiers: Tier[] = [
   {
     id: "standard",
     name: "Standard",
-    price: "$3,995",
-    priceAmount: 3995,
+    price: "$800",
+    priceAmount: 800,
     period: "/mo",
     tasks: "One active task at a time",
     note: "One active task at a time. Unlimited requests in the queue behind it.",

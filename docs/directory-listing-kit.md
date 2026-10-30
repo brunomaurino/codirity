@@ -38,11 +38,11 @@ costs more trust than it earns.
 
 ## Short description (under 160 characters)
 
-> Software development and AI automation subscription for startups: senior engineers, unlimited requests, $3,995/mo flat. Pause or cancel anytime.
+> Software development and AI automation subscription for startups: senior engineers, unlimited requests, $800/mo flat. Pause or cancel anytime.
 
 ## Medium description (about 300 characters)
 
-> Codirity is a software development and AI automation subscription. You add requests to a queue; a senior engineer works them one active task at a time and ships them async. One flat rate of $3,995/mo, unlimited requests and revisions, pause or cancel anytime. Cancel in the first 7 days and get 50% back.
+> Codirity is a software development and AI automation subscription. You add requests to a queue; a senior engineer works them one active task at a time and ships them async. One flat rate of $800/mo, unlimited requests and revisions, pause or cancel anytime. Cancel in the first 7 days and get 50% back.
 
 ## Long description (about 900 characters)
 
@@ -50,7 +50,7 @@ costs more trust than it earns.
 >
 > You work directly with the person building your systems: no account managers, no offshore hand-offs. The code lives in your repos and the infrastructure in your cloud accounts, so you own everything.
 >
-> One flat rate of $3,995/mo. Unlimited requests and revisions, no contracts, pause or cancel anytime. Every new subscription is backed by a guarantee: cancel in the first 7 days and get 50% back, no questions asked.
+> One flat rate of $800/mo. Unlimited requests and revisions, no contracts, pause or cancel anytime. Every new subscription is backed by a guarantee: cancel in the first 7 days and get 50% back, no questions asked.
 
 ## Services (pick the directory's closest categories)
 
@@ -83,8 +83,8 @@ TypeScript, Next.js, React, Node.js, NestJS, Stripe, AWS, LLM APIs (AI features 
 | Field | Value |
 |---|---|
 | Pricing model | Monthly subscription, flat rate |
-| Price | $3,995 per month (USD) |
-| Minimum project size | One month: pick the bucket that contains $3,995 (usually "$1,000+") |
+| Price | $800 per month (USD) |
+| Minimum project size | One month: pick the bucket that contains $800 (usually "< $1,000") |
 | Hourly rate | **FILL**. The offer has no hourly rate. If the field is mandatory, choose a bucket the operator is willing to defend on a call; never derive one by dividing the monthly price |
 | Guarantee | Cancel within the first 7 days of a new subscription and get 50% back |
 
